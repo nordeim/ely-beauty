@@ -1,4 +1,4 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.8
+# ElyBeauty — Master Project Architecture Document (PAD) v2.9
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
@@ -7,6 +7,54 @@
 **Audience:** Senior Engineers, Tech Leads, DevOps, and Onboarding Engineers
 **Rule:** Every architectural decision in this document traces to a specific rationale. Nothing is here "because it's popular."
 
+
+#### Revision Block — v2.9 (Run 81 — the category-model, dual-filter & one-page-grid cycle)
+
+- `[DA]` **The category model is the reference's two parallel systems**
+  (captured from its public entity API + ID-link measurement, 2026-11-09):
+  many-to-many DISPLAY categories (`ProductCategory` junction, `@@id` on
+  the pair, both FKs Restrict — the Wooden cleansing brush is a DUAL
+  member of Bestsellers AND Beauty Tools; six of the 19 published
+  products belong to none) plus the TEMPLATE category string
+  (`Product.templateCategory`: skincare ×12 / lip_care ×3 / body_care ×4)
+  that drives the detail-page breadcrumb eyebrow, the nav/footer
+  `?category=skincare|body_care|sets` links, and the shop's template
+  filter mode. The retired single `categoryId` FK is GONE (destructive
+  `db:push`; a reseed rebuilds the wiring — the old FK rode the same
+  content-refresh policy).
+- `[SE]` **`/shop` filters in dual mode** (`resolveCategoryFilter` in
+  `src/lib/products.ts`): a category param matching an ACTIVE display
+  slug filters the junction (h1 = the category's NAME, its pill active);
+  anything else filters `templateCategory` equality (h1 "Shop", NO pill
+  active — the reference's own Category slugs match nothing). Unknown
+  values match no row's template string → 0 products, exactly like the
+  reference.
+- `[SR]` **The pill result sets are the reference's exact memberships**:
+  Beauty Tools 7 / Brush & Combs 3 / Bestsellers 4 (dual) / Gift Sets 0
+  (entity-API measured; the clone's 10/6/3 was the never-measured
+  residue). "Complete the Ritual" = the 3 NEWEST products excluding
+  self (createdAt order — measured on the Bonnet AND the Pillowcase;
+  the same-category rule retired). The ritual banner CTA links plain
+  `/shop`. The grid paginates at 24/page — the 19-product catalog
+  renders on ONE page like the reference (the 12/page pager was the
+  HomeNest-era superset).
+- `[SR]` **The shop empty state is the reference's centered anatomy**:
+  `text-center py-20`, the Cormorant 24px/300 `No products found`
+  paragraph, `text-sm text-muted-foreground` "Check back soon for new
+  arrivals." — the dashed box, icon, hint copy and clear-filters link
+  retired (measured on the reference's empty gift-sets filter).
+- `[SE]` **The webhook parses intent metadata through the guarded
+  `parseShippingMetadata` seam** (`src/lib/stripe-payment.ts`):
+  unparseable `meta.shipping` routes to the metadata-unusable PERMANENT
+  path (event recorded + refund trail) instead of escaping as a throw
+  the outer catch would misclassify as transient (audit 81-a L-1).
+- `[TE]` Suite: 650 → **677 unit** (+27: the seed memberships ×3, the
+  dual-filter resolution ×5, the categoryIds schema ×4, the delete-guard
+  junction seam, the parseShippingMetadata truth table ×4, the
+  byte-count fallback ×2, the S81 source pins ×8) · 85 → **88 e2e**
+  (+3: the nav template-filters, the empty-state anatomy, the admin
+  multi-select dual-membership edit; the pagination test reworked to
+  the one-page grid). The mobile panel re-verified byte-exact ±1px.
 
 #### Revision Block — v2.8 (Run 80 — the overlay empty-state, no-results centering & webhook raw-body cycle)
 

@@ -3,13 +3,15 @@ import { Facebook } from "lucide-react";
 
 import { WhatsAppFloat } from "./whatsapp-float";
 
-// The reference's footer link map (verified live). COMPANY links all route
-// to /about; SHOP links filter the /shop grid.
+// S81-3 (measured live 2026-11-09): the reference's footer SHOP column
+// carries the TEMPLATE categories — All Products / Skincare / Body Care /
+// Gift Sets -> ?category=skincare / body_care / sets (each filters the
+// product's template-category string). COMPANY links all route to /about.
 const SHOP_LINKS = [
   { href: "/shop", label: "All Products" },
-  { href: "/shop?category=beauty-tools", label: "Beauty Tools" },
-  { href: "/shop?category=brush-combs", label: "Brush & Combs" },
-  { href: "/shop?category=gift-sets", label: "Gift Sets" },
+  { href: "/shop?category=skincare", label: "Skincare" },
+  { href: "/shop?category=body_care", label: "Body Care" },
+  { href: "/shop?category=sets", label: "Gift Sets" },
 ];
 
 const COMPANY_LINKS = [

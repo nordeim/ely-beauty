@@ -33,9 +33,9 @@ export function parseAmountToCents(input: string): number | null {
   return Math.round(cents);
 }
 
-/** Back-compat alias for the pre-ElyBeauty name — kept for its own unit
- * test's import (S77-9: no production module imports it; admin schemas use
- * parseAmountToCents). */
+/** Back-compat alias for the pre-ElyBeauty name — kept for its unit
+ * test AND the three admin dialogs' dollar-labeled inputs (product-dialog,
+ * coupon-dialog, settings-form — all import this alias). */
 export const parseDollarsToCents = parseAmountToCents;
 
 /** Percentage discount between compare-at and current price, e.g. -29 => "-29%". */

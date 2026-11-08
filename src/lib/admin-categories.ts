@@ -1,11 +1,9 @@
 /**
- * Guarded category deletion (session-17 S17-1).
+ * Guarded category deletion (session-17 S17-1; S81-1 many-to-many seam).
  *
  * `deleteCategoryAction` used to be check-then-write: count the products,
- * then deleteMany the category. `Product.category` is a REQUIRED relation
- * with no explicit `onDelete` (default Restrict; the datasource leaves
- * `relationMode` unset so SQLite enforces the FK at write time), so a product
- * created in the window between the count and the delete raises P2003 —
+ * then deleteMany the category. The relation is a Restrict FK, so a product
+ * linked in the window between the count and the delete raises P2003 —
  * which no catch in the action mapped (every sibling admin error path was
  * narrowed by S13-5). The escaped rejection surfaced as the generic S13-2
  * toast instead of an actionable message.
@@ -15,12 +13,16 @@
  * the FK itself — the delete's P2003 maps to the same "in use" outcome with
  * an unknown count. Any other error rethrows (the S13-2 contract: unknown
  * errors are deliberately surfaced, never swallowed).
+ *
+ * S81-1: the count is now the ProductCategory JUNCTION-row count (for one
+ * categoryId each junction row IS a distinct member product); the Restrict
+ * FK lives on the junction's categoryId column.
  */
 import { isForeignKeyViolation } from "@/lib/prisma-errors";
 
 /** The minimal Prisma-client surface the guarded delete touches. */
 export interface CategoryWriteClient {
-  product: { count(args: { where: { categoryId: string } }): Promise<number> };
+  productCategory: { count(args: { where: { categoryId: string } }): Promise<number> };
   category: { deleteMany(args: { where: { id: string } }): Promise<{ count: number }> };
 }
 
@@ -34,7 +36,7 @@ export async function deleteCategoryIfEmpty(
   db: CategoryWriteClient,
   id: string,
 ): Promise<DeleteCategoryOutcome> {
-  const productCount = await db.product.count({ where: { categoryId: id } });
+  const productCount = await db.productCategory.count({ where: { categoryId: id } });
   if (productCount > 0) return { outcome: "in-use", productCount };
 
   try {

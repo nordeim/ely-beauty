@@ -68,15 +68,24 @@ export async function upsertProductAction(data: ProductUpsertInput): Promise<Adm
   });
   if (skuClash) return { ok: false, error: "A product with this SKU already exists." };
 
-  const category = await db.category.findUnique({ where: { id: input.categoryId }, select: { id: true } });
-  if (!category) return { ok: false, error: "The selected category no longer exists." };
+  // S81-1: every id in the (possibly empty) categoryIds array must exist —
+  // the many-to-many memberships.
+  if (input.categoryIds.length > 0) {
+    const existing = await db.category.findMany({
+      where: { id: { in: input.categoryIds } },
+      select: { id: true },
+    });
+    if (existing.length !== input.categoryIds.length) {
+      return { ok: false, error: "A selected category no longer exists." };
+    }
+  }
 
   const dbData = {
     name: input.name,
     slug: input.slug,
     shortDescription: input.shortDescription ?? "",
     description: input.description,
-    categoryId: input.categoryId,
+    templateCategory: input.templateCategory ?? null,
     price: input.price,
     compareAtPrice: input.compareAtPrice ?? null,
     sku: input.sku,
@@ -94,11 +103,26 @@ export async function upsertProductAction(data: ProductUpsertInput): Promise<Adm
   };
 
   try {
-    if (id) {
-      await db.product.update({ where: { id }, data: dbData });
-    } else {
-      await db.product.create({ data: dbData });
-    }
+    // S81-1: the product write and the membership sync share one
+    // transaction — a junction failure can never strand a half-updated
+    // product (delete-then-create is idempotent; last write wins on
+    // concurrent edits, the single-FK precedent).
+    await db.$transaction(async (tx) => {
+      let productId: string;
+      if (id) {
+        const row = await tx.product.update({ where: { id }, data: dbData });
+        productId = row.id;
+      } else {
+        const row = await tx.product.create({ data: dbData });
+        productId = row.id;
+      }
+      await tx.productCategory.deleteMany({ where: { productId } });
+      if (input.categoryIds.length > 0) {
+        await tx.productCategory.createMany({
+          data: input.categoryIds.map((categoryId) => ({ productId, categoryId })),
+        });
+      }
+    });
   } catch (error) {
     // The slug/SKU pre-checks race under concurrent admins — a P2002 here is
     // a unique clash, NOT a missing product; say so instead of the misleading

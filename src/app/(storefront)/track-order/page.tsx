@@ -92,9 +92,10 @@ export default async function TrackOrderPage({
 
   let order: OrderWithDetails | null = null;
   if (submitted) {
-    // Order numbers are sequential and printed on every receipt — the email
-    // match is the access control. Lookups are rate-limited (per client) so
-    // iterating number/email pairs is impractical.
+    // Order numbers are ELY-XXXXXXXX crypto-random (run-72) and printed on
+    // every receipt — the email match is the access control. Lookups are
+    // rate-limited (per client) so iterating number/email pairs is
+    // impractical.
     const h = await headers();
     const limit = rateLimit(`track-order:${clientIp(h)}`, 30, 60_000);
     if (limit.ok) {

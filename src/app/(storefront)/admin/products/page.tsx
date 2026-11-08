@@ -6,7 +6,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { formatMoney } from "@/lib/money";
 import { clampSearchTerm } from "@/lib/validation";
-import { parseColors, parseImages, parseSizes, parseSpecs, parseTags } from "@/lib/products";
+import { parseColors, parseImages, parseSizes, parseSpecs, parseTags, productCategoryInclude } from "@/lib/products";
 import { cn } from "@/lib/utils";
 
 import {
@@ -29,12 +29,14 @@ function firstParam(value: string | string[] | undefined): string {
   return value ?? "";
 }
 
-function toFormValues(product: Product, categoryId: string): ProductFormValues {
+function toFormValues(product: Product & { categories: { category: { id: string } }[] }): ProductFormValues {
   return {
     id: product.id,
     name: product.name,
     slug: product.slug,
-    categoryId,
+    // S81-1: the many-to-many memberships ride into the dialog.
+    categoryIds: product.categories.map((pc) => pc.category.id),
+    templateCategory: product.templateCategory ?? "",
     shortDescription: product.shortDescription,
     description: product.description,
     priceDollars: (product.price / 100).toFixed(2),
@@ -80,7 +82,7 @@ export default async function AdminProductsPage({
     db.product.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      include: { category: { select: { id: true, name: true } } },
+      include: productCategoryInclude,
       skip: (page - 1) * PER_PAGE,
       take: PER_PAGE,
     }),
@@ -145,7 +147,7 @@ export default async function AdminProductsPage({
           <tbody className="divide-y divide-border">
             {products.map((product) => {
               const image = parseImages(product.images)[0] ?? "/images/hero-elevate.png";
-              const formValues = toFormValues(product, product.category.id);
+              const formValues = toFormValues(product);
               return (
                 <tr key={product.id} className="align-middle transition-colors hover:bg-accent/40">
                   <td className="px-4 py-3">
@@ -163,7 +165,11 @@ export default async function AdminProductsPage({
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">{product.category.name}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {product.categories.length === 0
+                      ? "—"
+                      : product.categories.map((pc) => pc.category.name).join(", ")}
+                  </td>
                   <td className="px-4 py-3">
                     <span className="font-semibold">{formatMoney(product.price)}</span>
                     {product.compareAtPrice !== null && (

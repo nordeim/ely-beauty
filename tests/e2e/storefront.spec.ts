@@ -48,7 +48,11 @@ test.describe("storefront", () => {
 
     // Ritual banner (the reference's inset photographic CTA).
     await expect(page.getByRole("heading", { name: "Complete Your Ritual" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Discover Sets/ }).first()).toBeVisible();
+    // The ritual banner's CTA links plain /shop (S81-8 — the reference's
+    // "Discover Sets" carries no category param).
+    const discoverSets = page.getByRole("link", { name: /Discover Sets/ }).first();
+    await expect(discoverSets).toBeVisible();
+    await expect(discoverSets).toHaveAttribute("href", "/shop");
 
     // The reference's floating WhatsApp affordance rides every storefront page.
     const whatsapp = page.getByTestId("whatsapp-float");
@@ -61,7 +65,7 @@ test.describe("storefront", () => {
     }
   });
 
-  test("shop lists the catalog with count, pills, sort and pagination", async ({ page }) => {
+  test("shop lists the catalog with count, pills, sort and the ONE-PAGE grid", async ({ page }) => {
     await gotoHydrated(page, "/shop");
 
     await expect(page.getByRole("heading", { name: "All Products" })).toBeVisible();
@@ -69,25 +73,21 @@ test.describe("storefront", () => {
     await expect(page.getByText("19 products", { exact: true })).toBeVisible();
     await expect(page.getByText(/products found/)).toHaveCount(0);
 
+    // S81-5: the reference renders the WHOLE catalog on ONE page (19 cards,
+    // no pagination controls at this catalog size).
+    await expect(page.locator("article")).toHaveCount(19);
+    await expect(page.getByRole("navigation", { name: "Product pages" })).toHaveCount(0);
+
     // Page 1 opens in the reference's authored order = newest-first (the
     // seed backdates rows): the sold-out Bonnet is FIRST, the Pillowcase
     // (first in-stock card) second.
     const firstArticle = page.locator("article").first();
     await expect(firstArticle.getByText("Premium Double Sided Ruffles Silk Hair Bonnet")).toBeVisible();
     await expect(page.getByText("Pure Satin Silk Pillowcase – For Hair & Skin").first()).toBeVisible();
-
-    // Pagination reaches the tail on page 2 (19 products at 12/page — the
-    // oldest 7 seeded rows under the newest-first default).
-    await page.getByRole("link", { name: "Page 2" }).click();
-    await expect(page).toHaveURL(/page=2/);
-    await expect(page.getByText("Full Silicon Scalp Massager").first()).toBeVisible();
+    // The page-1 grid reaches the OLDEST row too now (the Ice Bowl, 19th).
     await expect(
       page.getByText("Facial Ice Bowl – Foldable & Travel-Friendly").first(),
     ).toBeVisible();
-
-    // Back to page 1 via the pill row (a pill change always resets ?page).
-    await page.getByRole("button", { name: "All Products" }).click();
-    await expect(page).toHaveURL(/\/shop$/);
 
     // Category filter pills — active pill carries the solid foreground fill.
     const allPill = page.getByRole("button", { name: "All Products" });
@@ -108,12 +108,84 @@ test.describe("storefront", () => {
       page.locator("article").first().getByText("Travel Silicone Mask Applicator Set 4 Pcs"),
     ).toBeVisible();
 
-    // Category pill narrows results (10 seeded beauty-tools products).
+    // Category pill narrows results (S81-1: 7 beauty-tools memberships —
+    // the entity-API-measured set; the h1 carries the category's name).
     await page.getByRole("button", { name: "Beauty Tools", exact: true }).click();
     await expect(page).toHaveURL(/category=beauty-tools/);
-    await expect(page.getByText("10 products", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Beauty Tools", level: 1 })).toBeVisible();
+    await expect(page.getByText("7 products", { exact: true })).toBeVisible();
     await expect(page.getByText("Pure Satin Silk Pillowcase – For Hair & Skin").first()).toBeHidden();
     await expect(page.getByText("Stainless Steel Gua Sha").first()).toBeVisible();
+    // The three former members that are reference-true UNCATEGORIZED stay
+    // out of the filtered grid (they surface only under All Products).
+    await expect(page.getByText("Moisturizing Spa Socks").first()).toBeHidden();
+    await expect(page.getByText("Crystal Hair Remover").first()).toBeHidden();
+    await expect(page.getByText("Full Silicon Scalp Massager").first()).toBeHidden();
+    // The dual-member cleansing brush rides BOTH filters (Bestsellers AND
+    // Beauty Tools — the reference's many-to-many).
+    await page.getByRole("button", { name: "Bestsellers", exact: true }).click();
+    await expect(page).toHaveURL(/category=bestsellers/);
+    await expect(page.getByText("4 products", { exact: true })).toBeVisible();
+    await expect(page.getByText("Wooden Cleansing Brush").first()).toBeVisible();
+  });
+
+  test("the nav's category links open the reference's template filters (S81-3)", async ({ page }) => {
+    // Measured live: the reference's nav (desktop AND mobile panel) links
+    // Beauty Tools -> ?category=skincare and Brush & Combs ->
+    // ?category=body_care — TEMPLATE filters, which render h1 "Shop", NO
+    // active pill, and the template's product set.
+    await gotoHydrated(page, "/shop");
+    await page.getByRole("link", { name: "Beauty Tools", exact: true }).first().click();
+    await expect(page).toHaveURL(/category=skincare/);
+    await expect(page.getByRole("heading", { name: "Shop", level: 1 })).toBeVisible();
+    await expect(page.getByText("12 products", { exact: true })).toBeVisible();
+    // No pill is active under a template filter (measured — all pills
+    // render the hairline/inactive style).
+    const allPill = page.getByRole("button", { name: "All Products" });
+    await expect(allPill).not.toHaveClass(/bg-foreground/);
+    await expect(
+      page.getByRole("button", { name: "Beauty Tools", exact: true }),
+    ).not.toHaveClass(/bg-foreground/);
+    // The body_care template set: the four bamboo/sandalwood brushes.
+    await page.getByRole("link", { name: "Brush & Combs", exact: true }).first().click();
+    await expect(page).toHaveURL(/category=body_care/);
+    await expect(page.getByText("4 products", { exact: true })).toBeVisible();
+    await expect(page.getByText("Natural Bamboo Hair Brush - Square").first()).toBeVisible();
+  });
+
+  test("the shop empty state is the reference's centered anatomy (S81-6)", async ({ page }) => {
+    // The reference's gift-sets filter renders 0 products + the measured
+    // empty state: a centered py-20 container, the Cormorant 24px/300
+    // "No products found" PARAGRAPH, the muted sub-copy — no dashed box,
+    // no icon, no clear-filters link.
+    await gotoHydrated(page, "/shop?category=gift-sets");
+    await expect(page.getByText("0 products", { exact: true })).toBeVisible();
+    const emptyHeading = page.getByText("No products found", { exact: true });
+    await expect(emptyHeading).toBeVisible();
+    await expect(page.getByText("Check back soon for new arrivals.")).toBeVisible();
+    await expect(page.getByText("Try adjusting your filters.")).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Clear filters" })).toHaveCount(0);
+    // The reference's element anatomy: a <p> riding the display serif at
+    // the 24px/300 editorial scale inside the centered py-20 container.
+    await expect(emptyHeading.locator("xpath=self::p")).toBeVisible();
+    const styles = await emptyHeading.evaluate((el) => {
+      const own = getComputedStyle(el);
+      const box = getComputedStyle(el.parentElement!);
+      return {
+        fs: own.fontSize,
+        fw: own.fontWeight,
+        ff: own.fontFamily,
+        align: box.textAlign,
+        pt: box.paddingTop,
+        pb: box.paddingBottom,
+      };
+    });
+    expect(styles.ff).toContain("Cormorant");
+    expect(styles.fs).toBe("24px");
+    expect(styles.fw).toBe("300");
+    expect(styles.align).toBe("center");
+    expect(styles.pt).toBe("80px");
+    expect(styles.pb).toBe("80px");
   });
 
   test("the search overlay finds products live and navigates (the S77 full-screen anatomy)", async ({ page }) => {
@@ -239,6 +311,25 @@ test.describe("storefront", () => {
     await expect(page.getByRole("heading", { name: "Customer Reviews" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Complete the Ritual" })).toBeVisible();
 
+    // S81-4: the breadcrumb eyebrow renders the TEMPLATE category
+    // ("lip care" — the reference's category string, underscores → spaces,
+    // uppercased by the eyebrow-label class), not the display category.
+    const eyebrow = page.locator("p.eyebrow-label", { hasText: "lip care" });
+    await expect(eyebrow).toHaveCount(1);
+    await expect(page.getByText("Bestsellers", { exact: true })).toHaveCount(0);
+
+    // S81-7: "Complete the Ritual" = the 3 NEWEST products excluding self
+    // (createdAt order — the reference's rule, verified on the Bonnet AND
+    // the Pillowcase). For the Pillowcase (2nd newest): Bonnet, Curler,
+    // Bamboo Square.
+    const ritual = page.locator("section").filter({
+      has: page.getByRole("heading", { name: "Complete the Ritual" }),
+    });
+    await expect(ritual.getByText("Premium Double Sided Ruffles Silk Hair Bonnet")).toBeVisible();
+    await expect(ritual.getByText("Heatless Hair Curler Set")).toBeVisible();
+    await expect(ritual.getByText("Natural Bamboo Hair Brush - Square")).toBeVisible();
+    await expect(ritual.locator("article")).toHaveCount(3);
+
     // A how-to-use product renders its usage section (conditional content).
     await openDetailFromShop(page, "Stainless Steel Gua Sha", "/shop?q=gua");
     await expect(page.getByRole("heading", { name: "How to Use" })).toBeVisible();
@@ -251,8 +342,12 @@ test.describe("storefront", () => {
     });
     await ritual.getByRole("link", { name: /^Brush & Combs/ }).click();
     await expect(page).toHaveURL(/category=brush-combs/);
-    await expect(page.getByText("6 products", { exact: true })).toBeVisible();
-    await expect(page.getByText("Natural Bamboo Hair Brush - Square").first()).toBeVisible();
+    // S81-1: the reference's Brush & Combs = 3 memberships; the h1 carries
+    // the category name under a display filter.
+    await expect(page.getByRole("heading", { name: "Brush & Combs", level: 1 })).toBeVisible();
+    await expect(page.getByText("3 products", { exact: true })).toBeVisible();
+    await expect(page.getByText("Sandalwood Hairbrush - Oval").first()).toBeVisible();
+    await expect(page.getByText("Natural Bamboo Hair Brush - Square").first()).toBeHidden();
   });
 
   test("footer links carry the reference policies", async ({ page }) => {

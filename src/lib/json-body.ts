@@ -93,7 +93,9 @@ async function readBodyTextBounded(request: Request, maxBytes: number): Promise<
   }
 
   const text = await request.text();
-  return text.length > maxBytes ? null : text;
+  // S81-10 (audit 81-a L-3): count BYTES, not UTF-16 code units — an
+  // astral-plane payload is ~2x its String.length in bytes.
+  return new TextEncoder().encode(text).length > maxBytes ? null : text;
 }
 
 /**

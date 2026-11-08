@@ -46,6 +46,50 @@ test.describe("admin back office", () => {
     await expect(page.getByText("Pure Satin Silk Pillowcase – For Hair & Skin").first()).toBeVisible();
   });
 
+  test("admin edits a product's display categories (the S81-11 multi-select)", async ({ page }) => {
+    await loginAsAdmin(page);
+    await gotoHydrated(page, "/admin/products");
+    const search = page.getByLabel("Search products by name");
+    await search.fill("Gua Sha");
+    search.press("Enter");
+    await page.getByRole("button", { name: /Edit Stainless Steel Gua Sha/i }).first().click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+
+    // The category editor is a checkbox GROUP — the reference's
+    // many-to-many semantics (zero or more display categories per product).
+    const group = dialog.getByRole("group", { name: /display categories/i });
+    await expect(group).toBeVisible();
+    // The Gua Sha ships in exactly one display category (Beauty Tools).
+    await expect(group.getByRole("checkbox", { name: "Beauty Tools" })).toBeChecked();
+    await expect(group.getByRole("checkbox", { name: "Bestsellers" })).not.toBeChecked();
+
+    // Add the dual membership (the reference's cleansing-brush shape) and
+    // save; the storefront pill picks the new member up.
+    await group.getByRole("checkbox", { name: "Bestsellers" }).check();
+    await dialog.getByRole("button", { name: "Save Changes" }).click();
+    await expect(dialog).toBeHidden();
+    await gotoHydrated(page, "/shop?category=bestsellers");
+    await expect(page.getByText("5 products", { exact: true })).toBeVisible();
+    await expect(page.getByText("Stainless Steel Gua Sha").first()).toBeVisible();
+    // The OTHER membership is untouched (Beauty Tools still 7).
+    await gotoHydrated(page, "/shop?category=beauty-tools");
+    await expect(page.getByText("7 products", { exact: true })).toBeVisible();
+
+    // Revert (self-cleaning — the e2e suite must stay re-runnable against
+    // the persistent demo DB).
+    await gotoHydrated(page, "/admin/products");
+    await search.fill("Gua Sha");
+    search.press("Enter");
+    await page.getByRole("button", { name: /Edit Stainless Steel Gua Sha/i }).first().click();
+    await expect(dialog).toBeVisible();
+    await group.getByRole("checkbox", { name: "Bestsellers" }).uncheck();
+    await dialog.getByRole("button", { name: "Save Changes" }).click();
+    await expect(dialog).toBeHidden();
+    await gotoHydrated(page, "/shop?category=bestsellers");
+    await expect(page.getByText("4 products", { exact: true })).toBeVisible();
+  });
+
   test("orders manager lists orders and opens management", async ({ page }) => {
     await loginAsAdmin(page);
     await gotoHydrated(page, "/admin/orders");

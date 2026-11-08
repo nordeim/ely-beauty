@@ -332,3 +332,20 @@ Stage Summary:
 - Every fixed surface pinned: the hint (4 unit + 2 e2e), the no-results copy (3 unit + 1 e2e with computed style + codepoints), the raw-body seam (7-case truth table + source pins).
 - Dev-server screenshots: 25/25 regenerated and validated (dimensions + non-blank).
 - Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.
+
+---
+
+Task ID: 75
+Agent: run-81 executor (the category-model, dual-filter & one-page-grid cycle)
+Task: The full remediation cycle on the surviving workspace (git pull to 2c3a646): docs review → gates re-validation (650/650 unit, 85/85 e2e, clean build — docs matched reality) → deep audit 81-a (read-only subagent, web-application + code-review-checklist methodology, skills/ excluded: 12/12 anchors PASS, 0 CRITICAL/HIGH/MEDIUM, 3 LOW, 2 INFO; run-80 verified regression-free) → live-reference re-measurement (agent-browser, both viewports, logged in; every pinned surface re-verified GREEN; the reference's public entity API captured its AUTHORITATIVE category model — the category_ids many-to-many + the template category string) → the Session 81 plan (S81-1..S81-12, validated against the codebase) → TDD execution (RED 33 → GREEN; 650 → 677 unit, 85 → 88 e2e) → 25 screenshots off the dev server → the docs sweep (AGENTS/CLAUDE/README/PAD v2.9/SKILL v2.9.0/session_18/this worklog/REMEDIATION_PLAN Session 81) → commit + SSH-wrapper push to main.
+
+Work Log:
+- The category-model discovery: probing the reference's link targets (home tiles link by category ENTITY ID; the nav links ?category=skincare/body_care) revealed a dual category system; /api/entities/Product + /api/entities/Category (read with the operator's logged-in session) confirmed it exactly — every product carries category_ids (an ARRAY; the cleansing brush dual-member, six products uncategorized) + a category STRING (skincare/lip_care/body_care) driving the breadcrumb eyebrow, the nav/footer links, and a template filter mode (h1 "Shop", no pill active). The 20th API product is is_published: false — the 19-product catalog confirmed.
+- The fix: the ProductCategory junction + templateCategory column (destructive db:push; a reseed rebuilds the wiring — the existing dev db converged with one db:seed run), resolveCategoryFilter's dual mode, the reference's exact memberships (7/3/4 with the dual; 6 uncategorized), the nav/footer template links, the detail eyebrow, the 3-newest-excluding-self ritual, PER_PAGE 24 (the one-page grid), the centered Cormorant empty state, the guarded parseShippingMetadata seam (audit L-1), the admin checkbox multi-select with transactional junction writes, and restore-demo-stock's wiring backstop.
+- Tooling traps survived: the [h-eating bash artifact struck on the hydration-marker grep (a codepoint probe proved the file correct); a wedged dev-server/browser pair (Fast Refresh loop, never hydrating) resolved by restarting both — the production e2e suite was the truth; the sort-label colon regression ("Name: A-Z") was caught by the e2e immediately.
+
+Stage Summary:
+- All gates green: lint · typecheck · typecheck:tests · 677/677 unit · clean build · 88/88 e2e.
+- Every fixed surface verified against the reference's measured values (the dual filter modes, the memberships, the eyebrow, the ritual, the empty state, the CTA, the mobile panel ±1px).
+- Dev-server screenshots: 25/25 regenerated and validated.
+- Pushed: main via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.

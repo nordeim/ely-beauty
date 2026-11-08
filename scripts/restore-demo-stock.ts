@@ -1,6 +1,6 @@
 /**
- * restore-demo-state — S14-4 (session 14) + S15-2 (session 15) e2e determinism
- * guard.
+ * restore-demo-state — S14-4 (session 14) + S15-2 (session 15) + S81-1
+ * (session 81) e2e determinism guard.
  *
  * The demo DB's stock AND active-catalog state are TRAFFIC-OWNED by the seed
  * policy (S7-3: reseeds refresh catalog content, never price/stock/rating/...)
@@ -12,12 +12,19 @@
  * extends the same guard to the second drift vector: a deactivated seed
  * product would break the storefront cardinality pins.
  *
- * This script restores every seed product's stock AND isActive flag back to
- * their SEED values before the e2e webServer starts. It is a TEST-DATA
- * restore (the session-7 live-verify convention: "data restored to seed
- * values afterwards"), not a policy change: `prisma/seed.ts` still never
- * touches stock. Admin-CREATED products (non-seed rows) are deliberately
- * left alone — the restore never deletes operator-owned data.
+ * S81-1 adds the third drift vector: the admin e2e exercises the category
+ * MULTI-SELECT (the S81-11 dual-membership edit) — a failed/interrupted run
+ * could strand an edited membership set on a seed product and break the
+ * pill-count pins (7/3/4). The restore rebuilds every seed product's
+ * display-category memberships and template category to the seed values.
+ *
+ * This script restores every seed product's stock, isActive flag, and
+ * category wiring back to their SEED values before the e2e webServer starts.
+ * It is a TEST-DATA restore (the session-7 live-verify convention: "data
+ * restored to seed values afterwards"), not a policy change:
+ * `prisma/seed.ts` still never touches stock. Admin-CREATED products
+ * (non-seed rows) are deliberately left alone — the restore never deletes
+ * operator-owned data.
  *
  * Wired into playwright.config.ts's webServer.command (a fresh server start
  * restores first; a reused healthy server keeps its state — documented in
@@ -40,35 +47,74 @@ async function main() {
   try {
     let restored = 0;
     let alreadyAtSeed = 0;
+    let wiringRestored = 0;
+    // The seed slugs -> category ids map (S81-1 membership restore).
+    const categoryBySlug = new Map(
+      (
+        await db.category.findMany({
+          select: { id: true, slug: true },
+        })
+      ).map((c) => [c.slug, c.id] as const),
+    );
     for (const product of PRODUCTS) {
       // Seed products ship active (the seed type carries no isActive — the
       // create defaults it) — the restore pins that invariant.
       const seedActive = true;
       const current = await db.product.findUnique({
         where: { slug: product.slug },
-        select: { stock: true, isActive: true },
+        select: { stock: true, isActive: true, templateCategory: true },
       });
       if (!current) continue; // catalog row absent — the seed owns creation
       if (current.stock === product.stock && current.isActive === seedActive) {
         alreadyAtSeed += 1;
-        continue;
+      } else {
+        await db.product.update({
+          where: { slug: product.slug },
+          data: {
+            ...(current.stock === product.stock ? {} : { stock: product.stock }),
+            ...(current.isActive === seedActive ? {} : { isActive: seedActive }),
+          },
+        });
+        restored += 1;
+        console.log(
+          `restored ${product.slug}:` +
+            (current.stock === product.stock ? "" : ` stock ${current.stock} → ${product.stock}`) +
+            (current.isActive === seedActive ? "" : ` isActive ${current.isActive} → ${seedActive}`),
+        );
       }
-      await db.product.update({
+
+      // S81-1: rebuild the category wiring (memberships + template) to the
+      // seed values — the admin multi-select e2e's interrupted-run backstop.
+      const seeded = await db.product.findUnique({
         where: { slug: product.slug },
-        data: {
-          ...(current.stock === product.stock ? {} : { stock: product.stock }),
-          ...(current.isActive === seedActive ? {} : { isActive: seedActive }),
-        },
+        select: { id: true, categories: { select: { categoryId: true } } },
       });
-      restored += 1;
-      console.log(
-        `restored ${product.slug}:` +
-          (current.stock === product.stock ? "" : ` stock ${current.stock} → ${product.stock}`) +
-          (current.isActive === seedActive ? "" : ` isActive ${current.isActive} → ${seedActive}`),
-      );
+      if (seeded) {
+        const wanted = product.categories
+          .map((slug) => categoryBySlug.get(slug))
+          .filter((id): id is string => id !== undefined);
+        const have = seeded.categories.map((pc) => pc.categoryId).sort();
+        const want = [...wanted].sort();
+        const wiringDrifted =
+          have.join("|") !== want.join("|") || current.templateCategory !== product.templateCategory;
+        if (wiringDrifted) {
+          await db.productCategory.deleteMany({ where: { productId: seeded.id } });
+          if (wanted.length > 0) {
+            await db.productCategory.createMany({
+              data: wanted.map((categoryId) => ({ productId: seeded.id, categoryId })),
+            });
+          }
+          await db.product.update({
+            where: { slug: product.slug },
+            data: { templateCategory: product.templateCategory },
+          });
+          wiringRestored += 1;
+          console.log(`restored ${product.slug} category wiring to seed`);
+        }
+      }
     }
     console.log(
-      `restore-demo-stock: ${restored} restored, ${alreadyAtSeed} already at seed, ${PRODUCTS.length} catalog entries`,
+      `restore-demo-stock: ${restored} restored, ${alreadyAtSeed} already at seed, ${wiringRestored} wiring restored, ${PRODUCTS.length} catalog entries`,
     );
   } finally {
     await db.$disconnect();

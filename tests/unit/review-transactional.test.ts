@@ -45,7 +45,6 @@ async function ensureProduct(): Promise<void> {
       name: "Test Knife",
       slug: "test-knife",
       description: "A test product.",
-      categoryId: "cat-1",
       price: 19999,
       sku: "TEST-KNIFE",
       stock: 10,

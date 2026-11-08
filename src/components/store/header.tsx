@@ -16,10 +16,14 @@ import { useStore } from "./store-provider";
 // route) — so the clone renders none either. This also removes the old
 // `window.location.search` read during render, which was hydration-unsafe
 // (server/client first-paint mismatch on /shop?category=… landings).
+// S81-3 (measured live + the dossier's line-71 "replicate as-observed"
+// mapping): the reference's nav links Beauty Tools -> the TEMPLATE filter
+// ?category=skincare and Brush & Combs -> ?category=body_care — NOT its
+// display categories (which its own pills/tiles reach by ID).
 const NAV_LINKS = [
   { href: "/shop", label: "Shop" },
-  { href: "/shop?category=beauty-tools", label: "Beauty Tools" },
-  { href: "/shop?category=brush-combs", label: "Brush & Combs" },
+  { href: "/shop?category=skincare", label: "Beauty Tools" },
+  { href: "/shop?category=body_care", label: "Brush & Combs" },
   { href: "/about", label: "About" },
 ];
 

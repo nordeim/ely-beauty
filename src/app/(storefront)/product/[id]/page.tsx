@@ -6,7 +6,7 @@ import { ArrowLeft, BadgeCheck } from "lucide-react";
 import { db } from "@/lib/db";
 import { formatDate } from "@/lib/format";
 import { formatMoney } from "@/lib/money";
-import { parseColors, parseImages, parseSizes, toCardData } from "@/lib/products";
+import { firstCategoryName, parseColors, parseImages, parseSizes, productCategoryInclude, toCardData } from "@/lib/products";
 import { buildProductJsonLd, jsonLdScript, siteBaseUrl } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
 import { getCurrentUser } from "@/lib/auth";
@@ -71,7 +71,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
   const [product, user, settings] = await Promise.all([
     db.product.findUnique({
       where: { id, isActive: true },
-      include: { category: { select: { name: true, slug: true } } },
+      include: productCategoryInclude,
     }),
     getCurrentUser(),
     getSettings().catch(() => null),
@@ -80,12 +80,13 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
 
   const [reviewCount, related, wishlistIds] = await Promise.all([
     db.review.count({ where: { productId: product.id } }),
-    // "Complete the Ritual" — the reference renders 3 related pieces.
+    // S81-7 (measured live on the reference, Bonnet AND Pillowcase):
+    // "Complete the Ritual" = the 3 NEWEST active products excluding self
+    // (createdAt order) — NOT same-category pieces.
     db.product.findMany({
-      where: { categoryId: product.categoryId, isActive: true, id: { not: product.id } },
-      orderBy: [{ rating: "desc" }, { createdAt: "desc" }],
+      where: { isActive: true, id: { not: product.id } },
+      orderBy: { createdAt: "desc" },
       take: 3,
-      include: { category: { select: { name: true, slug: true } } },
     }),
     // Session-11 S11-2: the detail-page heart renders the filled state.
     getWishlistIds(),
@@ -109,6 +110,11 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
   const colors = parseColors(product.colors);
   const sizes = parseSizes(product.sizes);
 
+  // S81-4: the eyebrow rides the TEMPLATE category (underscores → spaces);
+  // the first display category is the admin-created fallback.
+  const detailEyebrow =
+    product.templateCategory?.replace(/_/g, " ") ?? firstCategoryName(product) ?? "";
+
   // schema.org/Product structured data — drives rich results (price, stock,
   // stars). Pure builder unit-pinned in tests/unit/seo-ld.test.ts.
   const productJsonLd = buildProductJsonLd({
@@ -123,7 +129,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
     stock: product.stock,
     rating: product.rating,
     reviewCount: product.reviewCount,
-    categoryName: product.category.name,
+    categoryName: firstCategoryName(product) ?? undefined,
     url: `${siteBaseUrl()}/product/${product.id}`,
     brandName: settings?.storeName ?? "ElyBeauty",
   });
@@ -164,9 +170,15 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
 
         {/* RIGHT — summary + purchase + description (reference anatomy) */}
         <div className="flex flex-col">
-          {/* S74-6 (P-5, measured): the reference renders the product's
-              category as a micro-label eyebrow above the title. */}
-          <p className="eyebrow-label mb-3 text-muted-foreground">{product.category.name}</p>
+          {/* S74-6 (P-5, measured) + S81-4 (entity-API measured): the
+              reference renders the product's TEMPLATE category as the
+              micro-label eyebrow ("skincare" / "lip care", underscores →
+              spaces — uppercased by the eyebrow-label class). Fallbacks: the
+              first display category, then nothing (admin-created products
+              may carry neither). */}
+          {detailEyebrow !== "" && (
+            <p className="eyebrow-label mb-3 text-muted-foreground">{detailEyebrow}</p>
+          )}
           {/* S76-3 (D-5, measured): the reference's product heading scale —
               text-4xl (36px) mobile, lg:text-5xl (48px) at the lg
               breakpoint with text-5xl's default lh 1.0 (the measured
@@ -342,7 +354,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
           </h2>
           <div className="grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-3">
             {related.map((p) => (
-              <ProductCard key={p.id} product={toCardData(p, p.category)} />
+              <ProductCard key={p.id} product={toCardData(p)} />
             ))}
           </div>
         </section>

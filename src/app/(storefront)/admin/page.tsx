@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { buildRevenueChart, type RevenueDayRow } from "@/lib/analytics";
 import { orderStatusBadgeClass } from "@/lib/format";
 import { formatMoney } from "@/lib/money";
+import { firstCategoryName, productCategoryInclude } from "@/lib/products";
 import { cn } from "@/lib/utils";
 
 import { RevenueChart, type RevenuePoint } from "./revenue-chart";
@@ -56,7 +57,7 @@ export default async function AdminDashboardPage() {
       db.product.findMany({
         where: { stock: { lt: 10 } },
         orderBy: [{ stock: "asc" }, { name: "asc" }],
-        include: { category: { select: { name: true } } },
+        include: productCategoryInclude,
       }),
       // Bounded in SQL (session-9 S9-4): one SUM row per UTC day instead of
       // every order in the window. Prisma stores SQLite DateTimes as
@@ -197,7 +198,7 @@ export default async function AdminDashboardPage() {
                       <span className="font-semibold text-amber-600">{product.stock} left</span>
                     )}
                     {" · "}
-                    {product.category.name}
+                    {firstCategoryName(product) ?? "—"}
                   </p>
                 </div>
               </li>

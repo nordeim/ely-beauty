@@ -35,10 +35,12 @@ import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStore } from "./store-provider";
 
+// S81-3 (measured live): the panel's category links open the reference's
+// TEMPLATE filters (skincare / body_care) — same mapping as the desktop nav.
 const NAV_LINKS = [
   { href: "/shop", label: "Shop" },
-  { href: "/shop?category=beauty-tools", label: "Beauty Tools" },
-  { href: "/shop?category=brush-combs", label: "Brush & Combs" },
+  { href: "/shop?category=skincare", label: "Beauty Tools" },
+  { href: "/shop?category=body_care", label: "Brush & Combs" },
   { href: "/about", label: "About" },
 ];
 

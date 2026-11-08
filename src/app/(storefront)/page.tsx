@@ -28,7 +28,6 @@ export default async function HomePage() {
       where: { isActive: true },
       orderBy: { createdAt: "desc" },
       take: 6,
-      include: { category: { select: { name: true, slug: true } } },
     }),
   ]);
 
@@ -96,7 +95,7 @@ export default async function HomePage() {
               reference's card rhythm. */}
           <div className="grid grid-cols-2 gap-6 lg:grid-cols-3 lg:gap-x-8 lg:gap-y-12">
             {curated.map((p, i) => (
-              <ProductCard key={p.id} product={toCardData(p, p.category)} priority={i < 3} />
+              <ProductCard key={p.id} product={toCardData(p)} priority={i < 3} />
             ))}
           </div>
           </div>
@@ -121,7 +120,10 @@ export default async function HomePage() {
               <h2 className="font-display text-4xl font-light tracking-tight text-white sm:text-6xl">
                 Complete Your Ritual
               </h2>
-              <Link href="/shop?category=gift-sets" className="link-cta mt-2 border-white/60 text-white hover:border-white">
+              <Link
+              href="/shop"
+              className="link-cta mt-2 border-white/60 text-white hover:border-white"
+            >
                 Discover Sets
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>

@@ -7,6 +7,7 @@ import {
   classifyStripeEvent,
   classifyWebhookPlacementError,
   isIntentAnchorP2002,
+  parseShippingMetadata,
   parseStripeWebhookEvent,
   paymentIntentLast4,
   StripeAmountMismatchError,
@@ -357,5 +358,36 @@ describe("paymentIntentLast4 — defensive against every SDK shape", () => {
     expect(paymentIntentLast4({ payment_method: "pm_123", latest_charge: "ch_123" })).toBeNull();
     expect(paymentIntentLast4({})).toBeNull();
     expect(paymentIntentLast4({ payment_method: null, latest_charge: null })).toBeNull();
+  });
+});
+
+describe("parseShippingMetadata — the S81-9 guarded metadata parse", () => {
+  // Audit 81-a L-1: the webhook's orphaned-payment recovery parsed
+  // meta.shipping with a bare JSON.parse — a SyntaxError escaped to the
+  // outer catch, which classifyWebhookPlacementError reads as TRANSIENT
+  // (500 + Stripe retry loop, no StripeEvent refund trail). The guarded
+  // seam returns null for unparseable metadata so the addressSchema
+  // safeParse fails and the route takes the metadata-unusable PERMANENT
+  // path (record + refund trail).
+  it("returns the parsed object for valid JSON", () => {
+    const snapshot = { fullName: "A", phone: "01711111111", address: "Rd 1", city: "Dhaka", postalCode: "", country: "Bangladesh" };
+    expect(parseShippingMetadata(JSON.stringify(snapshot))).toEqual(snapshot);
+  });
+
+  it("returns null for malformed JSON (never throws)", () => {
+    expect(parseShippingMetadata("{not json")).toBeNull();
+    expect(parseShippingMetadata("[1,")).toBeNull();
+  });
+
+  it("returns null for absent/empty values", () => {
+    expect(parseShippingMetadata(undefined)).toBeNull();
+    expect(parseShippingMetadata("")).toBeNull();
+  });
+
+  it("returns non-object parses untouched — the schema gates the shape", () => {
+    // A string/number parse is NOT null — addressSchema.safeParse owns the
+    // rejection (the seam must not smuggle its own type policy in).
+    expect(parseShippingMetadata("\"nope\"")).toBe("nope");
+    expect(parseShippingMetadata("42")).toBe(42);
   });
 });

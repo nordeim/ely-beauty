@@ -68,7 +68,7 @@ export default async function AdminAnalyticsPage() {
   const productRows = referencedIds.length
     ? await db.product.findMany({
         where: { id: { in: referencedIds } },
-        select: { id: true, name: true, category: { select: { name: true } } },
+        select: { id: true, name: true, categories: { select: { category: { select: { name: true } } } } },
       })
     : [];
   const productById = new Map(productRows.map((p) => [p.id, p]));
@@ -80,7 +80,8 @@ export default async function AdminAnalyticsPage() {
 
   const byCategory = new Map<string, number>();
   for (const r of rollups) {
-    const categoryName = (r.productId ? productById.get(r.productId)?.category.name : undefined) ?? "Uncategorized";
+    const product = r.productId ? productById.get(r.productId) : undefined;
+    const categoryName = product?.categories[0]?.category.name ?? "Uncategorized";
     byCategory.set(categoryName, (byCategory.get(categoryName) ?? 0) + r.revenue);
   }
   const categoryMix = [...byCategory.entries()]

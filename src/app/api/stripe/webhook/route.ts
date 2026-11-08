@@ -14,6 +14,7 @@ import {
   chargeRefundedReflection,
   classifyStripeEvent,
   classifyWebhookPlacementError,
+  parseShippingMetadata,
   parseStripeBdtPerUsd,
   parseStripeWebhookEvent,
   STRIPE_FAILURE_REASON,
@@ -245,9 +246,10 @@ export async function POST(request: NextRequest) {
     // The orphaned-payment case: rebuild the placement input from the
     // intent's OWN metadata (embedded at mint time).
     const meta = intentView.metadata ?? {};
-    const shippingSnapshot = addressSchema.safeParse(
-      meta.shipping ? JSON.parse(meta.shipping) : null,
-    );
+    // S81-9 (audit 81-a L-1): the guarded parse — unparseable metadata is
+    // metadata-unusable (the PERMANENT path: record + refund trail), never a
+    // throw the outer catch would misclassify as transient.
+    const shippingSnapshot = addressSchema.safeParse(parseShippingMetadata(meta.shipping));
     const email = emailSchema.safeParse(meta.email ?? "");
     const cartId = typeof meta.cartId === "string" && meta.cartId.length > 0 ? meta.cartId : null;
     const userId = typeof meta.userId === "string" && meta.userId.length > 0 ? meta.userId : null;

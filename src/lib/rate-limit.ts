@@ -33,7 +33,8 @@ export type RateLimitResult = {
 
 /**
  * Count one request against `key`. A fixed window starting at the first
- * request in the window; rejected requests do not extend the count.
+ * request in the window — every counted request (accepted or rejected
+ * alike) rides the SAME window; the window itself never extends.
  */
 export function rateLimit(key: string, limit: number, windowMs: number): RateLimitResult {
   const now = Date.now();

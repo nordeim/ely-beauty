@@ -24,7 +24,6 @@ export default async function WishlistPage() {
     ids.size > 0
       ? await db.product.findMany({
           where: { id: { in: Array.from(ids) }, isActive: true },
-          include: { category: { select: { name: true, slug: true } } },
           orderBy: { createdAt: "desc" },
           // The write path caps the wishlist at MAX_WISHLIST_ITEMS (S8-6);
           // the read mirrors that bound instead of loading unbounded rows.
@@ -68,7 +67,7 @@ export default async function WishlistPage() {
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {products.map((p) => (
-          <ProductCard key={p.id} product={toCardData(p, p.category)} />
+          <ProductCard key={p.id} product={toCardData(p)} />
         ))}
       </div>
     </div>

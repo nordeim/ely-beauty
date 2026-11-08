@@ -476,3 +476,52 @@ describe("productInputSchema.variants (S73-12)", () => {
     }
   });
 });
+
+describe("productInputSchema.categoryIds — the S81-1 many-to-many input", () => {
+  // The reference's products carry a category_ids ARRAY (6 of its 19
+  // published products belong to NO display category; the Wooden cleansing
+  // brush belongs to TWO). The admin input follows: an array of existing
+  // category ids, ZERO allowed, duplicates rejected, bounded.
+  const base = {
+    name: "Test Tool",
+    slug: "test-tool",
+    description: "A very good test tool for the category array pins.",
+    price: 1999,
+    sku: "BT-CAT-01",
+    stock: 10,
+    images: ["/images/knife-1.jpg"],
+  };
+
+  it("accepts zero categories (the reference's 6 uncategorized products)", () => {
+    const out = productInputSchema.safeParse({ ...base, categoryIds: [] });
+    expect(out.success).toBe(true);
+  });
+
+  it("accepts one and multiple categories and carries them through", () => {
+    const one = productInputSchema.safeParse({ ...base, categoryIds: ["cat_beauty-tools"] });
+    expect(one.success).toBe(true);
+    if (one.success) expect(one.data.categoryIds).toEqual(["cat_beauty-tools"]);
+    const two = productInputSchema.safeParse({
+      ...base,
+      categoryIds: ["cat_beauty-tools", "cat_bestsellers"],
+    });
+    expect(two.success).toBe(true);
+    if (two.success) expect(two.data.categoryIds).toEqual(["cat_beauty-tools", "cat_bestsellers"]);
+  });
+
+  it("rejects duplicates, non-strings, and an unbounded array", () => {
+    expect(productInputSchema.safeParse({ ...base, categoryIds: ["a", "a"] }).success).toBe(false);
+    expect(productInputSchema.safeParse({ ...base, categoryIds: ["a", 42] }).success).toBe(false);
+    expect(productInputSchema.safeParse({ ...base, categoryIds: "cat_x" }).success).toBe(false);
+    expect(
+      productInputSchema.safeParse({ ...base, categoryIds: Array.from({ length: 11 }, (_, i) => `c${i}`) })
+        .success,
+    ).toBe(false);
+  });
+
+  it("the parsed output no longer carries the retired single categoryId field", () => {
+    const out = productInputSchema.safeParse({ ...base, categoryIds: ["cat_beauty-tools"] });
+    expect(out.success).toBe(true);
+    if (out.success) expect("categoryId" in out.data).toBe(false);
+  });
+});

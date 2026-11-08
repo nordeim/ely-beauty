@@ -34,7 +34,10 @@ export type ProductFormValues = {
   id: string | null;
   name: string;
   slug: string;
-  categoryId: string;
+  // S81-1: the many-to-many display-category memberships (zero or more).
+  categoryIds: string[];
+  // S81-1: the reference's template category string ("" = none).
+  templateCategory: string;
   shortDescription: string;
   description: string;
   priceDollars: string;
@@ -57,12 +60,13 @@ export type CategoryOption = { id: string; name: string };
 const IMAGE_SUGGESTIONS =
   "/images/product-satin-pillowcase.png, /images/product-silk-bonnet.png, /images/product-heatless-curler.png, /images/product-scalp-massager.png, /images/product-gua-sha.png, /images/product-derma-roller.png, /images/product-spa-socks.png, /images/product-crystal-hair-remover.png";
 
-function emptyProduct(categoryId: string): ProductFormValues {
+function emptyProduct(): ProductFormValues {
   return {
     id: null,
     name: "",
     slug: "",
-    categoryId,
+    categoryIds: [],
+    templateCategory: "",
     shortDescription: "",
     description: "",
     priceDollars: "",
@@ -100,14 +104,12 @@ export function ProductDialogButton({
   const [open, setOpen] = React.useState(false);
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [form, setForm] = React.useState<ProductFormValues>(product ?? emptyProduct(categories[0]?.id ?? ""));
+  const [form, setForm] = React.useState<ProductFormValues>(product ?? emptyProduct());
   const slugTouched = React.useRef(Boolean(product?.slug));
-
-  const fallbackCategoryId = categories[0]?.id ?? "";
 
   function handleOpenChange(next: boolean) {
     if (next) {
-      setForm(product ?? emptyProduct(fallbackCategoryId));
+      setForm(product ?? emptyProduct());
       slugTouched.current = Boolean(product?.slug);
       setError(null);
     }
@@ -181,18 +183,20 @@ export function ProductDialogButton({
       .map((size) => size.trim())
       .filter(Boolean);
 
-    if (!form.categoryId) {
-      setError("Choose a category.");
-      return;
-    }
-
     setPending(true);
     try {
       const result = await upsertProductAction({
         id: form.id,
         name: form.name,
         slug: form.slug,
-        categoryId: form.categoryId,
+        categoryIds: form.categoryIds,
+        // Narrow the free string to the schema's enum ("" and stray values → null).
+        templateCategory:
+          form.templateCategory === "skincare" ||
+          form.templateCategory === "lip_care" ||
+          form.templateCategory === "body_care"
+            ? form.templateCategory
+            : null,
         shortDescription: form.shortDescription,
         description: form.description,
         price: priceCents,
@@ -285,21 +289,52 @@ export function ProductDialogButton({
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {/* S81-1: the display categories are a many-to-many — a
+                checkbox GROUP (zero or more; the reference itself ships six
+                uncategorized products and one dual member). */}
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-medium">Display categories</legend>
+              <div className="grid grid-cols-2 gap-2">
+                {categories.map((category) => {
+                  const checked = form.categoryIds.includes(category.id);
+                  return (
+                    <label
+                      key={category.id}
+                      className="flex cursor-pointer items-center gap-2 rounded-md border border-border px-3 py-2 text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() =>
+                          setField(
+                            "categoryIds",
+                            checked
+                              ? form.categoryIds.filter((cid) => cid !== category.id)
+                              : [...form.categoryIds, category.id],
+                          )
+                        }
+                        aria-label={category.name}
+                        className="h-4 w-4 accent-foreground"
+                      />
+                      {category.name}
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
             <div className="space-y-2">
-              <Label htmlFor="product-category">Category</Label>
+              <Label htmlFor="product-template-category">Template category</Label>
               <Select
-                value={form.categoryId || undefined}
-                onValueChange={(value) => setField("categoryId", value)}
+                value={form.templateCategory || undefined}
+                onValueChange={(value) => setField("templateCategory", value)}
               >
-                <SelectTrigger id="product-category" aria-label="Category">
-                  <SelectValue placeholder="Select a category" />
+                <SelectTrigger id="product-template-category" aria-label="Template category">
+                  <SelectValue placeholder="None" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="skincare">Skincare</SelectItem>
+                  <SelectItem value="lip_care">Lip care</SelectItem>
+                  <SelectItem value="body_care">Body care</SelectItem>
                 </SelectContent>
               </Select>
             </div>

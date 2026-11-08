@@ -466,3 +466,25 @@ export function paymentIntentLast4(intent: {
   }
   return null;
 }
+
+/**
+ * Parse the mint-embedded shipping snapshot from intent metadata (S81-9,
+ * audit 81-a L-1).
+ *
+ * The webhook's orphaned-payment recovery used a bare `JSON.parse` — a
+ * SyntaxError escaped to the route's outer catch, which
+ * `classifyWebhookPlacementError` reads as TRANSIENT (a 500 + the Stripe
+ * retry loop, no StripeEvent refund trail). The guarded seam returns null
+ * for unparseable metadata instead, so the addressSchema safeParse fails
+ * and the route takes the metadata-unusable PERMANENT path (event recorded
+ * + the ops refund trail). Non-object parses pass through untouched — the
+ * schema owns the shape policy.
+ */
+export function parseShippingMetadata(shipping: string | undefined): unknown {
+  if (typeof shipping !== "string" || shipping.length === 0) return null;
+  try {
+    return JSON.parse(shipping) as unknown;
+  } catch {
+    return null;
+  }
+}

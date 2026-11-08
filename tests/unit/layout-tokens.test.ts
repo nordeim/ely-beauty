@@ -455,4 +455,94 @@ describe("S80 overlay empty-state, centered no-results & raw-body pins (source p
     const seam = src("lib/json-body.ts");
     expect(seam).toMatch(/request\.text\(\)/);
   });
+  it("S81-3: the nav (desktop + mobile panel) links the reference's template filters", () => {
+    // Measured live (2026-11-09): the reference's header nav AND mobile
+    // panel link Beauty Tools -> /shop?category=skincare and Brush & Combs
+    // -> /shop?category=body_care (template filters — the dossier's
+    // "replicate as-observed" line-71 mapping). The clone's own display
+    // slugs were the un-replicated residue.
+    for (const file of ["components/store/header.tsx", "components/store/mobile-nav.tsx"]) {
+      const nav = src(file);
+      expect(nav).toContain('{ href: "/shop?category=skincare", label: "Beauty Tools" }');
+      expect(nav).toContain('{ href: "/shop?category=body_care", label: "Brush & Combs" }');
+      expect(nav).not.toContain("/shop?category=beauty-tools");
+      expect(nav).not.toContain("/shop?category=brush-combs");
+    }
+  });
+
+  it("S81-3b: the footer SHOP column is the reference's template set", () => {
+    const footer = src("components/store/footer.tsx");
+    // The reference's footer: All Products / Skincare / Body Care / Gift
+    // Sets -> ?category=skincare / body_care / sets (measured live).
+    expect(footer).toContain('{ href: "/shop", label: "All Products" }');
+    expect(footer).toContain('{ href: "/shop?category=skincare", label: "Skincare" }');
+    expect(footer).toContain('{ href: "/shop?category=body_care", label: "Body Care" }');
+    expect(footer).toContain('{ href: "/shop?category=sets", label: "Gift Sets" }');
+    expect(footer).not.toContain('label: "Beauty Tools"');
+    expect(footer).not.toContain('label: "Brush & Combs"');
+  });
+
+  it("S81-4: the detail eyebrow renders the template category", () => {
+    const detail = src("app/(storefront)/product/[id]/page.tsx");
+    // The reference's breadcrumb eyebrow shows the TEMPLATE category
+    // ("skincare" / "lip care", underscores -> spaces) in the eyebrow-label
+    // style — not the display category.
+    expect(detail).toMatch(/templateCategory/);
+    expect(detail).not.toMatch(/\{product\.category\.name\}/);
+    expect(detail).not.toMatch(/eyebrow-label[^>]*>\{product\.categories/);
+  });
+
+  it("S81-5: the /shop grid renders the full catalog on ONE page (PER_PAGE 24)", () => {
+    const shop = src("app/(storefront)/shop/page.tsx");
+    expect(shop).toContain("const PER_PAGE = 24;");
+    expect(shop).not.toContain("const PER_PAGE = 12;");
+  });
+
+  it("S81-6: the shop empty state is the reference's centered Cormorant anatomy", () => {
+    const shop = src("app/(storefront)/shop/page.tsx");
+    expect(shop).toContain("text-center py-20");
+    expect(shop).toContain("No products found");
+    expect(shop).toContain("Check back soon for new arrivals.");
+    // The retired dashed-box anatomy (measured AGAINST the reference).
+    expect(shop).not.toContain("border-dashed");
+    expect(shop).not.toContain("PackageSearch");
+    expect(shop).not.toContain("Try adjusting your filters");
+    expect(shop).not.toContain("Clear filters");
+  });
+
+  it("S81-7: Complete the Ritual is the 3 newest products excluding self", () => {
+    const detail = src("app/(storefront)/product/[id]/page.tsx");
+    expect(detail).not.toMatch(/categoryId:\s*product\.categoryId/);
+    expect(detail).toMatch(/id:\s*\{ not: product\.id \}/);
+  });
+
+  it("S81-8: the ritual banner CTA links plain /shop (the reference's Discover Sets)", () => {
+    const home = src("app/(storefront)/page.tsx");
+    expect(home).not.toContain("/shop?category=gift-sets");
+  });
+
+  it("S81-9: the webhook parses intent metadata through the guarded seam", () => {
+    const webhook = src("app/api/stripe/webhook/route.ts");
+    // Audit 81-a L-1: a bare JSON.parse(meta.shipping) throw escapes to the
+    // outer catch, which classifies it TRANSIENT (500 + Stripe retry loop,
+    // no StripeEvent refund trail). The guarded parse routes unparseable
+    // metadata down the metadata-unusable PERMANENT path.
+    expect(webhook).toContain("parseShippingMetadata");
+    expect(webhook).not.toMatch(/JSON\.parse\(\s*meta\.shipping/);
+  });
+
+  it("S81-10: the three stale comments are corrected (audit 81-a L-2)", () => {
+    const money = src("lib/money.ts");
+    expect(money).not.toContain("no production module imports it");
+    const track = src("app/(storefront)/track-order/page.tsx");
+    expect(track).not.toContain("sequential");
+    const rate = src("lib/rate-limit.ts");
+    expect(rate).not.toContain("rejected requests do not extend");
+  });
+
+  it("S81-10b: the no-stream body fallback counts BYTES, not UTF-16 units (audit 81-a L-3)", () => {
+    const seam = src("lib/json-body.ts");
+    expect(seam).not.toMatch(/text\.length > maxBytes/);
+    expect(seam).toMatch(/TextEncoder\(\)\.encode\(text\)\.length/);
+  });
 });

@@ -7,6 +7,9 @@
 // typed to the minimal surface the helper touches. P2003 must be a REAL
 // `PrismaClientKnownRequestError` — a code-stamped plain Error fails the
 // `instanceof` gate (the session-16 S16-1 lesson).
+//
+// S81-1: the seam counts ProductCategory JUNCTION rows (the many-to-many
+// membership count) instead of the retired single Product.categoryId FK.
 import { describe, expect, it, vi } from "vitest";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
@@ -28,7 +31,10 @@ function fakeDb(overrides: {
       : vi.fn().mockResolvedValue({ count: 1 }));
   return {
     client: {
-      product: { count: vi.fn().mockResolvedValue(overrides.count ?? 0) },
+      // S81-1: the many-to-many seam — the guard counts JUNCTION rows
+      // (memberships), which for one categoryId IS the distinct product
+      // count using the category.
+      productCategory: { count: vi.fn().mockResolvedValue(overrides.count ?? 0) },
       category: { deleteMany },
     } satisfies CategoryWriteClient,
     deleteMany,

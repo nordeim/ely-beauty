@@ -54,7 +54,22 @@ model Category {
   isActive     Boolean   @default(true)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
-  products     Product[]
+  products     ProductCategory[]
+}
+
+/// S81-1: the many-to-many display-category membership (the reference's
+/// category_ids array — its Wooden cleansing brush belongs to Bestsellers
+/// AND Beauty Tools; six of its 19 published products belong to none).
+/// Both FKs Restrict (an in-use category cannot be orphaned by a product
+/// delete; the guarded category delete counts these rows).
+model ProductCategory {
+  productId  String
+  categoryId String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@id([productId, categoryId])
+  @@index([categoryId])
 }
 
 model Product {
@@ -63,8 +78,12 @@ model Product {
   name             String
   shortDescription String         @default("")
   description      String
-  categoryId       String
-  category         Category       @relation(fields: [categoryId], references: [id])
+  // S81-1: the reference's TEMPLATE category string (skincare |
+  // lip_care | body_care) — drives the detail-page breadcrumb eyebrow, the
+  // nav/footer ?category=skincare/body_care/sets links, and the shop's
+  // template filter mode (h1 "Shop", no pill active). Distinct from the
+  // many-to-many DISPLAY categories (the pills/tiles/h1) below.
+  templateCategory String?
   price            Int // cents
   compareAtPrice   Int? // cents; non-null drives the "-N%" badge
   cost             Int? // cents, admin-only margin info
@@ -91,8 +110,7 @@ model Product {
   wishlistItems    WishlistItem[]
   orderItems       OrderItem[]
   reviews          Review[]
-
-  @@index([categoryId])
+  categories       ProductCategory[]
 }
 
 model Review {

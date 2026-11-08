@@ -185,3 +185,34 @@ describe("readRawBody — the bounded raw-body seam (S80-3, audit 80-a L-1)", ()
     expect(MAX_RAW_BODY_BYTES).toBe(64 * 1024);
   });
 });
+
+describe("readBodyTextBounded no-stream fallback counts BYTES (S81-10, audit 81-a L-3)", () => {
+  // The fallback path (request.body === null) capped on String.length —
+  // UTF-16 code units — so an astral-plane payload could ride ~2x the byte
+  // budget. The TextEncoder form counts true bytes. Synthetic Request-like
+  // object: a real body-less Request always text()s "" — the seam's own
+  // contract accepts the Request shape, so the fallback is exercised
+  // directly.
+  it("rejects an astral-plane text whose byte length exceeds the cap but UTF-16 length does not", async () => {
+    // "\u{1D11E}" (musical symbol G clef) = 2 UTF-16 units, 4 bytes.
+    const text = "\u{1D11E}".repeat(3); // 6 UTF-16 units, 12 bytes
+    const fake = {
+      headers: new Headers(),
+      body: null,
+      text: async () => text,
+    } as unknown as Request;
+    const out = await readRawBody(fake, 8);
+    expect(out).toBeNull();
+  });
+
+  it("accepts the same text under a byte-sized cap it fits", async () => {
+    const text = "\u{1D11E}".repeat(3); // 12 bytes
+    const fake = {
+      headers: new Headers(),
+      body: null,
+      text: async () => text,
+    } as unknown as Request;
+    const out = await readRawBody(fake, 12);
+    expect(out).toBe(text);
+  });
+});

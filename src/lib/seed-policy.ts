@@ -25,7 +25,10 @@ const PRODUCT_UPDATE_FIELDS = [
   "name",
   "shortDescription",
   "description",
-  "categoryId",
+  // S81-1: the template category string rides the content refresh (the old
+  // single categoryId did); the many-to-many memberships are rebuilt by the
+  // seed's delete-then-create sweep, not this field list.
+  "templateCategory",
   "images",
   "tags",
   "specs",

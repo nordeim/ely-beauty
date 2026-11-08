@@ -4,11 +4,11 @@
 // `import.meta` execution guard).
 //
 // The storefront e2e spec consumes these assumptions (19-product ElyBeauty
-// catalog in the live reference's authored order, 4 categories, 2-page
-// pagination at 12/page); the restore-demo-stock harness keeps the live demo
-// DB aligned with them (stock AND isActive since S15-2). If a seed change
-// moves any value here, re-check the storefront/shopping-flow e2e
-// assumptions in the same change.
+// catalog in the live reference's authored order, 4 display categories, the
+// ONE-PAGE /shop grid at 24/page — S81-5); the restore-demo-stock harness
+// keeps the live demo DB aligned with them (stock AND isActive since
+// S15-2). If a seed change moves any value here, re-check the
+// storefront/shopping-flow e2e assumptions in the same change.
 //
 // Run-72 note: the reference lists several products with stock 0 (sold-out
 // pieces stay visible in its grid — verified live). The seed mirrors that
@@ -66,20 +66,76 @@ describe("seed catalog constants (S15-2, run-72)", () => {
     ]);
   });
 
-  it("carries the category rows the /shop category-filter pins assume", () => {
-    expect(PRODUCTS.filter((p) => p.category === "beauty-tools").length).toBe(10);
-    expect(PRODUCTS.filter((p) => p.category === "brush-combs").length).toBe(6);
-    expect(PRODUCTS.filter((p) => p.category === "bestsellers").length).toBe(3);
+  it("carries the reference's display-category memberships (S81-1 — entity-API measured)", () => {
+    // Captured from the reference's public entity API + its ID-link filters
+    // (2026-11-09): products carry a category_ids ARRAY — many-to-many. The
+    // Wooden cleansing brush is a DUAL member (Bestsellers AND Beauty Tools).
+    const inCat = (slug: string) =>
+      PRODUCTS.filter((p) => (p.categories ?? []).includes(slug)).map((p) => p.slug);
+    // Beauty Tools = 7 (incl. the dual-member cleansing brush).
+    expect(inCat("beauty-tools")).toEqual([
+      "stainless-steel-gua-sha",
+      "facial-threading-tool",
+      "derma-roller-titanium",
+      "derma-stamp-titanium",
+      "travel-silicone-mask-applicator-set-4-pcs",
+      "wooden-cleansing-brush",
+      "facial-ice-bowl",
+    ]);
+    // Brush & Combs = 3.
+    expect(inCat("brush-combs")).toEqual([
+      "sandalwood-hairbrush-oval",
+      "exfoliating-body-gloves",
+      "anti-cellulite-dry-body-brush",
+    ]);
+    // Bestsellers = 4 (the cleansing brush's second membership).
+    expect(inCat("bestsellers")).toEqual([
+      "premium-double-sided-ruffles-silk-hair-bonnet",
+      "pure-satin-silk-pillowcase",
+      "heatless-hair-curler-set",
+      "wooden-cleansing-brush",
+    ]);
+    // Gift Sets = 0 (the reference's empty category — reference-true).
+    expect(inCat("gift-sets")).toEqual([]);
   });
 
-  it("fills page 1 of the 12-per-page /shop grid (pagination pin reaches page 2)", () => {
+  it("six reference-true products belong to NO display category (S81-1)", () => {
+    // The reference's category_ids arrays are EMPTY for these six — they
+    // surface only under All Products (and the template filters).
+    const uncategorized = PRODUCTS.filter((p) => (p.categories ?? []).length === 0).map(
+      (p) => p.slug,
+    );
+    expect(uncategorized).toEqual([
+      "natural-bamboo-hair-brush-square",
+      "sandalwood-paddle-hairbrush-oval",
+      "natural-bamboo-hair-brush-oval",
+      "moisturizing-spa-socks",
+      "crystal-hair-remover",
+      "full-silicon-scalp-massager",
+    ]);
+  });
+
+  it("every product carries a template category (skincare ×12 / lip_care ×3 / body_care ×4 — S81-1)", () => {
+    // The reference's `category` STRING field — drives the detail-page
+    // breadcrumb eyebrow, the nav/footer slug filters, and the template
+    // filter mode on /shop.
+    const counts: Record<string, number> = {};
+    for (const p of PRODUCTS) {
+      expect(["skincare", "lip_care", "body_care"]).toContain(p.templateCategory);
+      counts[p.templateCategory] = (counts[p.templateCategory] ?? 0) + 1;
+    }
+    expect(counts).toEqual({ skincare: 12, lip_care: 3, body_care: 4 });
+  });
+
+  it("fits the reference's ONE-PAGE /shop grid (S81-5 — 24/page, no pager at 19)", () => {
     expect(PRODUCTS.length).toBeGreaterThan(12);
     expect(PRODUCTS.length).toBeLessThanOrEqual(24);
   });
 
-  it("spans 3 product-bearing categories (gift-sets is seeded with no products — reference-true)", () => {
-    expect(new Set(PRODUCTS.map((p) => p.category)).size).toBe(3);
-    expect(PRODUCTS.find((p) => p.category === "gift-sets")).toBeUndefined();
+  it("spans 3 product-bearing display categories (gift-sets seeded empty — reference-true)", () => {
+    const bearing = new Set<string>();
+    for (const p of PRODUCTS) for (const c of p.categories ?? []) bearing.add(c);
+    expect(bearing).toEqual(new Set(["beauty-tools", "brush-combs", "bestsellers"]));
   });
 
   it("every product carries the fields the restore harness restores against", () => {

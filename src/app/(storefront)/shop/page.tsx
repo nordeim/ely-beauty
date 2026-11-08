@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, PackageSearch } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { clampSearchTerm } from "@/lib/validation";
 import { db } from "@/lib/db";
 import { siteBaseUrl } from "@/lib/seo";
-import { SORT_OPTIONS, queryProducts } from "@/lib/products";
+import { resolveCategoryFilter, SORT_OPTIONS, queryProducts } from "@/lib/products";
 import { ProductCard } from "@/components/store/product-card";
 
 import { ShopControls } from "./shop-controls";
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   alternates: { canonical: `${siteBaseUrl()}/shop` },
 };
 
-const PER_PAGE = 12;
+const PER_PAGE = 24; // S81-5: the reference renders the whole 19-product catalog on ONE page
 const MAX_PAGE = 1000; // sanity clamp against hand-typed ?page= URLs
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -85,6 +85,18 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
     }),
   ]);
 
+  // S81-2: the reference's h1 — the DISPLAY category's name under a
+  // display filter, "Shop" under any other category param (the template
+  // filters and unknown values), "All Products" unfiltered.
+  const activeCategorySlugs = new Set(categories.map((c) => c.slug));
+  const resolution = resolveCategoryFilter(category || undefined, activeCategorySlugs);
+  const heading =
+    resolution.kind === "display"
+      ? (categories.find((c) => c.slug === resolution.slug)?.name ?? "Shop")
+      : resolution.kind === "template"
+        ? "Shop"
+        : "All Products";
+
   // Snap a stale out-of-range page (?page=99) back to the last real page.
   const effective =
     result.products.length === 0 && result.page > result.totalPages && result.total > 0
@@ -108,7 +120,7 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
     <div className="container-page flex flex-col gap-8 py-12 lg:py-20">
       {/* Title + count — the reference's editorial heading. */}
       <div>
-        <h1 className="mb-4 font-display text-4xl font-light tracking-tight lg:text-6xl">All Products</h1>
+        <h1 className="mb-4 font-display text-4xl font-light tracking-tight lg:text-6xl">{heading}</h1>
         {q && (
           <p className="mb-4 text-sm text-muted-foreground">
             Showing results for &ldquo;{q}&rdquo;
@@ -132,17 +144,12 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
 
       {/* Grid — the reference's 3-column editorial layout. */}
       {products.length === 0 ? (
-        <div className="flex flex-col items-center justify-center border border-dashed border-border px-6 py-16 text-center">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-primary">
-            <PackageSearch className="h-7 w-7" aria-hidden />
-          </div>
-          <h2 className="text-lg font-semibold text-foreground">No products found</h2>
-          <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">
-            Try adjusting your filters.
-          </p>
-          <Link href="/shop" className="link-cta mt-5 border-foreground/40 text-foreground hover:border-foreground">
-            Clear filters
-          </Link>
+        // S81-6 (measured live): the reference's empty state — a centered
+        // py-20 block with the Cormorant 24px/300 heading and the muted
+        // sub-copy. No border, no icon, no clear-filters link.
+        <div className="text-center py-20">
+          <p className="mb-2 font-display text-2xl font-light">No products found</p>
+          <p className="text-sm text-muted-foreground">Check back soon for new arrivals.</p>
         </div>
       ) : (
         // S76-1 (D-1, measured): the reference's /shop grid rhythm — gap-6

@@ -198,7 +198,18 @@ export const productInputSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, dashes"),
   shortDescription: z.string().trim().max(300).default(""),
   description: z.string().trim().min(10, "Description is required").max(8000),
-  categoryId: z.string().min(1, "Category is required"),
+  // S81-1: the many-to-many display-category memberships — zero valid (the
+  // reference has six uncategorized products), duplicates rejected, bounded.
+  categoryIds: z
+    .array(z.string().min(1))
+    .max(10, "A product can belong to at most 10 categories")
+    .refine((ids) => new Set(ids).size === ids.length, "Duplicate categories selected")
+    .default([]),
+  // S81-1: the reference's template category string — drives the detail
+  // eyebrow and the nav/footer template filters. Optional (admin-created
+  // products may carry none; the eyebrow falls back to the first display
+  // category).
+  templateCategory: z.enum(["skincare", "lip_care", "body_care"]).nullable().optional(),
   price: z
     .number()
     .int()

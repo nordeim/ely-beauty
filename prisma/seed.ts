@@ -34,7 +34,15 @@ type ColorOption = { name: string; hex: string };
 type SeedProduct = {
   slug: string;
   name: string;
-  category: string;
+  // S81-1: the reference's two parallel category systems, captured from its
+  // entity API (2026-11-09):
+  //  - categories: DISPLAY-category slugs (many-to-many; six reference
+  //    products belong to none, the cleansing brush to two);
+  //  - templateCategory: the template `category` string (skincare |
+  //    lip_care | body_care) — the detail eyebrow, the nav/footer slug
+  //    filters, and the shop's template filter mode.
+  categories: string[];
+  templateCategory: "skincare" | "lip_care" | "body_care";
   price: number; // cents (৳1 = 100)
   compareAtPrice?: number;
   sku: string;
@@ -105,7 +113,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "premium-double-sided-ruffles-silk-hair-bonnet",
     name: "Premium Double Sided Ruffles Silk Hair Bonnet",
-    category: "bestsellers",
+    categories: ["bestsellers"],
+    templateCategory: "skincare",
     price: 37000,
     sku: "ELY-001",
     stock: 0,
@@ -135,7 +144,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "pure-satin-silk-pillowcase",
     name: "Pure Satin Silk Pillowcase – For Hair & Skin",
-    category: "bestsellers",
+    categories: ["bestsellers"],
+    templateCategory: "lip_care",
     price: 28800,
     compareAtPrice: 35000,
     sku: "ELY-002",
@@ -167,7 +177,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "heatless-hair-curler-set",
     name: "Heatless Hair Curler Set",
-    category: "bestsellers",
+    categories: ["bestsellers"],
+    templateCategory: "lip_care",
     price: 34000,
     sku: "ELY-003",
     stock: 0,
@@ -196,7 +207,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "natural-bamboo-hair-brush-square",
     name: "Natural Bamboo Hair Brush - Square",
-    category: "brush-combs",
+    categories: [],
+    templateCategory: "body_care",
     price: 47000,
     sku: "ELY-004",
     stock: 16,
@@ -222,7 +234,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "sandalwood-paddle-hairbrush-oval",
     name: "Sandalwood Paddle Hairbrush – Oval",
-    category: "brush-combs",
+    categories: [],
+    templateCategory: "body_care",
     price: 47000,
     sku: "ELY-005",
     stock: 21,
@@ -246,7 +259,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "sandalwood-hairbrush-oval",
     name: "Sandalwood Hairbrush - Oval",
-    category: "brush-combs",
+    categories: ["brush-combs"],
+    templateCategory: "body_care",
     price: 54000,
     sku: "ELY-006",
     stock: 39,
@@ -269,7 +283,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "natural-bamboo-hair-brush-oval",
     name: "Natural Bamboo Hair Brush - Oval",
-    category: "brush-combs",
+    categories: [],
+    templateCategory: "body_care",
     price: 45000,
     sku: "ELY-007",
     stock: 11,
@@ -293,7 +308,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "stainless-steel-gua-sha",
     name: "Stainless Steel Gua Sha",
-    category: "beauty-tools",
+    categories: ["beauty-tools"],
+    templateCategory: "skincare",
     price: 66500,
     sku: "ELY-008",
     stock: 121,
@@ -318,7 +334,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "exfoliating-body-gloves",
     name: "Exfoliating Body Gloves | 100% Natural Viscose Fiber",
-    category: "brush-combs",
+    categories: ["brush-combs"],
+    templateCategory: "skincare",
     price: 34000,
     sku: "ELY-009",
     stock: 49,
@@ -341,7 +358,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "facial-threading-tool",
     name: "Facial Threading Tool",
-    category: "beauty-tools",
+    categories: ["beauty-tools"],
+    templateCategory: "skincare",
     price: 44000,
     sku: "ELY-010",
     stock: 24,
@@ -366,7 +384,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "moisturizing-spa-socks",
     name: "Moisturizing Spa Socks",
-    category: "beauty-tools",
+    categories: [],
+    templateCategory: "skincare",
     price: 54000,
     sku: "ELY-011",
     stock: 0,
@@ -391,7 +410,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "crystal-hair-remover",
     name: "Crystal Hair Remover",
-    category: "beauty-tools",
+    categories: [],
+    templateCategory: "skincare",
     price: 52000,
     sku: "ELY-012",
     stock: 30,
@@ -414,7 +434,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "full-silicon-scalp-massager",
     name: "Full silicon scalp massager", // S74-13: the reference authored it lowercase (live-measured 2026-11-08)
-    category: "beauty-tools",
+    categories: [],
+    templateCategory: "skincare",
     price: 48000,
     sku: "ELY-013",
     stock: 19,
@@ -444,7 +465,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "derma-roller-titanium",
     name: "Derma Roller - Titanium",
-    category: "beauty-tools",
+    categories: ["beauty-tools"],
+    templateCategory: "skincare",
     price: 48800,
     sku: "ELY-014",
     stock: 15,
@@ -469,7 +491,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "derma-stamp-titanium",
     name: "Derma Stamp - Titanium",
-    category: "beauty-tools",
+    categories: ["beauty-tools"],
+    templateCategory: "skincare",
     price: 79000,
     sku: "ELY-015",
     stock: 9,
@@ -492,7 +515,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "travel-silicone-mask-applicator-set-4-pcs",
     name: "Travel Silicone Mask Applicator Set 4 Pcs",
-    category: "beauty-tools",
+    categories: ["beauty-tools"],
+    templateCategory: "skincare",
     price: 12000,
     sku: "ELY-016",
     stock: 6,
@@ -514,7 +538,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "wooden-cleansing-brush",
     name: "Wooden cleansing brush",
-    category: "beauty-tools",
+    categories: ["beauty-tools", "bestsellers"],
+    templateCategory: "lip_care",
     price: 44000,
     compareAtPrice: 60000,
     sku: "ELY-017",
@@ -538,7 +563,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "anti-cellulite-dry-body-brush",
     name: "Anti-cellulite Dry Body Brush",
-    category: "brush-combs",
+    categories: ["brush-combs"],
+    templateCategory: "skincare",
     price: 107000,
     compareAtPrice: 119600,
     sku: "ELY-018",
@@ -563,7 +589,8 @@ export const PRODUCTS: SeedProduct[] = [
   {
     slug: "facial-ice-bowl",
     name: "Facial Ice Bowl – Foldable & Travel-Friendly",
-    category: "beauty-tools",
+    categories: ["beauty-tools"],
+    templateCategory: "skincare",
     price: 104000,
     sku: "ELY-019",
     stock: 0,
@@ -709,14 +736,18 @@ async function main() {
   // grid). Create-only: reseeds never rewrite the createdAt of existing
   // rows — re-ordering requires a fresh DB.
   for (const [index, p] of PRODUCTS.entries()) {
-    const categoryId = categoryIds.get(p.category);
-    if (!categoryId) throw new Error(`Unknown category ${p.category} for ${p.slug}`);
+    // S81-1: resolve every display-category membership (unknown slugs are
+    // a seed bug, not a silent skip).
+    for (const slug of p.categories) {
+      if (!categoryIds.get(slug)) throw new Error(`Unknown category ${slug} for ${p.slug}`);
+    }
+    const membershipIds = p.categories.map((slug) => categoryIds.get(slug) as string);
     const data = {
       slug: p.slug,
       name: p.name,
       shortDescription: p.shortDescription,
       description: p.description,
-      categoryId,
+      templateCategory: p.templateCategory,
       price: p.price,
       compareAtPrice: p.compareAtPrice ?? null,
       sku: p.sku,
@@ -743,6 +774,18 @@ async function main() {
       update: productSeedUpdate(data),
       create: { ...data, createdAt: productSeedCreatedAt(index) },
     });
+    // S81-1: the display-category memberships are catalog wiring (the old
+    // single categoryId rode the same refresh policy) — rebuilt
+    // deterministically so a reseed converges an existing DB onto the
+    // reference's many-to-many model (delete-then-create is idempotent;
+    // the junction's composite PK makes createMany fail on dupes, so the
+    // sweep always runs).
+    await prisma.productCategory.deleteMany({ where: { productId: product.id } });
+    if (membershipIds.length > 0) {
+      await prisma.productCategory.createMany({
+        data: membershipIds.map((categoryId) => ({ productId: product.id, categoryId })),
+      });
+    }
     createdProducts += 1;
 
     // A starter review per product so detail pages are never empty.

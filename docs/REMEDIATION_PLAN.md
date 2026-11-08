@@ -11190,3 +11190,247 @@ states:**
 - **Deferred (documented)**: the zod 3→4 migration epic — a
   major-version schema migration deserves its own dedicated cycle
   with full gate validation, not a tail-end of a parity session.
+
+---
+
+## Session 81 — The Category-Model, Dual-Filter & One-Page-Grid Cycle
+
+> **Status:** EXECUTING (this cycle)
+> **Date:** 2026-11-09
+> **Inputs:** deep audit 81-a (read-only subagent: **12/12 standing anchors
+> PASS, 0 CRITICAL/HIGH/MEDIUM, 3 LOW, 2 INFO** — the run-80 changes
+> verified regression-free) + the live-reference re-measurement
+> (agent-browser 0.41.1, logged in, mobile 390×844 + desktop 1440×900)
+> + the reference's public entity API (`/api/entities/Product`,
+> `/api/entities/Category` — read with the operator's logged-in session),
+> which this cycle used to capture the reference's **authoritative
+> category data model** for the first time.
+
+### Findings feeding this cycle
+
+**The priority surfaces re-verified GREEN (unchanged):** the mobile
+menu panel (y:64 h:214, rows @36px rhythm 89/125/161/197/233,
+14px/20px uppercase ls 1.4px — byte-exact against the pins), the
+search overlay's full S78–S80 anatomy (input Cormorant 18px/300, the
+computed blur(4px) — the reference's v3 `backdrop-blur-sm` class
+resolves to the same 4px as the clone's v4 `backdrop-blur-xs`; the
+60vh-capped list; the 80px rows with 2px radius, 56px thumbs,
+conditional 12px descriptions, Cormorant 14px/300 prices; the
+empty-query hint; the codepoint-exact no-results copy), the shop
+catalog order (19/19 positions identical to the seed's authored
+order), the detail page (h1 36px, ৳ price 24px/600 Inter, eyebrow
+`text-xs tracking-widest uppercase` 12px/1.2px), the variant chips
+(38px rounded-full pills), the footer headings (12px/1.2px uppercase).
+The reference has NOT changed its pinned surfaces.
+
+**NEW: the reference's authoritative category model (entity API +
+ID-link measurement).** The reference carries TWO parallel category
+systems on every product:
+
+- **Display categories** — a `category_ids` ARRAY (many-to-many; the
+  shop pills, the home tiles, and the detail h1 filter on it):
+  `Beauty Tools` = 7 products (Gua Sha, Threading Tool, Derma Roller,
+  Derma Stamp, Mask Applicator, Wooden cleansing brush, Facial Ice
+  Bowl), `Brush & Combs` = 3 (Sandalwood Hairbrush Oval, Exfoliating
+  Gloves, Anti-cellulite Brush), `Bestsellers` = 4 (Bonnet, Pillowcase,
+  Heatless Curler, **Wooden cleansing brush — a DUAL member of
+  Bestsellers AND Beauty Tools**), `Gift Sets` = 0 (empty), and **6
+  products belong to NO display category** (Bamboo Square, Paddle
+  Oval, Bamboo Oval, Spa Socks, Crystal Hair Remover, Scalp Massager
+  — they surface only under All Products).
+- **Template category** — a `category` STRING field
+  (`skincare` ×12, `lip_care` ×3, `body_care` ×4): the detail-page
+  breadcrumb eyebrow renders it ("skincare"/"lip care", underscores →
+  spaces, the eyebrow-label style), the header nav AND footer link to
+  its slug filters (`?category=skincare` / `body_care` / `sets`), and
+  the shop page filters on it (h1 "Shop", NO pill active, 12/4/0
+  products respectively). The Category's OWN slugs (`beautytools`,
+  `brush_comms`, `Bestseller`) match nothing — only IDs (display) and
+  template strings filter. The 20th API product ("Pure Botanical
+  Cleansing Oil") is `is_published: false` — the 19-product published
+  catalog is confirmed correct.
+
+**The deltas measured (each visible on a core page):**
+
+- **D-81-1 — the pill result sets.** The clone's single-FK mapping
+  renders beauty-tools=10 / brush-combs=6 / bestsellers=3 vs the
+  reference's 7 / 3 / 4 — three extra cards under Beauty Tools
+  (Spa Socks, Crystal Hair Remover, Scalp Massager), three extra
+  under Brush & Combs (Bamboo Square, Paddle Oval, Bamboo Oval), and
+  the cleansing brush missing from Bestsellers. The dual membership
+  is unrepresentable in the single-FK schema (root cause).
+- **D-81-2 — the shop h1 under a filter.** Reference: display- filter
+  → the category NAME ("Beauty Tools"); template/unknown filter →
+  "Shop"; unfiltered → "All Products". Clone: "All Products" always.
+- **D-81-3 — the nav + footer links.** Reference nav (desktop AND
+  mobile panel): Beauty Tools → `?category=skincare`, Brush & Combs →
+  `?category=body_care` (template filters — the dossier's line-71
+  "replicate as-observed" mapping, never replicated). Reference
+  footer SHOP column: All Products / Skincare / Body Care / Gift Sets
+  → `?category=skincare` / `body_care` / `sets`. Clone: its own
+  display slugs everywhere.
+- **D-81-4 — the detail breadcrumb eyebrow.** Reference: the template
+  category ("skincare" / "lip care"). Clone: the display category
+  ("Bestsellers" / "Beauty Tools").
+- **D-81-5 — the one-page grid.** Reference: all 19 products on ONE
+  page, no pagination controls. Clone: 12/page + a pager (2 pages).
+- **D-81-6 — the shop empty state.** Reference:
+  `text-center py-20` + Cormorant 24px/300 "No products found" +
+  `text-sm text-muted-foreground` "Check back soon for new
+  arrivals." — no border, no icon, no clear-filters link. Clone: a
+  dashed box + PackageSearch icon + 18px/600 Inter + "Try adjusting
+  your filters." + "Clear filters".
+- **D-81-7 — the related pieces.** Reference "Complete the Ritual" =
+  the 3 newest products excluding self (createdAt order — verified on
+  the Bonnet AND the Pillowcase; NOT category-based). Clone:
+  same-category products (count varies; 2 cards for the Bonnet).
+- **D-81-8 — the ritual banner CTA.** Reference "Discover Sets" →
+  plain `/shop`. Clone → `/shop?category=gift-sets` (an empty grid).
+
+**Audit 81-a findings folded in:** L-1 the webhook's bare
+`JSON.parse(meta.shipping)` can misclassify corrupted metadata as a
+transient failure (500 + Stripe retry loop, no StripeEvent refund
+trail) — guard it to the metadata-unusable permanent path; L-2 stale
+comments (the `parseDollarsToCents` "test-only" claim is false —
+three admin dialogs import it; the track-order "sequential" comment
+contradicts the ELY- crypto-random order numbers; the rate-limit
+"rejected requests do not extend the count" wording is wrong); L-3
+the `readBodyTextBounded` no-stream fallback caps on UTF-16 units,
+not bytes.
+
+### ToDo (TDD-first: RED tests → GREEN implementations)
+
+- [x] **S81-1 (D-81-1, root cause)**: the Prisma many-to-many —
+      `ProductCategory` junction (`@@id([productId, categoryId])`,
+      both sides FK'd) replacing the single `categoryId` FK, plus
+      `Product.templateCategory String?` (skincare | lip_care |
+      body_care). Seed: the reference's exact memberships (7 / 3 / 4
+      with the cleansing brush dual; 6 uncategorized; template
+      categories 12 / 3 / 4), create-only like every other seed
+      field. RED: `tests/unit/seed-catalog.test.ts` rewritten to the
+      reference's membership + template pins.
+- [x] **S81-2 (D-81-2)**: `queryProducts` dual filter mode — a
+      category param matching an active Category slug filters the
+      junction (`categories: { some: { category: { slug, isActive } } }`);
+      anything else filters `templateCategory` equality. The shop
+      page's h1: display-match → the category name; any other
+      category param → "Shop"; none → "All Products". RED:
+      `tests/unit/products.test.ts` (both modes + the h1 derivation)
+      + storefront e2e pins.
+- [x] **S81-3 (D-81-3)**: the nav (header + mobile panel) links
+      Beauty Tools → `/shop?category=skincare`, Brush & Combs →
+      `/shop?category=body_care`; the footer SHOP column becomes the
+      reference's All Products / Skincare / Body Care / Gift Sets →
+      template slugs. RED: layout-tokens source pins + storefront
+      e2e.
+- [x] **S81-4 (D-81-4)**: the detail eyebrow renders
+      `templateCategory` (underscores → spaces) in the eyebrow-label
+      style; fallback to the first display category name; nothing
+      when neither exists. The JSON-LD category carries the first
+      display category name. RED: unit pin + e2e.
+- [x] **S81-5 (D-81-5)**: `PER_PAGE` 12 → 24 — the 19-product
+      catalog renders on ONE page like the reference; the pager
+      survives as the >24 superset. RED: the storefront e2e
+      pagination section reworked to the one-page assertion.
+- [x] **S81-6 (D-81-6)**: the shop empty state becomes the
+      reference's exact anatomy (centered py-20, Cormorant 24px/300
+      heading, the "Check back soon for new arrivals." sub-copy; the
+      dashed box, icon, hint copy and clear-filters link retire).
+      RED: storefront e2e empty-state pin (gift-sets).
+- [x] **S81-7 (D-81-7)**: "Complete the Ritual" = the 3 newest
+      active products excluding self (createdAt desc). RED: e2e pin
+      (the Bonnet's ritual shows Pillowcase, Curler, Bamboo Square).
+- [x] **S81-8 (D-81-8)**: the ritual banner CTA → plain `/shop`.
+      RED: source pin + e2e.
+- [x] **S81-9 (audit L-1)**: the webhook's `meta.shipping` parse is
+      guarded — unparseable metadata routes to the
+      metadata-unusable permanent path (StripeEvent row + refund
+      trail), never the transient 500 retry loop. RED: the webhook
+      unit truth-table extension.
+- [x] **S81-10 (audit L-2/L-3)**: the three stale comments corrected;
+      the `readBodyTextBounded` no-stream fallback counts bytes via
+      TextEncoder. RED: the json-body truth-table extension.
+- [x] **S81-11 (S81-1 blast radius)**: the admin surfaces — the
+      product dialog's category MULTI-select (checkbox list; zero
+      categories valid — the reference has 6 such products), the
+      upsert action writes junction rows transactionally, the
+      category-delete guard counts junction rows, analytics
+      byCategory reads the first display category ("Uncategorized"
+      fallback). RED: admin unit + e2e extensions; the
+      session17-hardening delete-guard seam updated.
+- [x] **S81-12**: the docs sweep (session_18.md, worklog Task 75,
+      AGENTS.md category-model contract, CLAUDE/README counts, PAD
+      v2.9, SKILL v2.9.0) + 25 dev-server screenshots + `.env.example`
+      re-verify + the final full gate chain + commit + SSH-wrapper
+      push to main.
+
+### Validation against the codebase (pre-execution)
+
+Every change site named and pre-read: `prisma/schema.prisma` (the
+Product/Category models), `prisma/seed.ts` (the CATEGORIES array +
+every product's `category` field), `src/lib/products.ts`
+(`queryProducts`' relation filter + `toCardData`'s category param —
+`ProductCard` renders NEITHER category field, so the card shape only
+needs a null-safe fallback), `src/app/(storefront)/shop/page.tsx`
+(h1 hardcoded "All Products", PER_PAGE 12, the dashed empty state),
+`shop-controls.tsx` (slug pills — unchanged; the All-Products pill is
+active only when `!category`, so template filters already render
+pill-inactive), `product/[id]/page.tsx` (eyebrow line 169, related
+query line 85, JSON-LD line 126), `header.tsx`/`mobile-nav.tsx` (nav
+links), `footer.tsx` (SHOP_LINKS), `page.tsx` (banner CTA line 124),
+`actions/admin.ts` (upsert categoryId), `admin-categories.ts` (the
+delete-guard seam), `product-dialog.tsx` (single-select + the
+"Choose a category." gate), `validation.ts` (`categoryId:
+z.string().min(1)`), `admin/analytics/page.tsx` (byCategory),
+`scripts/restore-demo-stock.ts` (no category usage — safe), the
+package scripts (`db:push` already carries `--accept-data-loss`, so
+the destructive FK→junction push is non-interactive), and every
+affected test surface (`seed-catalog`, `products`, `product-card`,
+`seo-ld`, `session17-hardening`, `admin` e2e, `storefront` e2e's
+"10 products"/page-2 sections, `seo-platform`'s `page=2` canonical
+pin — which asserts only canonicalization and survives the one-page
+grid).
+
+### Session 81 execution log
+
+- **Gates on the pulled tree**: lint ✓ · typecheck ✓ ·
+  typecheck:tests ✓ · 650/650 unit ✓ · clean build ✓ · 85/85 e2e ✓
+  — the docs matched reality (the run-80 environment had survived;
+  the ambient `DATABASE_URL` shadow's symlink convergence held).
+- **Audit 81-a**: 12/12 anchors PASS, 0 CRITICAL/HIGH/MEDIUM,
+  3 LOW (L-1 webhook metadata parse; L-2 stale comments; L-3 the
+  UTF-16 fallback cap) + 2 INFO; run-80's S80-1/2/3 verified
+  regression-free.
+- **TDD (RED 33 → GREEN)**: the seed memberships/template pins,
+  the resolveCategoryFilter truth table, the categoryIds schema
+  pins, the delete-guard junction seam, the parseShippingMetadata
+  truth table, the byte-count fallback, the S81 source pins, and
+  the three new e2e specs went RED together. GREEN landed as the
+  schema junction + templateCategory, the dual-mode query, the
+  nav/footer/eyebrow/ritual/empty-state/CTA changes, the guarded
+  metadata seam, and the admin multi-select. Two GREEN-phase
+  corrections: the shop empty-state class order (the pin's
+  `text-center py-20`), and the sort label's colon (the rewritten
+  products.ts dropped it — the e2e caught it immediately).
+- **Convergence**: `db:push --accept-data-loss` + one `db:seed`
+  run converged the EXISTING dev db onto the reference's model
+  (memberships 7/3/4 with the dual, six uncategorized,
+  templates 12/3/4 — node-verified).
+- **Gates (all observed green)**: lint ✓ · typecheck ✓ ·
+  typecheck:tests ✓ · **677/677 unit** (+27) · clean build ✓ ·
+  **88/88 e2e** (+3, the pagination spec reworked to the one-page
+  grid).
+- **Evidence**: every fixed surface verified against the
+  reference's measured values via the dev server + agent-browser
+  (the dual filter modes' h1/pill/count behavior, the nav/footer
+  links, the "lip care" eyebrow, the ritual's 3-newest set, the
+  centered empty state, the plain-/shop CTA, the mobile panel
+  byte-exact ±1px); 25 dev-server screenshots regenerated +
+  validated; `.env.example` re-verified (no new env vars).
+- **Docs sweep**: AGENTS.md (the category-model invariant + the
+  2..81 range), CLAUDE.md (677/88), README (counts + the
+  file-hierarchy line), PAD v2.9, ely-beauty_SKILL.md v2.9.0
+  (project_state + the Session 81 Appendix B entry),
+  docs/session_18.md, worklog (Task 75), this log.
+- **Deferred (documented)**: the zod 3→4 migration epic — still
+  the standing deferred debt (a dedicated cycle), unchanged.

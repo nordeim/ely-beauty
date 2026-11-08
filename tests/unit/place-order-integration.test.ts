@@ -85,21 +85,21 @@ async function seedWorld(
   const cat = await db.category.create({ data: { slug: `cat-${tag}`, name: `Category ${tag}` } });
   const p1 = await db.product.create({
     data: {
-      slug: `p1-${tag}`, name: `Product One ${tag}`, description: "d", categoryId: cat.id,
+      slug: `p1-${tag}`, name: `Product One ${tag}`, description: "d",
       price: 1000, sku: `SKU-P1-${tag}`, stock: facts.p1Stock ?? 10,
       images: JSON.stringify(["/images/p1.png"]),
     },
   });
   const p2 = await db.product.create({
     data: {
-      slug: `p2-${tag}`, name: `Product Two ${tag}`, description: "d", categoryId: cat.id,
+      slug: `p2-${tag}`, name: `Product Two ${tag}`, description: "d",
       price: 500, sku: `SKU-P2-${tag}`, stock: facts.p2Stock ?? 3,
       images: JSON.stringify(["/images/p2.png"]),
     },
   });
   const p3 = await db.product.create({
     data: {
-      slug: `p3-${tag}`, name: `Product Three ${tag}`, description: "d", categoryId: cat.id,
+      slug: `p3-${tag}`, name: `Product Three ${tag}`, description: "d",
       price: 700, sku: `SKU-P3-${tag}`, stock: 5,
       images: JSON.stringify(["/images/p3.png"]),
     },

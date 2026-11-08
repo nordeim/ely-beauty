@@ -51,8 +51,6 @@ const BASE: ProductCardData = {
   compareAtPrice: 35000,
   rating: 4.9,
   reviewCount: 87,
-  categoryName: "Bestsellers",
-  categorySlug: "bestsellers",
   badge: "Bestseller",
   colors: [{ name: "Pink", hex: "#cb9d9d" }],
   shortDescription: "Sleep in smooth comfort.",
