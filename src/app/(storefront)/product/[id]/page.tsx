@@ -26,9 +26,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { id } = await params;
   const product = await db.product.findUnique({
     where: { id },
-    select: { name: true, shortDescription: true, images: true },
+    select: { name: true, shortDescription: true, description: true, images: true },
   });
   if (!product) return { title: "Product not found" };
+  // S76-8: the six reference-true no-card-copy products ship an empty
+  // shortDescription — their meta description falls back to the long copy
+  // (mirrors seo.ts's builder rule; never an empty-string meta).
+  const metaDescription = product.shortDescription || product.description;
   // First product image as the share card (root-relative store path — the
   // only form imageUrlSchema accepts since S7-6). metadataBase resolves the
   // relative path to an absolute URL for crawlers. External hosts would need
@@ -37,12 +41,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const ogImages = firstImage ? [firstImage] : ["/images/og-default.png"];
   return {
     title: product.name,
-    description: product.shortDescription,
+    description: metaDescription,
     alternates: { canonical: `${siteBaseUrl()}/product/${id}` },
     openGraph: {
       type: "website",
       title: product.name,
-      description: product.shortDescription,
+      description: metaDescription,
       url: `${siteBaseUrl()}/product/${id}`,
       images: ogImages,
     },
@@ -159,7 +163,11 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
           {/* S74-6 (P-5, measured): the reference renders the product's
               category as a micro-label eyebrow above the title. */}
           <p className="eyebrow-label mb-3 text-muted-foreground">{product.category.name}</p>
-          <h1 className="font-display text-3xl font-light leading-tight tracking-tight sm:text-4xl">
+          {/* S76-3 (D-5, measured): the reference's product heading scale —
+              text-4xl (36px) mobile, lg:text-5xl (48px) at the lg
+              breakpoint with text-5xl's default lh 1.0 (the measured
+              48/48; was text-3xl sm:text-4xl + leading-tight). */}
+          <h1 className="font-display text-4xl font-light tracking-tight lg:text-5xl">
             {product.name}
           </h1>
 

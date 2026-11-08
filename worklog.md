@@ -1739,3 +1739,26 @@ Work Log:
 
 Stage Summary:
 - Run 75 complete: the measured LAYOUT FRAME cycle — the universal gutter + responsive header + panel-inside-header structure closed to byte-exact against the live reference, the fixed-coupon ৳ currency bug fixed (customer-facing), the kitchen-era residual family (Stripe appearance, chart hexes + $ axes, 404 icon, favicon, WhatsApp glyph) retired, and the docs-truth debt (PAD body, DEPLOYMENT branding) paid. The suite grew 550 → 563 unit / 70 → 74 e2e. New traps encoded: the element-px-loses-to-container-page CSS-order class; measure the shared frame, not just the surfaces; the sandbox thread-budget exhaustion class (kill abandoned browser daemons before blaming the harnesses).
+
+---
+Task ID: 76
+Agent: Super Z (main agent + 76-a read-only audit subagent)
+Task: Run-76 cycle for github.com/nordeim/ely-beauty — workspace refresh, docs review, gates re-validation, the clean-build recovery (F-0), deep audit 76-a, live-reference re-measurement, TDD remediation (S76-0..S76-12), screenshots, the docs sweep, commit + SSH push to main.
+
+Work Log:
+- git pull to 1f8aea5 (the operator's session_7 narration capture); docs re-read (AGENTS/CLAUDE/README/PAD v2.3/SKILL v2.3.0/session_6/session_7/REMEDIATION_PLAN/worklog); skills/ excluded per contract.
+- Gates on the pulled tree: lint ✓ · typecheck ✓ · typecheck:tests ✓ · 563/563 unit ✓ — then the CLEAN build FAILED (globals.css:2:135421 Missed semicolon).
+- F-0 root-caused (CRITICAL): Tailwind v4's candidate scan reads .md prose; the run-75 docs sweep's colon-form md:aspect-[3:1] (4 doc files) compiled to invalid aspect-ratio:3:1 and broke the production PostCSS pass — run-75's final build was a stale-cache false-green. Reproduced standalone + via a temporary postcss parse-dump hook.
+- S76-0 (TDD, pre-plan): the @source not scan guard in globals.css (docs/, skills/, tests/, scripts/, **/*.md, **/*.mdx), the four doc typos → the slash form, tests/unit/tailwind-scan-guard.test.ts (3 pins incl. a real compile). Clean build ✓, 566/566 unit ✓, 74/74 e2e ✓ on the fixed tree.
+- Deep audit 76-a (read-only subagent): 9/9 anchors PASS, 0 C/H/M, 2 LOW (docs counts; a debug leftover — both disposed) + 3 NIT + 3 INFO; the guard proven load-bearing by controlled experiment; the F-3 doubled-hairline deduction later DISPOSED against the live DOM.
+- Live-reference re-measurement (agent-browser, both sites, both viewports, logged in): the frame surfaces re-verified GREEN; 12 new card/variant deltas measured (shop grid gaps, card text-block anchoring, product h1 scale, pill-vs-square chips, swatch anatomy, thumb geometry, non-home border-t, the bonnet's badge/desc data, the gallery image counts).
+- Remediation plan (Session 76) appended with the measured-values table, validated against the codebase (schema nullability, seed-policy ownership, metadata consumers, test-pin collisions), executed TDD-first: RED batch (10 unit + 3 e2e failing) → GREEN implementations (S76-1..S76-10) → the reseed + the live-DB badge UPDATE.
+- S76-9: 38 gallery variants generated (scripts/gen-gallery-variants.mjs, the run-72 brand pipeline, foreground idempotent chunks — background jobs die between shell invocations); the VLM coherence review kept 9 generated sets and replaced 10 drifted sets with PIL detail crops; 19/19 products VLM-verified coherent.
+- Final gates: lint ✓ · typecheck ✓ · typecheck:tests ✓ · 576/576 unit (+13) · clean build ✓ (after clearing a stale node_modules/.cache/jiti that broke next/font) · 77/77 e2e (+3).
+- The fixed surfaces re-measured GREEN against the live reference (byte-exact: shop grid 48px 32px + 363×447 cards + 48px row gaps, mobile cards 159×283 @ 24px gap, the card anatomy name@+16/20 + price@+44 + the bonnet name+price only, the h1 48/48/300, the 38px pill chips with ivory active text, the 36px double-ring swatches, the 64×80 thumbs @16 below the 544×725 main, the non-home header 82px desktop).
+- 25/25 screenshots regenerated (single clean pass after restore-stock + the 60s limiter window).
+- Docs sweep: REMEDIATION_PLAN Session 76 (execution log), session_8.md, worklog (this entry), README (576/77 + the gallery row), AGENTS.md (the scan-guard trap #7 + the S76 card/variant contract), CLAUDE.md (the S76 parity paragraph), PAD v2.4 (the revision block + counts), ely-beauty_SKILL.md v2.4.0 (project_state + the Session 76 entry with five encoded traps).
+- Commit + push to main through the SSH wrapper (fast-forward, no new branches; remote verified).
+
+Stage Summary:
+- Run 76 complete: the clean-build recovery cycle — the pushed run-75 tree's build breaker (prose leaking into the Tailwind candidate scan) closed with the structural @source not guard, and 12 live-measured card/variant anatomy deltas closed to byte-exact (the shop grid rhythm, the flow-anchored card text block, the 48px product heading scale, the pill chips, the double-ring swatches, the 64×80 thumbs, the non-home border-t, the badge/description data parity, and the VLM-verified 3-image galleries). The suite grew 563 → 576 unit / 74 → 77 e2e. Five new traps encoded in the SKILL: prose is a compile input; a warm Turbopack cache can false-green a broken tree; the stale jiti cache breaks next/font; VLM-verify generated imagery; pin typography scales, not wrap-dependent box heights.

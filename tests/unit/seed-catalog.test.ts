@@ -103,4 +103,40 @@ describe("seed catalog constants (S15-2, run-72)", () => {
     const roller = PRODUCTS.find((p) => p.slug === "derma-roller-titanium");
     expect(roller?.sizes).toEqual(["0.5mm", "1.0mm"]);
   });
+
+  it("S76 D-10: the bonnet carries NO badge (the reference's live card renders none)", () => {
+    const bonnet = PRODUCTS.find((p) => p.slug === "premium-double-sided-ruffles-silk-hair-bonnet");
+    expect(bonnet?.badge ?? null).toBeNull();
+  });
+
+  it("S76 D-11: the six reference-true no-description products ship empty card copy", () => {
+    // Measured live on the reference's /shop grid 2026-11-08: these six
+    // render name + price only (no 12px description line). The seed's copy
+    // must match — the card line is data, not a code branch.
+    const noDesc = [
+      "premium-double-sided-ruffles-silk-hair-bonnet",
+      "natural-bamboo-hair-brush-square",
+      "natural-bamboo-hair-brush-oval",
+      "facial-threading-tool",
+      "moisturizing-spa-socks",
+      "full-silicon-scalp-massager",
+    ];
+    for (const slug of noDesc) {
+      expect(PRODUCTS.find((p) => p.slug === slug)?.shortDescription).toBe("");
+    }
+    // A description-bearing product keeps its card copy (the guard against
+    // over-sweeping).
+    expect(PRODUCTS.find((p) => p.slug === "pure-satin-silk-pillowcase")?.shortDescription).toContain(
+      "Sleep in smooth comfort",
+    );
+  });
+
+  it("S76 D-12: every product ships a 3-image gallery (the rail renders everywhere)", () => {
+    for (const p of PRODUCTS) {
+      expect(p.images).toHaveLength(3);
+      expect(p.images[0]).toMatch(/^\/images\/product-/);
+      expect(p.images[1]).toMatch(/-2\.png$/);
+      expect(p.images[2]).toMatch(/-3\.png$/);
+    }
+  });
 });

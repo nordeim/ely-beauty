@@ -1,6 +1,29 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* S76 candidate-scan guard: prose is not a render surface. Tailwind v4's
+ * automatic source detection reads EVERY non-gitignored text file in the
+ * project — .md prose included. The run-75 docs sweep wrote the banner
+ * class into four doc files with a colon (`md:aspect-[3:1]`), the scan
+ * compiled that candidate to `aspect-ratio:3:1` (invalid CSS), and the
+ * clean production build died in PostCSS ("Missed semicolon") — masked
+ * at the time by Turbopack's stale CSS cache. docs/ (session logs and
+ * plans quote utility class names verbatim), skills/ (excluded from
+ * compilation by operator contract — its SKILL.md examples were also
+ * leaking dead rules like .text-\[clamp(...)\] into the bundle), tests/
+ * and scripts/ (pins assert class strings, never render them), and every
+ * .md/.mdx file are therefore excluded from the scan. Render classes
+ * live in src/ only. NOTE: the every-markdown-file exclusion spans src/
+ * too — zero .md/.mdx files exist under src/ today; if markdown content
+ * is ever introduced as a render surface there, revisit this guard.
+ * Pinned by tests/unit/tailwind-scan-guard.test.ts. */
+@source not "../../docs";
+@source not "../../skills";
+@source not "../../tests";
+@source not "../../scripts";
+@source not "../../**/*.md";
+@source not "../../**/*.mdx";
+
 @custom-variant dark (&:is(.dark *));
 
 /* Tailwind v4 trap (ecommerce-store trap-log #11): v4's default `hover`

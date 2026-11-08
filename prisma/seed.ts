@@ -41,7 +41,9 @@ type SeedProduct = {
   description: string;
   howToUse?: string;
   ingredients?: string;
-  badge?: string;
+  // S76-8: null is an explicit no-badge (the bonnet's reference-true
+  // state) — distinct from undefined's "keep the default" semantics.
+  badge?: string | null;
   isFeatured?: boolean;
   isNewArrival?: boolean;
 };
@@ -100,17 +102,24 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 0,
     rating: 4.8,
     reviewCount: 24,
-    images: ["/images/product-silk-bonnet.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-silk-bonnet.png", "/images/product-silk-bonnet-2.png", "/images/product-silk-bonnet-3.png"],
     tags: ["bestseller"],
     specs: [
       { label: "Material", value: "100% mulberry silk" },
       { label: "Sides", value: "Double-sided" },
     ],
     sizes: ["Pink & Lavender", "Maroon & Navy Blue", "Black & White"],
-    shortDescription: "Double-sided ruffled silk bonnet that protects hair overnight.",
+    // S76-8 (D-11): the reference renders NO card description on this
+    // product (measured live 2026-11-08) — empty copy, no card line.
+    shortDescription: "",
     description:
       "Sleep in luxury with our Premium Double Sided Ruffles Silk Hair Bonnet. Crafted from 100% mulberry silk, it reduces friction, prevents breakage, and keeps your hairstyle fresh while you sleep. The double-sided design offers two looks in one, with delicate ruffles adding a touch of elegance.",
-    badge: "Bestseller",
+    // S76-8 (D-10): the live reference renders NO badge on the bonnet
+    // card (measured 2026-11-08) — badge data parity.
+    badge: null,
     isFeatured: true,
     isNewArrival: true,
   },
@@ -124,7 +133,10 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 19,
     rating: 4.9,
     reviewCount: 87,
-    images: ["/images/product-satin-pillowcase.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-satin-pillowcase.png", "/images/product-satin-pillowcase-2.png", "/images/product-satin-pillowcase-3.png"],
     tags: ["bestseller", "sale"],
     specs: [
       { label: "Material", value: "Premium satin silk" },
@@ -152,7 +164,10 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 0,
     rating: 4.7,
     reviewCount: 53,
-    images: ["/images/product-heatless-curler.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-heatless-curler.png", "/images/product-heatless-curler-2.png", "/images/product-heatless-curler-3.png"],
     tags: ["bestseller"],
     specs: [
       { label: "Includes", value: "Curling rod + 2 scrunchies" },
@@ -178,13 +193,18 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 16,
     rating: 4.6,
     reviewCount: 31,
-    images: ["/images/product-bamboo-brush-square.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-bamboo-brush-square.png", "/images/product-bamboo-brush-square-2.png", "/images/product-bamboo-brush-square-3.png"],
     tags: [],
     specs: [
       { label: "Material", value: "Natural bamboo" },
       { label: "Shape", value: "Square" },
     ],
-    shortDescription: "Square bamboo paddle brush for gentle daily detangling.",
+    // S76-8 (D-11): the reference renders NO card description on this
+    // product (measured live 2026-11-08) — empty copy, no card line.
+    shortDescription: "",
     description:
       "Glide through knots with our Natural Bamboo Hair Brush. The square paddle design and smooth bamboo bristles detangle gently, distribute natural oils, and add shine — an eco-friendly essential for healthy hair.",
     isFeatured: true,
@@ -199,7 +219,10 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 21,
     rating: 4.8,
     reviewCount: 44,
-    images: ["/images/product-sandalwood-paddle.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-sandalwood-paddle.png", "/images/product-sandalwood-paddle-2.png", "/images/product-sandalwood-paddle-3.png"],
     tags: [],
     specs: [
       { label: "Material", value: "100% natural sandalwood" },
@@ -220,7 +243,10 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 39,
     rating: 4.9,
     reviewCount: 61,
-    images: ["/images/product-sandalwood-oval.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-sandalwood-oval.png", "/images/product-sandalwood-oval-2.png", "/images/product-sandalwood-oval-3.png"],
     tags: [],
     specs: [
       { label: "Material", value: "100% natural sandalwood" },
@@ -240,13 +266,18 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 11,
     rating: 4.5,
     reviewCount: 18,
-    images: ["/images/product-bamboo-brush-oval.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-bamboo-brush-oval.png", "/images/product-bamboo-brush-oval-2.png", "/images/product-bamboo-brush-oval-3.png"],
     tags: [],
     specs: [
       { label: "Material", value: "Natural bamboo" },
       { label: "Shape", value: "Oval" },
     ],
-    shortDescription: "Oval bamboo brush — gentle on scalp, kind to hair.",
+    // S76-8 (D-11): the reference renders NO card description on this
+    // product (measured live 2026-11-08) — empty copy, no card line.
+    shortDescription: "",
     description:
       "The oval sibling of our bamboo classic. Rounded pins massage the scalp while the pneumatic cushion adapts to your head's shape — comfortable, anti-static, and beautifully finished.",
   },
@@ -259,7 +290,10 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 121,
     rating: 4.8,
     reviewCount: 72,
-    images: ["/images/product-gua-sha.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-gua-sha.png", "/images/product-gua-sha-2.png", "/images/product-gua-sha-3.png"],
     tags: [],
     specs: [
       { label: "Material", value: "Stainless steel" },
@@ -281,7 +315,10 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 49,
     rating: 4.7,
     reviewCount: 39,
-    images: ["/images/product-exfoliating-gloves.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-exfoliating-gloves.png", "/images/product-exfoliating-gloves-2.png", "/images/product-exfoliating-gloves-3.png"],
     tags: [],
     specs: [
       { label: "Material", value: "100% natural viscose" },
@@ -301,13 +338,18 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 24,
     rating: 4.4,
     reviewCount: 12,
-    images: ["/images/product-threading-tool.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-threading-tool.png", "/images/product-threading-tool-2.png", "/images/product-threading-tool-3.png"],
     tags: [],
     specs: [
       { label: "Type", value: "Spring coil" },
       { label: "Use", value: "Facial hair removal" },
     ],
-    shortDescription: "Salon-style threading for smooth, hair-free skin.",
+    // S76-8 (D-11): the reference renders NO card description on this
+    // product (measured live 2026-11-08) — empty copy, no card line.
+    shortDescription: "",
     description:
       "Remove unwanted facial hair the traditional way — without wax or chemicals. The spring coil traps hair at the root and lifts it away in a gentle sweeping motion, leaving skin smooth for weeks.",
     howToUse: "Hold the handles, bend the coil against the skin, and roll outward across the area. Follow with a soothing moisturizer.",
@@ -321,14 +363,19 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 0,
     rating: 4.6,
     reviewCount: 21,
-    images: ["/images/product-spa-socks.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-spa-socks.png", "/images/product-spa-socks-2.png", "/images/product-spa-socks-3.png"],
     tags: [],
     specs: [
       { label: "Type", value: "Gel-lined spa socks" },
       { label: "Care", value: "Hand wash" },
     ],
     sizes: ["Pink", "Black"],
-    shortDescription: "Overnight heel repair with a moisturizing gel lining.",
+    // S76-8 (D-11): the reference renders NO card description on this
+    // product (measured live 2026-11-08) — empty copy, no card line.
+    shortDescription: "",
     description:
       "Slip into softness. These spa socks carry a vitamin-rich gel lining that hydrates dry heels and cracked skin while you sleep — wake up to noticeably smoother feet.",
   },
@@ -341,7 +388,10 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 30,
     rating: 4.5,
     reviewCount: 28,
-    images: ["/images/product-crystal-hair-remover.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-crystal-hair-remover.png", "/images/product-crystal-hair-remover-2.png", "/images/product-crystal-hair-remover-3.png"],
     tags: [],
     specs: [
       { label: "Material", value: "Crystal glass" },
@@ -361,7 +411,10 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 19,
     rating: 4.7,
     reviewCount: 33,
-    images: ["/images/product-scalp-massager.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-scalp-massager.png", "/images/product-scalp-massager-2.png", "/images/product-scalp-massager-3.png"],
     tags: [],
     specs: [
       { label: "Material", value: "Food-grade silicone" },
@@ -373,7 +426,9 @@ export const PRODUCTS: SeedProduct[] = [
       { name: "Beige", hex: "#E5C38F" },
     ],
     sizes: ["Pink", "Black", "Beige"],
-    shortDescription: "A scalp massage with every wash — lifts, cleans, stimulates.",
+    // S76-8 (D-11): the reference renders NO card description on this
+    // product (measured live 2026-11-08) — empty copy, no card line.
+    shortDescription: "",
     description:
       "Turn every wash into a spa ritual. The soft silicone tips lift away buildup, stimulate circulation, and feel wonderful — while the full-silicon body rinses clean and never hosts bacteria.",
   },
@@ -386,7 +441,10 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 15,
     rating: 4.8,
     reviewCount: 57,
-    images: ["/images/product-derma-roller.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-derma-roller.png", "/images/product-derma-roller-2.png", "/images/product-derma-roller-3.png"],
     tags: [],
     specs: [
       { label: "Needles", value: "Titanium micro-needles" },
@@ -408,7 +466,10 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 9,
     rating: 4.9,
     reviewCount: 26,
-    images: ["/images/product-derma-stamp.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-derma-stamp.png", "/images/product-derma-stamp-2.png", "/images/product-derma-stamp-3.png"],
     tags: [],
     specs: [
       { label: "Needles", value: "Titanium" },
@@ -428,7 +489,10 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 6,
     rating: 4.6,
     reviewCount: 15,
-    images: ["/images/product-mask-applicator.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-mask-applicator.png", "/images/product-mask-applicator-2.png", "/images/product-mask-applicator-3.png"],
     tags: [],
     specs: [
       { label: "Set", value: "4 pieces" },
@@ -448,7 +512,10 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 65,
     rating: 4.7,
     reviewCount: 42,
-    images: ["/images/product-cleansing-brush.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-cleansing-brush.png", "/images/product-cleansing-brush-2.png", "/images/product-cleansing-brush-3.png"],
     tags: ["bestseller", "sale"],
     specs: [
       { label: "Material", value: "Wood + soft bristles" },
@@ -469,7 +536,10 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 11,
     rating: 4.8,
     reviewCount: 35,
-    images: ["/images/product-body-brush.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-body-brush.png", "/images/product-body-brush-2.png", "/images/product-body-brush-3.png"],
     tags: ["sale"],
     specs: [
       { label: "Bristles", value: "Natural" },
@@ -490,7 +560,10 @@ export const PRODUCTS: SeedProduct[] = [
     stock: 0,
     rating: 4.7,
     reviewCount: 19,
-    images: ["/images/product-ice-bowl.png"],
+    // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
+    // variants) — the reference renders multi-image galleries on
+    // every product page; the rail renders with 2+ images.
+    images: ["/images/product-ice-bowl.png", "/images/product-ice-bowl-2.png", "/images/product-ice-bowl-3.png"],
     tags: [],
     specs: [
       { label: "Material", value: "Food-grade silicone" },

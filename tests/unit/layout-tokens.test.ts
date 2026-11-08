@@ -161,3 +161,68 @@ describe("S75 measured layout frame (source pins)", () => {
     expect(icon).not.toContain("#c4717d");
   });
 });
+
+describe("S76 measured card + variant anatomy (source pins)", () => {
+  it("D-1: the /shop grid rides the reference's measured gaps (24/24 mobile, 32/48 desktop)", () => {
+    const shop = src("app/(storefront)/shop/page.tsx");
+    expect(shop).toMatch(/grid grid-cols-2 gap-6 lg:grid-cols-3 lg:gap-x-8 lg:gap-y-12/);
+    // The kitchen-era 16px columns / 40px rows are gone.
+    expect(shop).not.toMatch(/gap-x-4 gap-y-10/);
+  });
+
+  it("D-2/D-3/D-4: the card text block anchors like the reference (flow, pt-4, default name leading)", () => {
+    const card = src("components/store/product-card.tsx");
+    expect(card).toMatch(/gap-1 pt-4/);
+    // The name rides text-sm's default 20px line-height (the reference's
+    // measured h:20) — leading-snug's 17px is gone.
+    expect(card).not.toContain("leading-snug");
+    // The price row FLOWS 8px under the last line (the reference's
+    // anchoring); mt-auto bottom-stuck it inside normalized rows.
+    expect(card).not.toContain("mt-auto");
+  });
+
+  it("D-5: the product h1 is 36/48 at the lg breakpoint (the reference's heading scale)", () => {
+    const page = src("app/(storefront)/product/[id]/page.tsx");
+    expect(page).toMatch(/font-display text-4xl font-light tracking-tight lg:text-5xl/);
+    expect(page).not.toMatch(/text-3xl font-light leading-tight/);
+  });
+
+  it("D-6: the size chips are the reference's 38px pills (ivory active text)", () => {
+    const panel = src("app/(storefront)/product/[id]/purchase-panel.tsx");
+    expect(panel).toMatch(/h-\[38px\] min-w-14 rounded-full border px-4 text-sm font-normal/);
+    // Active: solid foreground + IVORY text (text-background — white is the
+    // kitchen-era remnant the reference does not render).
+    expect(panel).toMatch(/border-foreground bg-foreground text-background/);
+    // Inactive: the hairline border token.
+    expect(panel).toMatch(/border-border text-foreground hover:border-foreground/);
+    // The square 40px chip is gone.
+    expect(panel).not.toMatch(/h-10 min-w-14 border border-input/);
+  });
+
+  it("D-7: the color swatches are the reference's 36px double-ring anatomy", () => {
+    const panel = src("app/(storefront)/product/[id]/purchase-panel.tsx");
+    expect(panel).toMatch(/h-9 w-9/);
+    // Active: the measured double ring — background 2px then foreground 4px
+    // outside the 2px foreground border.
+    expect(panel).toMatch(
+      /border-2 border-foreground shadow-\[0_0_0_2px_var\(--color-background\),0_0_0_4px_var\(--color-foreground\)\]/,
+    );
+    // Inactive: the subtle 1px black/15 ring, transparent border.
+    expect(panel).toMatch(/border-transparent shadow-\[0_0_0_1px_rgba\(0,0,0,0\.15\)\]/);
+    // The 40px ring-offset anatomy is gone.
+    expect(panel).not.toContain("ring-offset-2");
+  });
+
+  it("D-8: the gallery thumbs are the reference's 64×80 (aspect 4/5)", () => {
+    const gallery = src("app/(storefront)/product/[id]/product-gallery.tsx");
+    expect(gallery).toMatch(/aspect-\[4\/5\] w-16/);
+    expect(gallery).not.toMatch(/aspect-\[3\/4\] w-\[60px\]/);
+  });
+
+  it("D-9: the non-home header carries the reference's border-t (66px bar box)", () => {
+    const chrome = src("components/store/store-chrome.tsx");
+    // The non-home branch: border-t + border-b + bg/95 + blur.
+    expect(chrome).toMatch(/border-t border-b border-border bg-background\/95 backdrop-blur/);
+    expect(chrome).not.toMatch(/"border-b border-border bg-background\/95 backdrop-blur"/);
+  });
+});

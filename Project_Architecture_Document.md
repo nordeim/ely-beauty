@@ -1,4 +1,4 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.3
+# ElyBeauty — Master Project Architecture Document (PAD) v2.4
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
@@ -7,9 +7,37 @@
 **Audience:** Senior Engineers, Tech Leads, DevOps, and Onboarding Engineers
 **Rule:** Every architectural decision in this document traces to a specific rationale. Nothing is here "because it's popular."
 
+
+#### Revision Block — v2.4 (Run 76 — the clean-build recovery & card-anatomy parity cycle)
+
+- `[SR]` **The pushed run-75 tree did not build clean (F-0, CRITICAL)**:
+  Tailwind v4's candidate scan read the run-75 docs sweep's colon-form
+  `md:aspect-[3:1]` (four doc files) as a class candidate → invalid
+  `aspect-ratio:3:1` in the compiled CSS → the production build's PostCSS
+  pass failed; run-75's final build was a stale-cache false-green. Fixed
+  with the `@source not` scan guard (docs/, skills/, tests/, scripts/,
+  `**/*.md`, `**/*.mdx`), the doc typos, and
+  `tests/unit/tailwind-scan-guard.test.ts`.
+- `[SR]` **The measured card + variant anatomy (S76-1..S76-7)**: the /shop
+  grid gaps (24/24 mobile, 32/48 desktop — 363px cards, 48px row gaps); the
+  card text block's flow anchoring (pt-4, default name leading, price after
+  the last line — row-normalized 447px cards); the product h1's 36/48
+  heading scale; the 38px pill size chips (ivory active text); the 36px
+  double-ring swatches; the 64×80 gallery thumbs; the non-home header's
+  border-t.
+- `[SR]` **The catalog data parity (S76-8/S76-9)**: the bonnet's badge →
+  null and six reference-true no-description products → empty card copy
+  (the metadata falls back to the long description); every product ships a
+  VLM-verified coherent 3-image gallery (9 generated angle sets + 10 PIL
+  detail-crop sets — `scripts/gen-gallery-variants.mjs` documents the
+  pipeline).
+- `[SR]` **Tests**: 563 → 576 unit (+13: the 3 scan-guard pins, the 7
+  card/variant D-pins, the 3 seed-catalog pins), 74 → 77 e2e (+3: the shop
+  card geometry, the product h1 scale, the pill chips + gallery rail).
+
 #### Revision Block — v2.3 (Run 75 — the container-gutter & responsive-header parity cycle)
 
-- `[SR]` **The measured LAYOUT FRAME**: run-74 closed 14 surface deltas but measured each surface in isolation; run-75's whole-page walk found the shared frame the surfaces sit in differed. One root fix — `container-page` became the reference's measured universal gutter (`max-w-7xl px-6 lg:px-16`; 1152px content @1440) — plus the responsive header (`h-16 lg:h-20`, 64/80px), the reference's main clearance (`pt-20 lg:pt-24`), the home section rhythm (per-section `py-20 lg:py-32`, centered "Shop by Ritual" heading, measured grid gaps), the banner `aspect-[21/9] md:aspect-[3:1]`, the product grid `gap-8 lg:gap-16` (544px columns), the hero h1's responsive line-height (1.1 mobile / 1.0 desktop, md breakpoint), and the footer `py-16 lg:py-24`.
+- `[SR]` **The measured LAYOUT FRAME**: run-74 closed 14 surface deltas but measured each surface in isolation; run-75's whole-page walk found the shared frame the surfaces sit in differed. One root fix — `container-page` became the reference's measured universal gutter (`max-w-7xl px-6 lg:px-16`; 1152px content @1440) — plus the responsive header (`h-16 lg:h-20`, 64/80px), the reference's main clearance (`pt-20 lg:pt-24`), the home section rhythm (per-section `py-20 lg:py-32`, centered "Shop by Ritual" heading, measured grid gaps), the banner `aspect-[21/9] md:aspect-[3/1]`, the product grid `gap-8 lg:gap-16` (544px columns), the hero h1's responsive line-height (1.1 mobile / 1.0 desktop, md breakpoint), and the footer `py-16 lg:py-24`.
 - `[SR]` **The mobile panel moved INSIDE the fixed header** (the reference's DOM order): the panel renders flush below the bar regardless of the page-shell's content clearance — retiring the run-72 solid-bar-while-open workaround (the bar now stays transparent over the hero with the panel open, exactly like the reference).
 - `[SR]` **The fixed-coupon currency bug (H-1)**: `couponLabel`'s fixed branch rendered `$6.95 off` on a ৳ store (the cart/checkout/admin coupon labels); now formats through `formatMoney`. Plus the kitchen-era residuals: the Stripe Element appearance re-mapped to the current tokens, the admin charts' orange → taupe + ৳ axis ticks (was `$`), the 404 `CookingPot` → `Sparkles`, the favicon re-anchored to the S74-10 logo colors, the WhatsApp float's real brand glyph, and the wordmark split hardened past the literal 3-char slice.
 - `[SR]` **Tests**: 550 → 563 unit (+13: `layout-tokens.test.ts` — the measured-frame source pins), 70 → 74 e2e (+4: the mobile header/panel geometry pins, the desktop frame pins — 264px tiles, 1152×384 banner, 544px columns).
@@ -77,8 +105,8 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, select, sheet, label, tabs, radio) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^3.25 | Single validation boundary (ADR-005) |
-| Unit tests | Vitest | ^3.2 | Node-env suite (563 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins — see §8.1) |
-| E2E tests | Playwright | ^1.64 | 74 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins |
+| Unit tests | Vitest | ^3.2 | Node-env suite (576 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins — see §8.1) |
+| E2E tests | Playwright | ^1.64 | 77 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
 ### 1.3 Architecture Decision Records
@@ -327,7 +355,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 563 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 576 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -581,7 +609,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
 | `prisma/schema.prisma` / `seed.ts` | 19 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 563 unit · 74 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins) |
+| `tests/unit/*` · `tests/e2e/*` | 576 unit · 77 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---

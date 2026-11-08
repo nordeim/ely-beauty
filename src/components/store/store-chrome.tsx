@@ -69,7 +69,12 @@ export function StoreChrome({
       >
         <header
           className={`fixed top-0 z-40 w-full ${
-            overHero ? "bg-transparent" : "border-b border-border bg-background/95 backdrop-blur"
+            // S76-7 (D-9, measured): the reference's non-home bar carries
+            // border-t AND border-b (the 66px closed box; the panel opens
+            // at y:65) — home stays fully transparent over the hero.
+            overHero
+              ? "bg-transparent"
+              : "border-t border-b border-border bg-background/95 backdrop-blur"
           }`}
         >
           <Header user={user} cartCount={count} />

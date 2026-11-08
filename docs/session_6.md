@@ -62,7 +62,7 @@ live-reference whole-page re-measurement → the measured-frame remediation
   `py-20 lg:py-32` with the centered "Shop by Ritual" heading (`mb-16`,
   `lg:text-5xl`); the tiles ride `gap-6 lg:gap-8` (264px @1440) and the
   curated grid `gap-6 lg:gap-x-8 lg:gap-y-12`; the banner is
-  `aspect-[21/9] md:aspect-[3:1]` (1152×384); the product page's container
+  `aspect-[21/9] md:aspect-[3/1]` (1152×384); the product page's container
   `pt-6 pb-20` + grid `gap-8 lg:gap-16` (544px columns); the hero h1
   `leading-[1.1] lg:leading-none` + `md:text-7xl`; the footer
   `py-16 lg:py-24`; the WhatsApp float renders the real brand glyph

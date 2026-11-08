@@ -266,3 +266,84 @@ test.describe("storefront — the S75 measured frame (desktop layout geometry)",
     expect(box?.width).toBeCloseTo(544, 0);
   });
 });
+
+test.describe("storefront — the S76 measured card + variant anatomy (desktop geometry)", () => {
+  test("the /shop grid renders 363px cards at the reference's measured gaps (D-1/D-2/D-3/D-4)", async ({ page }) => {
+    await gotoHydrated(page, "/shop");
+
+    // D-1: 1152px content − 2×32px gaps = 3×362.67px columns (was 373
+    // under gap-x-4's 16px columns).
+    const grid = page.locator("div.grid").filter({
+      has: page.locator("article"),
+    });
+    const firstCard = grid.locator("article").first();
+    const cardBox = await firstCard.boundingBox();
+    expect(cardBox?.width).toBeCloseTo(362.7, 0);
+
+    // D-1: the row gap is 48px (was 40 under gap-y-10).
+    const secondRow = grid.locator("article").nth(3);
+    const secondBox = await secondRow.boundingBox();
+    if (cardBox && secondBox) {
+      expect(secondBox.y - (cardBox.y + cardBox.height)).toBeCloseTo(48, 0);
+    }
+
+    // D-2/D-3/D-4: the text block anchors like the reference — the name
+    // sits 16px under the image at text-sm's default 20px line-height, and
+    // the price flows after the last line (the reference's flow anchoring,
+    // no mt-auto). The first card is the no-description Bonnet (the seed's
+    // authored order; its 64px content trails ~20px inside the row) — the
+    // row-normalized card is 447px: 363 image + the 84px block of its
+    // description-bearing row neighbor (the Pillowcase).
+    expect(cardBox?.height).toBeCloseTo(447, 0);
+  });
+
+  test("the product h1 rides the reference's heading scale: 48px at lg (D-5)", async ({ page, request }) => {
+    const res = await request.get("/api/search?q=silk");
+    const data = (await res.json()) as { results?: { id: string }[] };
+    const productId = data.results?.[0]?.id;
+    expect(productId).toBeTruthy();
+    await gotoHydrated(page, `/product/${productId}`);
+
+    // The SCALE is the pin (the box height depends on the product name's
+    // wrap: the reference's own pillowcase h1 wraps to two 48px lines in
+    // the 544px column — the clone's does too).
+    const h1 = page.getByRole("heading", { level: 1 });
+    await expect(h1).toBeVisible();
+    const typography = await h1.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { fontSize: s.fontSize, lineHeight: s.lineHeight };
+    });
+    expect(typography.fontSize).toBe("48px");
+    // text-5xl's default lh 1.0 — the reference's measured 48/48.
+    expect(typography.lineHeight).toBe("48px");
+  });
+
+  test("the size chips are the reference's 38px pills (D-6) and the gallery rail renders (D-8/D-12)", async ({ page, request }) => {
+    // The massager is the IN-STOCK sizes-bearing piece (the bonnet — the
+    // reference-true sold-out lead — renders the Check-back-soon panel
+    // instead of purchase controls).
+    const res = await request.get("/api/search?q=massager");
+    const data = (await res.json()) as { results?: { id: string }[] };
+    const productId = data.results?.[0]?.id;
+    expect(productId).toBeTruthy();
+    await gotoHydrated(page, `/product/${productId}`);
+
+    // D-6: pill chips — 38px tall, fully rounded.
+    const chip = page.getByRole("button", { name: "Pink", exact: true });
+    await expect(chip).toBeVisible();
+    const chipBox = await chip.boundingBox();
+    expect(chipBox?.height).toBeCloseTo(38, 0);
+    const radius = await chip.evaluate((el) => getComputedStyle(el).borderRadius);
+    // Fully-rounded pill (the reference renders 9999px; v4's rounded-full
+    // computes to Chrome's infinity representation — both are "full").
+    expect(parseFloat(radius)).toBeGreaterThanOrEqual(9999);
+
+    // D-8/D-12: the gallery rail renders below the main image with the
+    // 64×80 thumbs (3-image seeded gallery).
+    const thumb = page.getByRole("button", { name: "View image 2 of 3" });
+    await expect(thumb).toBeVisible();
+    const thumbBox = await thumb.boundingBox();
+    expect(thumbBox?.width).toBeCloseTo(64, 0);
+    expect(thumbBox?.height).toBeCloseTo(80, 0);
+  });
+});

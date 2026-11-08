@@ -10121,3 +10121,235 @@ paginates at 12 (the documented superset with e2e pins — KEPT).
   AGENTS.md (the S75 mobile-menu + layout-frame contracts),
   CLAUDE.md (the S75 parity paragraph), session_6.md, worklog,
   ely-beauty_SKILL.md v2.3.0.
+
+## Session 76 — The Clean-Build Recovery & Card-Anatomy Parity Cycle
+
+Cycle: workspace refresh (git pull to 1f8aea5 — the operator's session_7
+narration capture) → docs review (AGENTS/CLAUDE/README/PAD v2.3/SKILL
+v2.3.0/session_6/session_7/REMEDIATION_PLAN/worklog) → gates on the pulled
+tree → **the pulled tree FAILED the clean production build** (see F-0) → the
+S76-0 fix + guard (TDD, already landed in the working tree) → full gates
+green → deep audit 76-a (read-only) → live-reference re-measurement (the
+reference ONLINE, logged in; agent-browser computed styles on BOTH sites,
+390×844 + 1440×900) → this plan → TDD execution.
+
+### F-0 (CRITICAL, fixed pre-plan as S76-0): the pushed run-75 tree does not build clean
+
+`rm -rf .next && npm run build` on the pulled 1f8aea5 tree dies in the
+Turbopack PostCSS pass: `CssSyntaxError: globals.css:2:135421: Missed
+semicolon`. Root cause chain (reproduced standalone + via a temporary
+postcss parse-dump hook):
+
+- Tailwind v4's automatic candidate scan reads EVERY non-gitignored text
+  file in the project — **`.md` prose included**.
+- The run-75 docs sweep wrote the ritual-banner class into FOUR doc files
+  with a colon — `md:aspect-[3:1]` (CLAUDE.md, PAD v2.3,
+  docs/session_6.md, ely-beauty_SKILL.md) — while the CODE (page.tsx:110)
+  and its layout-tokens pin correctly use the slash form `md:aspect-[3/1]`.
+- The scan compiled the colon-form candidate to `aspect-ratio:3:1` —
+  invalid CSS — and the production build's second PostCSS parse rejects it.
+- Run-75's final "build green" was a **stale-cache false-green**: the docs
+  sweep ran AFTER the last real CSS compile, and Turbopack's persistent
+  cache reused the pre-sweep globals.css module (the .md scan inputs are
+  not tracked as compile dependencies).
+
+**S76-0 fix (landed + verified)**: (a) `@source not` guard in globals.css —
+docs/, skills/ (excluded from compilation by operator contract anyway; its
+SKILL.md examples were also leaking dead rules like
+`.text-\[clamp(...)\]` into the bundle), tests/, scripts/, `**/*.md`,
+`**/*.mdx` never feed the candidate scan; (b) the colon typo corrected in
+the four doc files (docs-truth: the code's class IS the slash form);
+(c) `tests/unit/tailwind-scan-guard.test.ts` — 3 pins: the guard's presence
+in source, the compiled CSS carries no colon-form aspect-ratio value (a
+real compile through @tailwindcss/postcss), and the guard does not
+over-exclude (.container-page + the slash-form banner pair still compile).
+Verified: clean build ✓, 566/566 unit ✓, 74/74 e2e ✓.
+
+### Audit 76-a findings (read-only subagent)
+
+- **9/9 standing code anchors PASS** (db-path, money/order-money,
+  validation, checkout/order-placement, auth/password, order-access/
+  tracking, mobile-nav/store-chrome, sitemap/robots/noindex,
+  CSP/proxy/auth-404); 0 CRITICAL / 0 HIGH / 0 MEDIUM.
+- The run-75 delta re-audited clean; the S76-0 guard verified load-bearing
+  by controlled experiment (stripping the `@source not` lines re-leaks the
+  colon-form rule into a standalone compile).
+- **F-1 (LOW)**: docs claim 563 unit tests; the live suite is 566 (563 +
+  the 3 guard pins) — count-lockstep must ride this commit.
+- **F-2 (LOW)**: `repro-css.mjs` debug leftover at the repo root (deleted).
+- **F-3 (NIT, DISPOSED by live measurement)**: "doubled hairline under the
+  open mobile panel on non-home routes" — the LIVE reference renders BOTH
+  hairlines (its non-home header carries border-t 1px + border-b 1px AND
+  the panel carries its own border-b; measured on /shop: header 66px bar
+  box, panel @y:65). The clone's structure matches; non-finding.
+- **F-4 (NIT)**: `splitWordmark` drops the boundary space undocumented.
+- **F-5 (NIT)**: US-flavored placeholder copy in the account address dialog
+  ("10001", "United States", "+1 (555)…") on the BD store.
+- **F-6 (INFO)**: `assertAuthSecret` has no minimum-length check (code and
+  docs agree on the implemented shape — hardening opportunity only).
+- **F-7 (INFO)**: stray non-gitignored root-level text files remain
+  scannable (the F-0 residual exposure class).
+- **F-8 (INFO)**: the `**/*.md` exclusion spans src/ too (zero .md under
+  src/ today; note in the guard comment).
+
+### The live-reference re-measurement (both sites, both viewports)
+
+Frame surfaces re-verified GREEN (byte-exact or ±1px): mobile header 64px
+transparent + toggle; panel @y:64 h:213-214 with the 14px/1.4px link
+rhythm @24-25 and SEARCH row; non-home header bg/95; desktop header 80;
+hero h1 96/96 desktop + 48/52.8 mobile; "Shop by Ritual" @y:1028 48px
+centered; ritual tiles 264×198 gap-4/32; banner 1152×384 with the white
+60px banner h2 (mobile 36/1.1); footer pad 96; catalog order UNCHANGED
+(19 published, the seed's authored order card-for-card); search overlay
+anatomy (input 18px borderless, "Search products...", div-row results with
+the documented `$` price quirk); navigate-closes + toggle-closes behaviors.
+The audit's F-3 double-hairline claim DISPOSED against the live DOM.
+
+**New deltas found (D-1..D-12, all live-measured on both sites):**
+
+| ID | Surface | Reference (measured) | Clone (measured) |
+|---|---|---|---|
+| D-1 | /shop grid gaps | mobile 24/24 · desktop col 32 / row 48 | mobile 16/24 · desktop 16/40 |
+| D-2 | card text-block top pad | 16 (name @img+16) | 12 (pt-3, name @img+13) |
+| D-3 | card name line-height | 20 (text-sm default) | 17 (leading-snug) |
+| D-4 | card price anchoring | flow (price 8px after last line) | mt-auto (bottom-stuck in stretched rows) |
+| D-5 | product h1 | text-4xl lg:text-5xl (36/48, lg bp), fw 300, lh 1.0 @lg | text-3xl sm:text-4xl (30/36, sm bp) + leading-tight |
+| D-6 | size chips | PILL radius-full h:38, 1px border, active solid fg + IVORY text | square h:40, active solid fg + WHITE text |
+| D-7 | color swatches | 36×36, active 2px fg border + double ring (bg 2px, fg 4px), inactive 1px black/15 ring | 40×40, active ring-1 fg + offset-2, inactive border-input |
+| D-8 | gallery thumbs | 64×80 (aspect 4/5), rail below main, gap-3 | 60×80 (aspect 3/4) |
+| D-9 | non-home header | border-t 1px + border-b (66px closed bar box; panel @y:65) | border-b only (65px; panel @y:64) |
+| D-10 | bonnet badge | none on the card | "BESTSELLER" renders |
+| D-11 | card description data | 6 products ship NO card description (bonnet, bamboo-square, bamboo-oval, threading-tool, spa-socks, scalp-massager) | all 21 seed products carry one |
+| D-12 | gallery image counts | 3-7 per product (bonnet 3, pillowcase 7 — rail always renders) | 1 per product (rail never renders) |
+
+Structural notes: the reference's card heights normalize through grid rows
+(its no-desc cards trail ~20px in the same row — flow content + h-full
+stretch, NOT a fixed-height block; verified mobile 3-line names + desktop
+1-line); its text block is pt-16/name-20/desc-16/price-20 flow.
+
+### ToDo (TDD-first: RED tests → GREEN implementations)
+
+- [x] **S76-1 (D-1)**: shop page grid → `grid grid-cols-2 gap-6
+      lg:grid-cols-3 lg:gap-x-8 lg:gap-y-12` (mobile 24/24, desktop 32/48 —
+      the reference's measured rhythm, identical to the curated grid's).
+- [x] **S76-2 (D-2 + D-3 + D-4)**: ProductCard text block — `pt-3` →
+      `pt-4`; drop `leading-snug` from the name h3 (text-sm's default lh
+      20px is the reference's); drop `mt-auto` from the price row (the
+      reference's flow anchoring — price sits 8px after the desc line, and
+      no-desc cards trail ~20px inside the normalized row).
+- [x] **S76-3 (D-5)**: product h1 → `font-display text-4xl font-light
+      tracking-tight lg:text-5xl` (36 mobile / 48 desktop at the lg
+      breakpoint; drop text-3xl/sm:text-4xl/leading-tight — text-5xl's
+      default lh 1.0 is the reference's measured 48/48).
+- [x] **S76-4 (D-6)**: size chips → `h-[38px] rounded-full border px-4
+      text-sm font-normal`, active `border-foreground bg-foreground
+      text-background` (IVORY, not white), inactive `border-border
+      text-foreground hover:border-foreground`.
+- [x] **S76-5 (D-7)**: color swatches → `h-9 w-9` (36px); active
+      `border-2 border-foreground` +
+      `shadow-[0_0_0_2px_var(--color-background),0_0_0_4px_var(--color-foreground)]`
+      (the reference's measured double ring); inactive
+      `border-transparent shadow-[0_0_0_1px_rgba(0,0,0,0.15)]`.
+- [x] **S76-6 (D-8)**: gallery thumbs → `aspect-[4/5] w-16` (+ sizes
+      64px) — 64×80, the reference's measured thumb box.
+- [x] **S76-7 (D-9)**: the non-home header gains `border-t` (store-chrome)
+      — closed bar box 66px and open-panel y:65, byte-matching the
+      reference's measured /shop geometry.
+- [x] **S76-8 (D-10 + D-11 + the metadata fallback)**: seed content —
+      bonnet `badge` → null (the live DB needs the one-off UPDATE too:
+      badge is admin-owned, reseeds never rewrite it); `shortDescription`
+      → "" for the six reference-true no-desc products; the product page's
+      generateMetadata falls back `shortDescription || description` (the
+      six keep a meta description; mirrors seo.ts:95's builder rule).
+- [x] **S76-9 (D-12)**: gallery imagery — extend
+      `scripts/generate-imagery.mjs` with two variant prompts per product
+      (same MOOD pipeline), generate, seed `images` → [main, v2, v3] for
+      all 21 products (uniform 3 — the reference's minimum; its 3-7
+      variance is recorded as the count deviation), reseed (content-only
+      policy refreshes images), VLM spot-verify a sample for coherence.
+- [x] **S76-10 (audit F-4 + F-5 + F-8)**: the splitWordmark JSDoc clause
+      (the boundary space is deliberately dropped); BD-flavored address
+      placeholders (postcode/city/phone); the guard comment's src/**/*.md
+      note.
+- [x] **S76-11 (docs)**: the count sweep (unit 566 + the new pins; e2e 74
+      + the new geometry pins), session_8 log, worklog entry, SKILL bump,
+      README/PAD/AGENTS/CLAUDE parity paragraphs, this plan's execution
+      log.
+- [x] **S76-12 (evidence)**: full gates on the final tree; every fixed
+      surface re-measured against the live reference; screenshots
+      regenerated; commit + push via the SSH wrapper.
+
+### Test strategy (RED first)
+
+- `tests/unit/layout-tokens.test.ts` (EXTEND): the shop-grid class
+  contract, the card block contract (pt-4, no leading-snug, no mt-auto),
+  the product h1 classes, the size-chip + swatch class contracts, the
+  thumb `aspect-[4/5] w-16`, the non-home header border-t.
+- `tests/unit/seed-catalog.test.ts` (EXTEND): the bonnet's null badge,
+  the six empty shortDescriptions, the 3-image gallery arrays.
+- `tests/e2e/storefront.spec.ts` (EXTEND): the shop card geometry @1440
+  (363px cards / 447px height / 48px row gap), the product h1 48px, the
+  pill size-chip (radius + height) — the rendered-outcome pins.
+
+### Execution log (run 76)
+
+- **S76-0 (pre-plan, the gate blocker)**: the clean build failed on the
+  pulled tree (`globals.css:2:135421: Missed semicolon` — the docs-sweep
+  colon-form `md:aspect-[3:1]` candidate compiled to invalid CSS through
+  Tailwind v4's .md-scanning auto-detection; run-75's final build was a
+  stale-cache false-green). Fixed: the `@source not` guard (docs/, skills/,
+  tests/, scripts/, `**/*.md`, `**/*.mdx`), the four doc typos → the slash
+  form, and `tests/unit/tailwind-scan-guard.test.ts` (3 pins incl. a real
+  compile asserting no colon-form aspect-ratio in the output and no
+  over-exclusion). Verified: clean build green BEFORE any other change.
+- **TDD discipline held**: the RED batch (7 layout-tokens D-pins + 3
+  seed-catalog pins) ran 10-failing before implementation; every fix
+  flipped its pins green. The e2e RED batch (3 geometry pins) ran failing
+  (2 test-side bugs found by the run: the h1 box-height pin was
+  wrap-dependent — the scale pin (48px/48px) is the invariant; the chip
+  test initially targeted the sold-out bonnet whose panel renders the
+  Check-back-soon state — the in-stock massager carries the sizes).
+- **The GREEN set**: shop grid `gap-6 lg:gap-x-8 lg:gap-y-12`; the card
+  text block `pt-4` + default name leading + flow price (mt-auto retired);
+  the product h1 `text-4xl lg:text-5xl`; the 38px pill size chips (active
+  solid fg + IVORY text); the 36px double-ring swatches; the 64×80
+  aspect-4/5 thumbs; the non-home header `border-t`; the seed content
+  (bonnet badge → null via seed + the one-off live-DB UPDATE — badge is
+  admin-owned; six shortDescriptions → ""; the metadata
+  `shortDescription || description` fallback).
+- **S76-9 (the galleries)**: `scripts/gen-gallery-variants.mjs` generated
+  38 variants through the run-72 brand pipeline; the VLM coherence review
+  kept 9 products' generated angles and replaced 10 drifted sets with PIL
+  detail crops (80% alternate framing + 58% center zoom — coherent by
+  construction; the gua-sha took 3 regenerations before the crop
+  fallback). All 19 products now ship VLM-verified coherent 3-image
+  galleries; the seed's images arrays refreshed by the content-only
+  reseed.
+- **Every fixed surface re-measured GREEN against the live reference**
+  (agent-browser, both sites): the /shop grid gap 48px 32px with 363×447
+  cards and 48px row gaps (byte-exact); the card anatomy (name @img+16
+  h:20, price @img+44, the bonnet rendering name+price only like the
+  reference); the mobile card 159×283 @ gap 24 (byte-exact); the product
+  h1 48px/48px/300; the pill chips (h:38, full radius, active
+  rgb(26,26,26) + ivory rgb(249,247,246) text); the swatches (36px, the
+  double ring); the thumbs 64×80 @16 below the 544×725 main; the non-home
+  header 82px desktop (80+2 borders — the border-t lands panel @65 on
+  mobile like the reference's 66px bar box).
+- **Gates (all observed green)**: lint · typecheck · typecheck:tests ·
+  **576/576 unit** (57 files; +3 guard pins, +7 D-pins, +3 seed pins) ·
+  clean build (after the second environmental lesson — see below) ·
+  **77/77 e2e** (+3 geometry pins).
+- **Environmental lessons encoded (this cycle's build-breaker family)**:
+  (1) the Tailwind candidate scan reads .md prose — a class-like string
+  in any doc can generate invalid CSS and break the clean build while a
+  warm Turbopack cache masks it (the S76-0 guard closes the class);
+  (2) a stale `node_modules/.cache/jiti` broke Turbopack's next/font
+  import-map resolution ("next/font/google queries have exactly one
+  entry") — clearing node_modules/.cache + .next restored the clean
+  build with zero code changes.
+- **Screenshots**: 25/25 regenerated in one clean pass (restore-stock →
+  the 60s limiter window → the cold-server sequence).
+- **Docs sweep**: this log, session_8.md, worklog, README (counts 576/77
+  + the gallery/badge rows), AGENTS.md (the scan-guard trap + the
+  card/chip/gallery contracts), CLAUDE.md (the S76 parity paragraph),
+  PAD v2.4, ely-beauty_SKILL.md v2.4.0.

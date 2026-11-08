@@ -196,7 +196,7 @@ export function AddressDialog() {
                 onChange={(e) => setField("postalCode", e.target.value)}
                 maxLength={20}
                 autoComplete="postal-code"
-                placeholder="10001"
+                placeholder="1205"
                 required
               />
             </div>
@@ -208,7 +208,7 @@ export function AddressDialog() {
                 onChange={(e) => setField("country", e.target.value)}
                 maxLength={60}
                 autoComplete="country-name"
-                placeholder="United States"
+                placeholder="Bangladesh"
                 required
               />
             </div>
@@ -223,7 +223,7 @@ export function AddressDialog() {
               onChange={(e) => setField("phone", e.target.value)}
               maxLength={40}
               autoComplete="tel"
-              placeholder="+1 (555) 123-4567"
+              placeholder="+880 1712 345678"
               required
             />
           </div>

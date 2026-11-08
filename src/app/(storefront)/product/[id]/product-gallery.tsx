@@ -45,11 +45,13 @@ export function ProductGallery({ images, name }: { images: string[]; name: strin
               aria-label={`View image ${i + 1} of ${gallery.length}`}
               aria-pressed={i === index}
               className={cn(
-                "relative aspect-[3/4] w-[60px] overflow-hidden border-2 bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                // S76-6 (D-8, measured): the reference's thumb box — 64×80
+                // (aspect 4/5), 2px active border (was 60×80 aspect 3/4).
+                "relative aspect-[4/5] w-16 overflow-hidden border-2 bg-muted transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 i === index ? "border-foreground" : "border-transparent hover:border-border",
               )}
             >
-              <Image src={src} alt="" fill sizes="60px" className="object-cover" />
+              <Image src={src} alt="" fill sizes="64px" className="object-cover" />
             </button>
           ))}
         </div>

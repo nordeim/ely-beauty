@@ -75,11 +75,18 @@ export function PurchasePanel({
                   aria-label={`Color ${c.name}`}
                   title={c.name}
                   className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-full border border-input transition-all",
-                    active ? "ring-1 ring-foreground ring-offset-2 ring-offset-background" : "hover:border-foreground",
+                    // S76-5 (D-7, measured): the reference's 36×36 swatch —
+                    // active = the 2px foreground border + the double ring
+                    // (background 2px, then foreground 4px); inactive = the
+                    // subtle 1px black/15 ring on a transparent border (was
+                    // 40px + the ring-offset anatomy).
+                    "flex h-9 w-9 items-center justify-center rounded-full transition-all",
+                    active
+                      ? "border-2 border-foreground shadow-[0_0_0_2px_var(--color-background),0_0_0_4px_var(--color-foreground)]"
+                      : "border-2 border-transparent shadow-[0_0_0_1px_rgba(0,0,0,0.15)] hover:shadow-[0_0_0_1px_rgba(0,0,0,0.35)]",
                   )}
                 >
-                  <span className="h-7 w-7 rounded-full" style={{ backgroundColor: c.hex }} />
+                  <span className="h-6 w-6 rounded-full" style={{ backgroundColor: c.hex }} />
                 </button>
               );
             })}
@@ -100,10 +107,14 @@ export function PurchasePanel({
                   onClick={() => setSelectedSize(s)}
                   aria-pressed={active}
                   className={cn(
-                    "h-10 min-w-14 border border-input px-4 text-sm transition-colors",
+                    // S76-4 (D-6, measured): the reference's size chip — a
+                    // 38px PILL (radius-full, 1px border) with the active
+                    // state SOLID foreground + IVORY text (text-background;
+                    // white was the remnant), inactive hairline-bordered.
+                    "h-[38px] min-w-14 rounded-full border px-4 text-sm font-normal transition-colors",
                     active
-                      ? "border-foreground bg-foreground text-white"
-                      : "text-foreground hover:border-foreground",
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border text-foreground hover:border-foreground",
                   )}
                 >
                   {s}

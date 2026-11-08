@@ -145,7 +145,11 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-3">
+        // S76-1 (D-1, measured): the reference's /shop grid rhythm — gap-6
+        // (24px) mobile, lg:gap-x-8 lg:gap-y-12 (32/48) desktop, identical
+        // to the home curated grid (was the 16px/40px gap pair → 373px
+        // columns; the reference renders 363px cards in a 32px gutter).
+        <div className="grid grid-cols-2 gap-6 lg:grid-cols-3 lg:gap-x-8 lg:gap-y-12">
           {products.map((p, i) => (
             <ProductCard key={p.id} product={p} priority={i < 3 && currentPage === 1} />
           ))}

@@ -69,8 +69,14 @@ export function ProductCard({
           </span>
         )}
       </Link>
-      <div className="flex flex-1 flex-col gap-1 pt-3">
-        <h3 className="text-sm font-medium leading-snug text-foreground">
+      {/* S76-2 (D-2/D-3/D-4, measured): the reference's text-block
+          anchoring — pt-4 (name 16px under the image), text-sm's DEFAULT
+          20px name line-height (the snug leading's 17px was a measurement
+          miss), and the price FLOWS 8px after the last line (no bottom-stick:
+          the reference bottom-sticks nothing; no-description cards trail
+          ~20px inside the row-normalized 447px card). */}
+      <div className="flex flex-1 flex-col gap-1 pt-4">
+        <h3 className="text-sm font-medium text-foreground">
           <Link href={`/product/${product.id}`} className="transition-colors hover:text-primary">
             {product.name}
           </Link>
@@ -78,7 +84,7 @@ export function ProductCard({
         {product.shortDescription && (
           <p className="line-clamp-1 text-xs text-muted-foreground">{product.shortDescription}</p>
         )}
-        <div className="mt-auto flex items-baseline gap-2 pt-1">
+        <div className="flex items-baseline gap-2 pt-1">
           <span className="text-sm font-medium text-foreground">{formatMoney(product.price)}</span>
           {product.compareAtPrice && product.compareAtPrice > product.price && (
             <span className="text-xs text-muted-foreground line-through">

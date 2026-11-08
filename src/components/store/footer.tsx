@@ -24,7 +24,10 @@ const COMPANY_LINKS = [
  * first word boundary (a space, or the second camelCase hump) so a renamed
  * store still breaks at a sensible seam instead of an arbitrary character
  * index. Single-word, single-case names stay monochrome-safe (the tail is
- * empty → one span renders nothing).
+ * empty → one span renders nothing). The boundary space (or the hump
+ * character) is DELIBERATELY DROPPED — the wordmark renders head+tail
+ * concatenated, so "Ely Beauty" brands as "ElyBeauty", matching
+ * settings.storeName's own concatenated styling (S76-10, audit F-4).
  */
 export function splitWordmark(name: string): { head: string; tail: string } {
   const trimmed = name.trim();
