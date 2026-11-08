@@ -1,6 +1,9 @@
-<!-- ElyBeauty mark: a rose-gold "E" monogram on an ivory roundel -->
+<!-- ElyBeauty mark: a rose-gold "E" monogram on an ivory roundel.
+     S75-13 (L-4): the anchors match logo.tsx's S74-10 measured pair
+     (#c99a3a gold / #d95577 rose) — the favicon had kept the duller
+     pre-S74-10 pair. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <circle cx="32" cy="32" r="30" fill="#f9f7f6"/>
-  <circle cx="32" cy="32" r="29" fill="none" stroke="#b08d57" stroke-width="1.5"/>
-  <text x="32" y="43" text-anchor="middle" font-family="Georgia, 'Cormorant Garamond', serif" font-size="34" font-weight="500" fill="#c4717d">E</text>
+  <circle cx="32" cy="32" r="29" fill="none" stroke="#c99a3a" stroke-width="1.5"/>
+  <text x="32" y="43" text-anchor="middle" font-family="Georgia, 'Cormorant Garamond', serif" font-size="34" font-weight="500" fill="#d95577">E</text>
 </svg>

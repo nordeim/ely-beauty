@@ -123,8 +123,8 @@ describe("couponDiscount carries the marketing description (S22-2)", () => {
       ok: true,
       code: "TENOFF",
       discount: 1000,
-      label: "$10.00 off",
-      description: "$10 off orders over $50",
+      label: "৳10 off", // S75-10b: formatMoney currency (was "$10.00 off")
+      description: "$10 off orders over $50", // admin-authored copy, verbatim
     });
   });
 

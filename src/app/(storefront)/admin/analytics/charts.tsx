@@ -19,8 +19,10 @@ import { formatMoney } from "@/lib/money";
 const AXIS_TICK = { fontSize: 11 };
 const GRID_STROKE = "#eee";
 
-/** Warm terracotta palette for the category mix pie (no blues/indigos). */
-const PIE_PALETTE = ["#d96e26", "#e8935a", "#b45325", "#f0b27a", "#8b6f5b", "#5c4033", "#d9b382", "#ef7b45"];
+/** S75-11 (L-2): warm taupe/stone palette for the category mix pie —
+ * anchored on the brand primary (no blues/indigos; the kitchen-era orange
+ * family retired with the run-75 sweep). */
+const PIE_PALETTE = ["#897a6c", "#a3937f", "#6f6357", "#bfae9a", "#5c534a", "#d6c9b8", "#9c8a76", "#7d7062"];
 
 function ChartEmpty({ label }: { label: string }) {
   return (
@@ -49,7 +51,9 @@ export function TopProductsChart({ data }: { data: { name: string; revenue: numb
             tick={AXIS_TICK}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(value: number) => `$${Math.round(value / 100).toLocaleString("en-US")}`}
+            // S75-11: ৳ axis ticks — the `$` prefix was a kitchen-era
+            // residual on a BDT store.
+            tickFormatter={(value: number) => `৳${Math.round(value / 100).toLocaleString("en-US")}`}
           />
           <YAxis
             type="category"
@@ -60,7 +64,7 @@ export function TopProductsChart({ data }: { data: { name: string; revenue: numb
             axisLine={false}
           />
           <Tooltip formatter={(value: unknown) => formatMoney(Number(value ?? 0))} />
-          <Bar dataKey="revenue" fill="#d96e26" radius={[0, 6, 6, 0]} maxBarSize={22} />
+          <Bar dataKey="revenue" fill="#897a6c" radius={[0, 6, 6, 0]} maxBarSize={22} />
         </BarChart>
       </ResponsiveContainer>
     </div>

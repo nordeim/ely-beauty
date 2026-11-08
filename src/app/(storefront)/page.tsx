@@ -46,13 +46,22 @@ export default async function HomePage() {
         }))}
       />
 
-      <div className="container-page flex flex-col gap-16 py-16 sm:gap-20 sm:py-20">
-        {/* Shop by Ritual */}
-        <section aria-labelledby="shop-by-ritual">
-          <h2 id="shop-by-ritual" className="font-display text-4xl font-light tracking-tight text-foreground sm:text-5xl">
+      {/* S75-3 (D-3, measured): the reference's section rhythm — each
+        section owns its vertical padding (py-20 lg:py-32) inside its own
+        container, the "Shop by Ritual" heading is CENTERED with mb-16,
+        and the curated header rides mb-12 (the kitchen-era single
+        gap-wrapper + left heading is gone). */}
+      <section aria-labelledby="shop-by-ritual" className="py-20 lg:py-32">
+        <div className="container-page">
+          <h2
+            id="shop-by-ritual"
+            className="mb-16 text-center font-display text-4xl font-light tracking-tight text-foreground lg:text-5xl"
+          >
             Shop by Ritual
           </h2>
-          <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {/* S75-4 (D-4, measured): gap-6 lg:gap-8 (24/32px) — the
+              reference's tile rhythm (was gap-4). */}
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
             {categories.map((cat) => (
               <CategoryCard
                 key={cat.id}
@@ -63,12 +72,14 @@ export default async function HomePage() {
               />
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
         {/* Curated for You */}
-        <section aria-labelledby="curated-for-you">
-          <div className="mb-8 flex items-end justify-between gap-4">
-            <h2 id="curated-for-you" className="font-display text-4xl font-light tracking-tight text-foreground sm:text-5xl">
+        <section aria-labelledby="curated-for-you" className="py-20 lg:py-32">
+          <div className="container-page">
+          <div className="mb-12 flex items-end justify-between gap-4">
+            <h2 id="curated-for-you" className="font-display text-4xl font-light tracking-tight text-foreground lg:text-5xl">
               Curated for You
             </h2>
             {/* S74-9 (measured): the reference's VIEW ALL — a muted
@@ -81,38 +92,43 @@ export default async function HomePage() {
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-3">
+          {/* S75-4 (D-4, measured): gap-6 lg:gap-x-8 lg:gap-y-12 — the
+              reference's card rhythm. */}
+          <div className="grid grid-cols-2 gap-6 lg:grid-cols-3 lg:gap-x-8 lg:gap-y-12">
             {curated.map((p, i) => (
               <ProductCard key={p.id} product={toCardData(p, p.category)} priority={i < 3} />
             ))}
           </div>
+          </div>
         </section>
-      </div>
 
-      {/* Complete Your Ritual — the inset photographic banner. */}
-      <section className="container-page">
-        <div className="relative overflow-hidden">
-          <Image
-            src="/images/ritual-banner.png"
-            alt=""
-            fill
-            sizes="(max-width: 1280px) 100vw, 1280px"
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-black/30" aria-hidden />
-          <div className="relative z-10 flex flex-col items-center gap-4 px-6 py-20 text-center sm:py-28">
-            <p className="eyebrow-label text-white">The Signature Set</p>
-            <h2 className="font-display text-4xl font-light tracking-tight text-white sm:text-6xl">
-              Complete Your Ritual
-            </h2>
-            <Link href="/shop?category=gift-sets" className="link-cta mt-2 border-white/60 text-white hover:border-white">
-              Discover Sets
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </Link>
+      {/* Complete Your Ritual — the inset photographic banner. S75-5
+          (D-5, measured): aspect-[21/9] md:aspect-[3/1] (1152×384 @1440;
+          342×147 @390) — the reference's media geometry (was auto-height). */}
+      <section className="py-20 lg:py-32">
+        <div className="container-page">
+          <div className="relative aspect-[21/9] overflow-hidden md:aspect-[3/1]">
+            <Image
+              src="/images/ritual-banner.png"
+              alt=""
+              fill
+              sizes="(max-width: 1280px) 100vw, 1280px"
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-black/30" aria-hidden />
+            <div className="relative z-10 flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
+              <p className="eyebrow-label text-white">The Signature Set</p>
+              <h2 className="font-display text-4xl font-light tracking-tight text-white sm:text-6xl">
+                Complete Your Ritual
+              </h2>
+              <Link href="/shop?category=gift-sets" className="link-cta mt-2 border-white/60 text-white hover:border-white">
+                Discover Sets
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
-      <div className="h-16 sm:h-20" />
     </div>
   );
 }

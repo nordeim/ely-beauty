@@ -36,18 +36,17 @@ export function StoreChrome({
   // back to the server-computed prop — no hydration guard (and no
   // set-state-on-mount effect) is needed. (Context type is `number | null`,
   // session-9 S9-1 — initializing at 0 made this fallback dead code.)
-  const { cartCount: liveCount, cartDrawerOpen, mobileNavOpen } = useStore();
+  const { cartCount: liveCount, cartDrawerOpen } = useStore();
   const count = liveCount ?? cartCount;
   const pathname = usePathname();
 
   // The home route renders its hero full-bleed UNDER the fixed header
-  // (the reference's transparent-over-hero bar); every other route pads
-  // the body down past the solid bar. Run-72 fix: while the mobile push-down
-  // panel is OPEN the home route must join the solid-bar layout too — the
-  // panel is the first in-flow child, so with no body offset its top rows
-  // (Search, Shop, …) render UNDER the fixed bar and are unreachable
-  // (verified: elementFromPoint lands on the header, clicks never arrive).
-  const overHero = pathname === "/" && !mobileNavOpen;
+  // (the reference's transparent-over-hero bar — which STAYS transparent
+  // when the mobile panel opens: the reference's panel is a child of the
+  // fixed header carrying its own ivory bg, so the bar never needs to go
+  // solid for it. S75-2 moved the panel inside the header element to
+  // match, retiring the run-72 solid-bar-while-open workaround.)
+  const overHero = pathname === "/";
 
   return (
     <>
@@ -62,7 +61,11 @@ export function StoreChrome({
       <div
         data-testid="page-shell"
         inert={cartDrawerOpen}
-        className={overHero ? "flex min-h-screen flex-col" : "flex min-h-screen flex-col pt-20"}
+        // S75-2 (D-1): the reference's MAIN wrapper clearance — pt-20
+        // lg:pt-24 (80/96px), exactly 16px past the fixed bar at both
+        // breakpoints (their header is 64/80px). Pages then add their own
+        // container paddings on top, matching the reference's stacking.
+        className={overHero ? "flex min-h-screen flex-col" : "flex min-h-screen flex-col pt-20 lg:pt-24"}
       >
         <header
           className={`fixed top-0 z-40 w-full ${
@@ -70,10 +73,14 @@ export function StoreChrome({
           }`}
         >
           <Header user={user} cartCount={count} />
+          {/* S75-2 (the reference's DOM order): the push-down panel is a
+              child of the FIXED header, so it renders flush below the bar
+              regardless of the page-shell's content clearance — the
+              run-72 in-flow placement needed the solid-bar workaround and
+              drifted 16px once the shell gained the reference's pt-20
+              lg:pt-24 main clearance. */}
+          <MobileNav />
         </header>
-        {/* S74-2: the panel takes no identity props — it renders the
-            reference's SEARCH + four nav links only. */}
-        <MobileNav />
         {children}
         {footer}
       </div>

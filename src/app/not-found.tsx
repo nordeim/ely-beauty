@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { CookingPot } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Page Not Found",
@@ -26,8 +26,10 @@ export default async function NotFound() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-16">
       <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 text-center shadow-sm sm:p-10">
+        {/* S75-12 (L-3): a beauty-appropriate glyph — the kitchen pot was
+            the scaffold's last visible brand residual. */}
         <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-primary">
-          <CookingPot className="h-7 w-7" aria-hidden />
+          <Sparkles className="h-7 w-7" aria-hidden />
         </span>
         <p className="mt-5 font-display text-6xl font-bold tracking-tight text-primary">404</p>
         <h1 className="mt-2 font-display text-2xl font-bold">Page Not Found</h1>

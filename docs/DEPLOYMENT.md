@@ -1,10 +1,10 @@
-# Deployment Guide — HomeNest Kitchen
+# Deployment Guide — ElyBeauty
 
-HomeNest Kitchen ships as a single Next.js **standalone** build with a SQLite
+ElyBeauty ships as a single Next.js **standalone** build with a SQLite
 file database — one Node process, zero external services. This guide covers
 the supported production paths and the environment contract. (Rewritten in
 session 6 to match the actual codebase — the previous revision was a template
-from another project.)
+from another project; rebranded in session 75 after the run-72 re-skin.)
 
 ## 1. Prerequisites
 
@@ -118,8 +118,8 @@ newest-first order is stable; existing rows keep their own timestamps). Re-runni
 cannot corrupt the stock ledger, collapse customer-grown review aggregates, or
 revert admin edits.
 
-> **Demo credentials:** the seed creates `admin@homenestkitchen.com` /
-> `Admin123!` and `demo@homenestkitchen.com` / `Demo1234!`. Production builds
+> **Demo credentials:** the seed creates `admin@elybeauty.com` /
+> `Admin123!` and `demo@elybeauty.com` / `Demo1234!`. Production builds
 > hide the login page's quick-fill box by default (session-12 S12-2) — for a
 > real store, still change the admin password (or reseed with your own
 > credentials) before going live, and leave `NEXT_PUBLIC_DEMO_MODE` unset
@@ -163,10 +163,10 @@ The clean-check order in `AGENTS.md` is the deploy gate: every step must exit
 | 429s on "Add All to Cart" with a huge wishlist | The bulk endpoint is limiter-budgeted at 10 requests/min (up to 100 lines each) | Wait for `Retry-After`; split unusually large operations |
 | 429s on the cart drawer loading behind a shared IP | `GET /api/cart-summary` is metered at 120 requests/min per IP (session-9 — the last unmetered public route) | Wait for `Retry-After`; raise the budget only alongside the limiter's other read budgets |
 | 429s on review submissions from one network | Reviews are two-tier metered (session-11): 20/min per IP (authoritative anti-spam ceiling) + 5/min per author per product | Wait for `Retry-After`; raise the per-IP ceiling only with a shared-store limiter decision |
-| `noindex` on pages you expected indexed | Session-8: cart/account/checkout/track-order/auth/wishlist/admin ship `robots: noindex` by design | Public catalog surfaces (`/`, `/products`, `/product/*`, `/about`, `/contact`, `/legal/*`) stay indexable |
+| `noindex` on pages you expected indexed | Session-8: cart/account/checkout/track-order/auth/wishlist/admin ship `robots: noindex` by design | Public catalog surfaces (`/`, `/shop`, `/product/*`, `/about`, `/contact`, `/legal/*`) stay indexable |
 | `EADDRINUSE :3100` during e2e | A previous standalone server is alive (process renames to `next-server`) | `pkill -f next-server` |
 | Stock-assuming e2e pins fail after many suite runs ("In Stock" gone, sold-out 409s on seeded products) | E2E checkouts are traffic that permanently drains the demo DB's traffic-owned stock (the seed policy never refreshes it — S14-4) | `npx tsx scripts/restore-demo-stock.ts` (the e2e webServer runs it automatically on a fresh server start); run it BEFORE suspecting code |
-| The auth e2e fails at its FIRST assertion (profile name `expected "Jordan Rivera"`) | A previously crashed/killed e2e run died mid-flow and left the demo profile name edited — the test restores it only on success (the seed's `update: {}` policy never re-resets the name) | One-line SQLite fix: `UPDATE User SET name = 'Jordan Rivera' WHERE email = 'demo@homenestkitchen.com'` — then re-run; run BEFORE suspecting code |
+| The auth e2e fails at its FIRST assertion (profile name `expected "Ayesha Rahman"`) | A previously crashed/killed e2e run died mid-flow and left the demo profile name edited — the test restores it only on success (the seed's `update: {}` policy never re-resets the name) | One-line SQLite fix: `UPDATE User SET name = 'Ayesha Rahman' WHERE email = 'demo@elybeauty.com'` — then re-run; run BEFORE suspecting code |
 
 
 ## The FX rate gate (S74-11)

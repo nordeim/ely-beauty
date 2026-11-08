@@ -1,4 +1,4 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.2
+# ElyBeauty — Master Project Architecture Document (PAD) v2.3
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
@@ -6,6 +6,14 @@
 **Last Updated:** 2026-11-08
 **Audience:** Senior Engineers, Tech Leads, DevOps, and Onboarding Engineers
 **Rule:** Every architectural decision in this document traces to a specific rationale. Nothing is here "because it's popular."
+
+#### Revision Block — v2.3 (Run 75 — the container-gutter & responsive-header parity cycle)
+
+- `[SR]` **The measured LAYOUT FRAME**: run-74 closed 14 surface deltas but measured each surface in isolation; run-75's whole-page walk found the shared frame the surfaces sit in differed. One root fix — `container-page` became the reference's measured universal gutter (`max-w-7xl px-6 lg:px-16`; 1152px content @1440) — plus the responsive header (`h-16 lg:h-20`, 64/80px), the reference's main clearance (`pt-20 lg:pt-24`), the home section rhythm (per-section `py-20 lg:py-32`, centered "Shop by Ritual" heading, measured grid gaps), the banner `aspect-[21/9] md:aspect-[3:1]`, the product grid `gap-8 lg:gap-16` (544px columns), the hero h1's responsive line-height (1.1 mobile / 1.0 desktop, md breakpoint), and the footer `py-16 lg:py-24`.
+- `[SR]` **The mobile panel moved INSIDE the fixed header** (the reference's DOM order): the panel renders flush below the bar regardless of the page-shell's content clearance — retiring the run-72 solid-bar-while-open workaround (the bar now stays transparent over the hero with the panel open, exactly like the reference).
+- `[SR]` **The fixed-coupon currency bug (H-1)**: `couponLabel`'s fixed branch rendered `$6.95 off` on a ৳ store (the cart/checkout/admin coupon labels); now formats through `formatMoney`. Plus the kitchen-era residuals: the Stripe Element appearance re-mapped to the current tokens, the admin charts' orange → taupe + ৳ axis ticks (was `$`), the 404 `CookingPot` → `Sparkles`, the favicon re-anchored to the S74-10 logo colors, the WhatsApp float's real brand glyph, and the wordmark split hardened past the literal 3-char slice.
+- `[SR]` **Tests**: 550 → 563 unit (+13: `layout-tokens.test.ts` — the measured-frame source pins), 70 → 74 e2e (+4: the mobile header/panel geometry pins, the desktop frame pins — 264px tiles, 1152×384 banner, 544px columns).
+- `[SR]` **Docs truth sweep**: the PAD body's ~26 kitchen-era claims corrected (§1.1 identity, §1.2 fonts/counts, the ADR-005 order numbers, the §1.4 parity ledger, §3.3 action count, §4.1/§12 model count, §5 typography/vocabulary, §6 payments posture, §8 counts, §13 glossary); DEPLOYMENT.md rebranded from HomeNest Kitchen (credentials, self-heal SQL, /shop).
 
 #### Revision Block — v2.2 (Run 74 — the measured-geometry parity cycle)
 
@@ -53,7 +61,7 @@
 
 ### 1.1 Document Metadata & Purpose
 
-ElyBeauty is a premium kitchenware e-commerce storefront with a full admin back office, built as a visual-and-functional superset of the Base44 reference app (`https://nest-culinary-hub.base44.app/`). This PAD is the definitive statement of how the system is wired and why each decision was made. Use it: (a) when onboarding — sections 2–4 explain the whole system in one read; (b) when debugging — section 11 lists known failure modes and section 6 explains the CSP/hydration interaction that produces the most confusing symptoms; (c) when reviewing change proposals — every ADR names its rejected alternatives.
+ElyBeauty is a premium-skincare e-commerce storefront with a full admin back office, built as a visual-and-functional superset of the Base44 reference app (`https://ely-beauty.base44.app/`). This PAD is the definitive statement of how the system is wired and why each decision was made. Use it: (a) when onboarding — sections 2–4 explain the whole system in one read; (b) when debugging — section 11 lists known failure modes and section 6 explains the CSP/hydration interaction that produces the most confusing symptoms; (c) when reviewing change proposals — every ADR names its rejected alternatives.
 
 The starting point of this remediation was a client-only Vite SPA that kept the entire catalog, all users, orders, and auth in `localStorage` with unsalted client-side SHA-256 "password hashing." The remediation replaced that substrate with a real server, a real database, and real sessions while preserving (and exceeding) the SPA's feature surface and matching the reference site's visual design pixel-for-pixel where it matters.
 
@@ -69,9 +77,9 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, select, sheet, label, tabs, radio) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^3.25 | Single validation boundary (ADR-005) |
-| Unit tests | Vitest | ^3.2 | Node-env suite (536 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73 parity/integrity pins — see §8.1) |
-| E2E tests | Playwright | ^1.64 | 68 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) |
-| Fonts | next/font (Playfair Display + Inter) | — | Self-hosted at build, no runtime font requests |
+| Unit tests | Vitest | ^3.2 | Node-env suite (563 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins — see §8.1) |
+| E2E tests | Playwright | ^1.64 | 74 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins |
+| Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
 ### 1.3 Architecture Decision Records
 
@@ -111,7 +119,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 - **Context:** Money bugs come from floats and from trusting the client.
 - **Decision:** Every monetary column is INTEGER cents. `src/lib/order-money.ts#computeOrderMoney` is the single source of truth: `taxable = max(0, subtotal − discount)`, free shipping when `taxable ≥ freeShippingThresholdCents` (both methods — the threshold is a spend gate), `tax = round(taxable × rate / 100)`, `total = taxable + shipping + tax`. `/api/checkout` re-derives everything **inside the placement transaction** — the product rows are re-read there, the coupon is re-validated (`isCouponRedeemable`: active, unexpired, under its redemption cap) and its `timesUsed` incremented, and the stock reservation runs via conditional atomic decrements — one `db.$transaction` also writing order + items + `placed` event, clearing cart items, and optionally saving the address. The order is **idempotent**: a client-generated `idempotencyKey` (unique, nullable column) short-circuits replays to the already-placed order's receipt.
 - **Rationale:** The checkout route can never be talked into a wrong total, a lost response can never double-order, and a concurrent price edit can never desync `total` from Σ(unitPrice×qty); `tests/unit/order-money.test.ts` pins the arithmetic including threshold edge cases.
-- **Consequences:** (+) Order numbers are `ORD-YYYY-NNN` with P2002 retry inside the transaction (number collisions only — an idempotency-key collision resolves to the winner). (−) The client renders mirror totals only — UI must not pretend to be authoritative.
+- **Consequences:** (+) Order numbers are `ELY-XXXXXXXX` (8 crypto-random base36 chars, `src/lib/order-number.ts`) with P2002 retry inside the transaction (number collisions only — an idempotency-key collision resolves to the winner). (−) The client renders mirror totals only — UI must not pretend to be authoritative.
 - **Alternatives rejected:** Stripe-backed pricing (no processor in scope; the demo payment is clearly labeled); trusting client totals (the vulnerability); deriving money from the pre-transaction cart summary (a TOCTOU window closed in session 3).
 
 **ADR-006: Per-request CSP nonces via `src/proxy.ts`, and the prerender trap it creates.**
@@ -124,7 +132,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 
 **ADR-007: Tailwind v4 CSS-first theme with reference-pinned tokens and a documented trap log.**
 
-- **Context:** The reference's computed values were sampled from live screenshots (2026-10-12). Tailwind v4 changed several default geometries and the display-utility cascade order; JS-toggling `hidden` next to `flex`/`block` is unreliable (tailwindlabs/tailwindcss#15884, #18653).
+- **Context:** The reference's computed values were sampled from the live app (run-72 re-pin, re-measured through session 75). Tailwind v4 changed several default geometries and the display-utility cascade order; JS-toggling `hidden` next to `flex`/`block` is unreliable (tailwindlabs/tailwindcss#15884, #18653).
 - **Decision:** All tokens live in `src/app/globals.css` under `@theme inline` as FULL `hsl()` values; `--shadow-sm`, blur, and radius scale are pinned to the reference's measured geometry; `@custom-variant hover (&:hover)` restores v3 hover semantics for touch contexts; the mobile menu (push-down panel, reference-matched) is **conditionally mounted** — never display-toggled — and is pinned by `tests/e2e/mobile-navigation.spec.ts`.
 - **Rationale:** Visual parity is a requirement, not a preference; the trap log encodes the failure modes so they aren't rediscovered.
 - **Consequences:** (+) Byte-comparable rendering vs the reference; deterministic menus. (−) Contributors must read the trap log before restyling overlays.
@@ -143,15 +151,14 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 
 | Reference surface | Clone status |
 |---|---|
-| Header (logo tile, nav pills, search, icon cluster) | Parity (+ wishlist icon) |
-| Hero carousel (serif overlay, dots, arrows, auto-rotate) | Parity (3 seeded slides match reference copy) |
-| Trust badges row | Parity |
-| 8 category tiles (gradient icons) | Parity |
-| Featured / New Arrivals grids | Parity + 8 extra products (superset) |
-| Product cards (−N% red pill, Featured pill, stars, struck price) | Parity |
-| Product detail (gallery, specs, reviews, related) | Parity + submit-able reviews (superset) |
-| Mobile menu (push-down, orange active pill, green close) | Parity + account/wishlist/admin entries |
-| Cart / checkout / success / tracking | Parity + coupons + server-authoritative totals |
+| Header (fixed 64/80px bar — transparent over the hero, nav micro-labels, search, icon cluster) | Parity (S75: h-16 lg:h-20, the measured universal px-6 lg:px-16 gutter) |
+| Hero (full-viewport h-screen, centered Cormorant title, CTA) | Parity (1 seeded slide — the admin carousel can add more; the engine auto-rotates with 2+) |
+| "Shop by Ritual" 4 image category tiles | Parity (4:3 tiles, per-section py-20 lg:py-32 rhythm — S75) |
+| "Curated for You" newest-6 grid | Parity + 13 more products in the catalog (superset) |
+| Product cards (split-corner badges, 1:1 images, struck compare-at) | Parity |
+| Product detail (gallery 3:4, category eyebrow, variant selectors, reviews, related) | Parity + submit-able reviews (superset) |
+| Mobile menu (push-down panel INSIDE the fixed header: SEARCH + 4 links ending at About, no active highlight) | Parity (S74-2/S75-2; the wishlist entry lives in the footer's SUPPORT column) |
+| Cart / checkout / success / tracking | Parity + coupons + server-authoritative totals (guest checkout is the superset — the reference requires login) |
 | Admin back office | Superset (reference requires admin role not held by the provided account; clone ships the complete console) |
 
 ---
@@ -176,7 +183,7 @@ flowchart TB
         Lib["lib: auth · cart · wishlist · coupons ·<br/>order-money · settings · products · db-path"]
     end
 
-    DB[("SQLite<br/>db/custom.db<br/>18 models")]
+    DB[("SQLite<br/>db/custom.db<br/>19 models")]
     FS["public/images<br/>self-hosted art"]
 
     UI -->|documents + RSC fetches| Proxy
@@ -216,13 +223,13 @@ Trust flow: the browser receives rendered HTML + flight data; every mutation is 
 
 ### 3.3 Admin Architecture
 
-The admin is a role-gated RSC surface, not a separate app: `admin/layout.tsx` resolves the session server-side and renders an access-denied card for non-admins (no information leak about the routes). Eleven server actions (`src/lib/actions/admin.ts`) cover products/categories/slides CRUD (with delete guards — products with order history must be archived instead), order status transitions with event records, carrier tracking, and settings updates. Every action re-checks `getCurrentUser().role === "admin"` — client-side UI state is never the gate. Charts (recharts) render in client islands fed by serializable props computed in the server pages.
+The admin is a role-gated RSC surface, not a separate app: `admin/layout.tsx` resolves the session server-side and renders an access-denied card for non-admins (no information leak about the routes). Fifteen exported server actions (`src/lib/actions/admin.ts`) cover products/categories/slides CRUD (with delete guards — products with order history must be archived instead), coupons ×3, order status transitions with event records, carrier tracking, and settings updates. Every action re-checks `getCurrentUser().role === "admin"` — client-side UI state is never the gate. Charts (recharts) render in client islands fed by serializable props computed in the server pages.
 
 ---
 
 ## 4. Data Architecture
 
-### 4.1 Entity Relationship (SQLite, 18 models)
+### 4.1 Entity Relationship (SQLite, 19 models)
 
 ```mermaid
 erDiagram
@@ -267,7 +274,7 @@ Seeds the ElyBeauty catalog from the live reference's public entity API (fetched
 
 ## 5. Design System Reference
 
-Tokens live in `src/app/globals.css` (`@theme inline`) — sampled from the live reference on 2026-10-12:
+Tokens live in `src/app/globals.css` (`@theme inline`) — sampled from the live reference (run-72 re-pin; S75 added the measured universal `px-6 lg:px-16` gutter to `container-page`):
 
 | Token | Value | Usage |
 |---|---|---|
@@ -280,11 +287,11 @@ Tokens live in `src/app/globals.css` (`@theme inline`) — sampled from the live
 | `badge-featured` | `hsl(0 0% 10%)` | Near-black BESTSELLER rect |
 | `border` / `input` | `hsl(30 10% 88%)` | Hairlines, inputs |
 
-Typography: **Cormorant Garamond** 300–600 (`--font-cormorant`, exposed as `.font-display` — light weight, tight tracking) for display headings; **Inter** 300–600 (`--font-inter`) for UI/body. Both self-hosted via `next/font` (zero layout shift, no runtime requests). Micro-labels `.eyebrow-label` (12px/500, 0.12em tracking, uppercase — the nav links, section eyebrows, CTAs); text CTAs `.link-cta` (underlined, `@utility`-declared so `@apply` can compose them — the run-72 trap).
+Typography: **Cormorant Garamond** 300–600 (`--font-cormorant`, exposed as `.font-display` — light weight, tight tracking) for display headings; **Inter** 300–600 (`--font-inter`) for UI/body. Both self-hosted via `next/font` (zero layout shift, no runtime requests). Micro-labels `.eyebrow-label` (12px/500, 0.1em tracking, uppercase — the nav links, section eyebrows, CTAs, S73-6); text CTAs `.link-cta` (the border-b treatment, `@utility`-declared so `@apply` can compose them — the run-72 trap).
 
 Geometry pins: radius `0.25rem` (4px — the reference's sharp editorial corners; the full named scale pinned down one notch); `--shadow-sm` pinned to v3 geometry; hover variants un-gated via `@custom-variant hover (&:hover)` so touch contexts match the reference's always-on hover styling.
 
-Component vocabulary: **borderless editorial cards** (no border/radius/shadow on product cards); the fixed 80px header is transparent over the home hero (white text) and solid ivory + hairline border elsewhere; the hero is full-bleed with a centered white Cormorant headline; the mobile panel is an ivory push-down with uppercase links (active = `text-primary`); the WhatsApp float is a green circle bottom-right; the footer is a 4-column ivory sheet.
+Component vocabulary: **borderless editorial cards** (no border/radius/shadow on product cards); the fixed header is 64px mobile / 80px desktop (`h-16 lg:h-20`, S75), transparent over the home hero (white text) and solid ivory + hairline border elsewhere; the hero is full-bleed `h-screen` with a centered white Cormorant headline; the mobile panel is an ivory push-down INSIDE the fixed header with uppercase links (NO active highlight, S73-4) ending at About; the WhatsApp float is a green circle with the real WhatsApp glyph bottom-right; the footer is a 4-column ivory sheet (`py-16 lg:py-24`, S75).
 
 ---
 
@@ -306,7 +313,7 @@ Component vocabulary: **borderless editorial cards** (no border/radius/shadow on
 | Inventory integrity | Cancelled orders restock inside the admin status transaction (`shouldRestockOnStatusChange`); cancelled + delivered are terminal states |
 | PII | Stored: name, email, phone, address (checkout requirement only); logs carry no credentials or PII |
 
-Known posture limits (explicit, not hidden): the payment step is a labeled demo (no processor); single-process SQLite (no multi-writer scale-out); email sending is out of scope (newsletter/contact persist to DB).
+Known posture limits (explicit, not hidden): payments default to Cash on Delivery (the reference's method) with real Stripe card payments when keys + `STRIPE_BDT_PER_USD` are configured (ADR-S74-11); single-process SQLite (no multi-writer scale-out); email sending is out of scope (newsletter/contact persist to DB).
 
 ---
 
@@ -320,7 +327,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 500 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 563 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -343,7 +350,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 | `order-status.test.ts` | Transition rules (terminal states) + restock-on-cancel predicate |
 | `review-aggregate.test.ts` | Weighted-average growth, rounding, empty baseline, out-of-range rejection; the transactional `growReviewAggregate` (S8-2: baseline read → merged write; no-op when the row vanished) |
 | `seo-routes.test.ts` | Sitemap lists only public routes; robots disallows admin/account/checkout/api |
-| `seed-catalog.test.ts` | The seed-owned catalog constants the storefront e2e pins assume (S15-2): 16 products, the session-34 re-aligned authored order (S12-5 + S33-1 + S34-1 — the first 8 slugs pin the reference's current live order, twice re-aligned), 3 cookware rows, 12-per-page pagination span, 8 categories, restore-harness field contract |
+| `seed-catalog.test.ts` | The seed-owned catalog constants the storefront e2e pins assume (S15-2): 19 products, the authored order (S12-5 lineage; the ElyBeauty order leads with the silk hair bonnet), 12-per-page pagination span, 4 categories, restore-harness field contract |
 | `seo-ld.test.ts` | JSON-LD builders: Product (cents→dollars price, stock→availability vocabulary, rating present only with reviews, images absolutized), Organization (contact + sameAs optional), WebSite (SearchAction → `/products?q=`) |
 | `cart-merge.test.ts` | Guest→user cart-merge planner: per-product sums, empty sides, zero-sum line drop, 99 ceiling, deterministic order |
 | `analytics.test.ts` | `foldItemAggregates`/top-products folds over bounded groupBy rows (S6-7) |
@@ -375,15 +382,15 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 | `validation.test.ts` (S17-2 addendum) | `MAX_CART_QUANTITY` is 99 and the cart schemas interpolate the shared constant |
 | `api-boundaries.test.ts` (C7 addendum) | Cart DELETE `?all=1`: no cart → `{itemCount:0}` with `deleteMany` never called; guest cart → cartId-scoped `deleteMany` + the fresh summary's `itemCount` |
 
-### 8.2 E2E (Playwright — 69 tests: 62 desktop + 7 mobile-navigation, `tests/e2e/`)
+### 8.2 E2E (Playwright — 74 tests: 67 desktop + 7 mobile-navigation, `tests/e2e/`)
 
 Two projects: `mobile-navigation` (iPhone-13 device emulation on Chromium — WebKit is not installable in the target sandbox) and `desktop-chromium` (1440×900). The config first runs `scripts/restore-demo-stock.ts` (S14-4 — e2e checkouts permanently drain the traffic-owned demo stock) and then boots the standalone production build on :3100 with `/api/health` as the readiness probe (reusing an existing healthy server, whose state is already restored).
 
 | Spec | Coverage |
 |---|---|
-| `mobile-navigation.spec.ts` | **The Tailwind v4 regression guard** — hamburger opens the push-down panel with search + 5 links; navigation closes it; the green close button works; reopen proves state-driven mounting; `aria-current` + `bg-primary` on the active pill; body scroll locks/unlocks |
-| `storefront.spec.ts` | Reference anatomy on home (carousel, badges, 8 categories, grids), products listing (count, **page 1 opens with the reference's authored order — re-aligned session-33 and session-34, currently Damascus-first (S12-5 + S33-1 + S34-1; order-agnostic visibility pins)**, pagination to the superset tail on page 2, category filter), search, product detail (price/compare/−%/stock/reviews/related), footer policies |
-| `shopping-flow.spec.ts` | Add-to-cart badge + mini drawer (off-viewport + inert assertions), **full guest checkout placing a real order** (`ORD-YYYY-NNN`, token-gated receipt, guess-denial without the token, cart emptied), **idempotent checkout replay** (same key → same receipt), coupon application, **malformed-JSON → 400 contract** (raw Buffer bodies; Playwright JSON-encodes string data), placed-order tracking via `/track-order`, **cart PATCH/DELETE on a gone line → friendly 404/200** (S10-2 pin), **the S13-3 closed-drawer inert guard** (closed = `inert` + unreachable; open drops it; restored on close) |
+| `mobile-navigation.spec.ts` | **The Tailwind v4 regression guard** — hamburger opens the push-down panel (inside the fixed header, S75-2) with SEARCH + 4 links ending at About; navigation closes it; the toggle X works; reopen proves state-driven mounting; `aria-current` with NO color highlight; body scroll locks/unlocks; the S75 measured-frame pins (64px header, 24px panel padding) |
+| `storefront.spec.ts` | Reference anatomy on home (hero, badges, 4 category tiles, grids), shop listing (count, **page 1 opens with the reference's authored order** (bonnet-first; order-agnostic visibility pins), pagination to the superset tail on page 2, category filter), search, product detail (price/compare/−%/stock/reviews/related), footer policies, the S74-2 footer-wishlist entry, the S75 measured-frame geometry pins (264px tiles, 1152×384 banner, 544px product columns) |
+| `shopping-flow.spec.ts` | Add-to-cart badge + mini drawer (off-viewport + inert assertions), **full guest checkout placing a real order** (`ELY-XXXXXXXX`, token-gated receipt, guess-denial without the token, cart emptied), **idempotent checkout replay** (same key → same receipt), coupon application, **malformed-JSON → 400 contract** (raw Buffer bodies; Playwright JSON-encodes string data), placed-order tracking via `/track-order`, **cart PATCH/DELETE on a gone line → friendly 404/200** (S10-2 pin), **the S13-3 closed-drawer inert guard** (closed = `inert` + unreachable; open drops it; restored on close) |
 | `auth.spec.ts` | Login card anatomy, demo-customer sign-in → `/account`, wrong-password + unknown-email inline errors (no redirect), short-password server rejection, `/account` gate, **guest-cart merge at login**, **first-login CLAIM cross-device (S7-1)**, **guest-wishlist merge at registration (S10-4 wiring)**, **the S13-1 production-bundle credential guard** (the login page's HTML + every referenced script chunk contain no seeded password strings), **the S14-3 profile-edit + Sign Out wiring pin** (`updateProfileAction` persists server-side — full-reload proof — then the seed name is restored; `logoutAction` returns the signed-out header) |
 | `admin.spec.ts` | Customer blocked from `/admin` (access-denied card, no route leak), admin sign-in → dashboard KPIs, products manager (search + add affordance), orders manager, **cancel-restocks-stock via the management dialog**, carousel slides, settings values, **the S13-2 aborted-save toast** (aborted action POST → the visible "Something went wrong" destructive toast, never silence) |
 | `seo-platform.spec.ts` | **SEO + platform contracts** — Organization + WebSite JSON-LD on home, Product JSON-LD on detail pages (price/stock/rating) + canonical link, robots/sitemap contents, manifest + icon resolve, security headers ship (`includeSubDomains`, `Permissions-Policy`, `nosniff`) and `X-Powered-By` does not, noindex on private surfaces (S8-9), **the branded 404 hydrates (S69-2 — `not-found.tsx` awaits `connection()` so the per-request CSP nonce applies; the prerendered shell used to log a burst of CSP violations and never hydrate)** |
@@ -544,6 +551,8 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | 91 | Fixed (run 74, S74-1..S74-10) | Fourteen live-measured visual-geometry deltas across the hero (78svh vs the reference's h-screen; no content max-width so the 96px title never wrapped), shop pills (rounded-full/40px vs the reference's 0-radius/34px), mobile panel (extra Sign In/Wishlist/Admin rows; border-t vs border-b; gap-5 vs space-y-4), purchase column (flex-wrap row with a taupe ADD TO CART vs the reference's stacked outlined/filled pair), the missing detail-page category eyebrow, serif section headings vs micro-labels, 4:5 card images vs 1:1, stacked-corner badges vs split corners, iconed footer SUPPORT column, 48px float vs 56px, underlined CTAs vs border-b | Every surface re-measured against the live reference (computed styles, both sites) and fixed to the measured values — the fixed surfaces now verify byte-exact (hero h1 720×192, pills 34px/0-radius, panel text byte-identical, eyebrow 12px/1.2px, gallery 3:4, float 56×56). The wishlist entry moved to the footer's SUPPORT column (the panel link was the codebase's only /wishlist navigation). |
 | 92 | Fixed (run 74, S74-11) | The Stripe card path minted PaymentIntents in `usd` with the amount set to the BDT poisha count — ৳288 → a $288.00 intent (~120× overcharge) the moment card payments were switched on; dormant only because Stripe ships unconfigured | `STRIPE_BDT_PER_USD` (positive number) gates the Card option (keys AND rate, or COD-only); `stripeChargeAmount(totalPoisha, rate)` is the single conversion seam feeding the mint, both verifies, and the in-tx amount guard; the interface rename `amountUsdCents` makes the old conflation a type error; the idempotency key hashes the converted amount. Unit + integration pinned (incl. the poisha-passed-through rejection). |
 | 93 | Fixed (run 74, S74-12/S74-13) | Audit residuals: the zod `country` default was still "United States" and `iconGradient` still kitchenware orange (both S73-9/S73-10 sweeps missed the schema layer); kitchenware placeholders survived in five dialogs; the cart-page variant label styled differently from the drawer's; the cart.ts merge split lacked splitBulkKey's no-pipe guard; the seed title-cased the massager's authored lowercase title | Schema defaults aligned (Bangladesh / stone); placeholder sweep; the variant label plain on both surfaces; the merge split single-sourced through `splitBulkKey`; the seed title matches the authored casing (reseeded via the content-only policy). |
+| 94 | Fixed (run 75, S75-1..S75-9) | The LAYOUT FRAME differed from the reference (run-74 measured surfaces in isolation): the page gutter was `px-4 sm:px-6 lg:px-8` vs the reference's universal `px-6 lg:px-16` (1216 vs 1152px content @1440); the header was 80px at every viewport vs `h-16 lg:h-20` (64/80px); the home sections rode one gap-wrapper vs the reference's per-section `py-20 lg:py-32` + centered ritual heading; the grids' gaps, the banner's aspect, the product page's clearance/grid gap, the hero h1's mobile line-height, and the footer's vertical rhythm all drifted; the mobile panel's element-level `px-6` lost to `container-page`'s `px-4` (CSS order — 16px vs the reference's 24px) | `container-page` re-pinned as the universal gutter (single source — every consumer aligns); the header/overlay/body-offset became responsive; the panel moved INSIDE the fixed header (the reference's DOM order — flush under the bar at any clearance, retiring the run-72 solid-bar workaround); the home/product/hero/footer geometry re-measured and pinned (unit `layout-tokens.test.ts` + e2e geometry pins). Every fixed surface re-measured green against the live reference. |
+| 95 | Fixed (run 75, S75-10..S75-14) | `couponLabel`'s fixed branch rendered `$X off` on a ৳ store (customer-facing cart/checkout/admin labels — the run-72 money sweep missed the seam); the Stripe Element appearance still carried the kitchen palette with a false mapping comment; the admin charts hardcoded the kitchen orange AND `$` axis ticks; the 404 icon was a kitchen pot; the favicon kept the pre-S74-10 dull anchors; the WhatsApp float rendered a generic chat bubble instead of the brand glyph; the hamburger's `aria-haspopup="dialog"` misdescribed the non-modal panel; the footer wordmark split was a literal `slice(0, 3)` | The fixed-coupon label formats through `formatMoney` (re-pinned tests); the appearance re-mapped to the current tokens; the charts re-anchored on the taupe family with ৳ ticks; `Sparkles` on the 404; the favicon carries `#c99a3a`/`#d95577`; the real WhatsApp logo path; `aria-haspopup="menu"`; `splitWordmark` splits at the first word boundary. |
 
 ---
 
@@ -563,7 +572,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/lib/validation.ts` | Every Zod schema + enum vocabularies |
 | `src/lib/csp.ts` + `src/proxy.ts` | CSP builder + per-request nonce proxy |
 | `src/lib/actions/auth.ts` | `useActionState` login/register/logout/profile |
-| `src/lib/actions/admin.ts` | 14 guarded admin mutations (products, categories, coupons ×3, carousel, orders, tracking, settings) |
+| `src/lib/actions/admin.ts` | 15 guarded admin mutations (products, categories, coupons ×3, carousel, orders, tracking, settings) |
 | `src/lib/admin-categories.ts` | The S17-1 guarded category delete (`deleteCategoryIfEmpty` — pre-count fast-fail + P2003 race mapping) |
 | `src/lib/cart-quantity.ts` | `MAX_CART_QUANTITY` (the single-sourced 99 ceiling) + `clampPurchaseQuantity` |
 | `src/app/globals.css` | Tailwind v4 theme tokens + trap pins |
@@ -571,8 +580,8 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/mobile-nav.tsx` | The Tailwind-v4-safe mobile menu |
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
-| `prisma/schema.prisma` / `seed.ts` | 18 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 536 unit · 69 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition/composite-stock-map/admin-variant-editor pins) |
+| `prisma/schema.prisma` / `seed.ts` | 19 models / idempotent seed |
+| `tests/unit/*` · `tests/e2e/*` | 563 unit · 74 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---
@@ -585,7 +594,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | **Server Action** | `'use server'` async function invoked from forms/client; runs on the server |
 | **Guest cart token** | Random cookie value (`homenest_cart`) keying a DB cart before login; claimed + merged on sign-in |
 | **Cents** | Every monetary integer; never floats |
-| **`ORD-YYYY-NNN`** | Order number format, zero-padded 3, allocated in the placement transaction with P2002 retry |
+| **`ELY-XXXXXXXX`** | Order number format — 8 crypto-random uppercase base36 chars, allocated in the placement transaction with P2002 retry (no sequence to enumerate) |
 | **Trap log** | Codified failure modes (this document §10.2 + inline comments) — each traced to a real incident during the build |
 | **Hydration sentinel** | `<html data-hydrated="true">` set by `StoreProvider`; the E2E suite's readiness signal |
-| **Reference** | `https://nest-culinary-hub.base44.app/` — the visual/functional target this build supersets |
+| **Reference** | `https://ely-beauty.base44.app/` — the visual/functional target this build supersets |

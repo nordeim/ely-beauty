@@ -1,10 +1,12 @@
 /**
  * Order-tracking access control — the pure seam for `/track-order`.
  *
- * Order numbers are sequential and printed on every confirmation page, so the
- * number alone must never unlock a customer's PII. Tracking requires the
- * order number PLUS the email used at checkout (case-insensitive). A mismatch
- * is indistinguishable from "order not found" to keep enumeration pointless.
+ * Order numbers are crypto-random `ELY-XXXXXXXX` (no sequence information
+ * to enumerate — see src/lib/order-number.ts), but they are still printed
+ * on every confirmation page, so the number alone must never unlock a
+ * customer's PII. Tracking requires the order number PLUS the email used
+ * at checkout (case-insensitive). A mismatch is indistinguishable from
+ * "order not found" to keep enumeration pointless.
  */
 
 /** Trim + lowercase an optional email into a comparable form. */

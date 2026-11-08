@@ -42,8 +42,8 @@ describe("couponDiscount — fixed coupons", () => {
       ok: true,
       code: "TENOFF",
       discount: 1000,
-      label: "$10.00 off",
-      description: "$10 off $50+", // S22-2: the engine carries the description
+      label: "৳10 off",
+      description: "$10 off $50+", // S22-2: the engine carries the description (the S75-10b re-pin covers the LABEL; the DESCRIPTION is admin-authored copy)
     });
   });
 
@@ -54,7 +54,7 @@ describe("couponDiscount — fixed coupons", () => {
       ok: true,
       code: "TENOFF",
       discount: 500,
-      label: "$10.00 off",
+      label: "৳10 off",
       description: "", // S22-2: the engine carries the description (empty here)
     });
   });

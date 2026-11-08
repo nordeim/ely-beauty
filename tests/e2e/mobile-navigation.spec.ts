@@ -177,3 +177,45 @@ test.describe("mobile navigation (Tailwind v4 regression guard)", () => {
     await expect(page.getByTestId("mobile-menu")).toHaveCount(0);
   });
 });
+
+test.describe("mobile navigation — the S75 measured frame (header + panel geometry)", () => {
+  test.beforeEach(async ({ page }) => {
+    await gotoHydrated(page, "/");
+  });
+
+  test("the mobile header is 64px tall (h-16 lg:h-20, measured on the reference)", async ({ page }) => {
+    // D-1 (S75-2): the reference's header inner is h-16 lg:h-20 — 64px on
+    // this 390px viewport, 80px on desktop. The kitchen-era clone pinned
+    // h-20 at every viewport, pushing the panel 16px low.
+    const header = page.locator("header");
+    await expect(header).toBeVisible();
+    const box = await header.boundingBox();
+    expect(box?.height).toBeCloseTo(64, 1);
+  });
+
+  test("the open panel starts below the 64px bar with 24px content padding", async ({ page }) => {
+    // D-9 (S75-2): the panel's content column rides container-page's px-6
+    // (24px) — the element-level px overrides retired (the CSS-order bug
+    // that let container-page's old px-4 win and render 16px).
+    await page.getByTestId("mobile-menu-button").click();
+    const panel = page.getByTestId("mobile-menu");
+    await expect(panel).toBeVisible();
+    // Settle before measuring (the documented session-41 class): the panel
+    // mounts with a slide-in-from-top-2 animation — a bounding box read
+    // mid-animation reports the translated position (62.4 instead of 64).
+    await page.waitForTimeout(700);
+    const panelBox = await panel.boundingBox();
+    expect(panelBox?.y).toBeCloseTo(64, 1);
+
+    const searchRow = panel.getByRole("button", { name: "Search", exact: true });
+    const searchBox = await searchRow.boundingBox();
+    expect(searchBox?.x).toBeCloseTo(24, 1);
+
+    // The panel ends at About (S74-2) — the row rhythm is 16px gaps.
+    const about = panel.getByRole("link", { name: "About", exact: true });
+    const aboutBox = await about.boundingBox();
+    expect(aboutBox?.x).toBeCloseTo(24, 1);
+    const aboutDelta = (aboutBox?.y ?? 0) - (searchBox?.y ?? 0);
+    expect(aboutDelta).toBeCloseTo(4 * 36, 0);
+  });
+});

@@ -127,7 +127,12 @@ export function HeroCarousel({ slides, autoRotateMs = 6000 }: { slides: Slide[];
               720px of content width, which is what wraps the 96px title
               to two lines (measured: their h1 is 720×192). */}
           <div className="w-full max-w-3xl px-6">
-            <h1 className="font-display text-5xl font-light leading-none tracking-tight text-white drop-shadow-md sm:text-7xl lg:text-8xl sm:leading-none lg:leading-none">
+            {/* S75-7 (D-7, measured): the reference's responsive title —
+                lh 1.1 at mobile (52.8px @ 48px font) and lh 1.0 at desktop
+                (96px @ 96px font), breaking to text-7xl at md like the
+                reference's own `heading-editorial text-5xl md:text-7xl
+                lg:text-8xl` (was leading-none everywhere + the sm step). */}
+            <h1 className="font-display text-5xl font-light leading-[1.1] tracking-tight text-white drop-shadow-md md:text-7xl lg:text-8xl lg:leading-none">
               {activeSlide.title}
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-sm text-white/85 drop-shadow sm:text-base">{activeSlide.subtitle}</p>

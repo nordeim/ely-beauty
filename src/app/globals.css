@@ -80,8 +80,16 @@
 }
 
 @layer utilities {
+  /* S75-1 (D-2, measured): the reference's UNIVERSAL page gutter —
+   * `max-w-7xl mx-auto px-6 lg:px-16` on every surface (header inner,
+   * home sections, /shop, product, footer — captured live 2026-11-08).
+   * 1440px viewport → 1152px of content. No sm step: the reference is
+   * 24px below lg and 64px above it. Element-level px-* overrides on a
+   * container-page consumer LOSE to this rule (utilities resolve in
+   * stylesheet order — the run-75 mobile-panel bug class), so consumers
+   * must not redeclare horizontal padding. */
   .container-page {
-    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+    @apply mx-auto w-full max-w-7xl px-6 lg:px-16;
   }
   /* Cormorant Garamond display headings — the reference's signature
    * typographic voice (light weight, tight tracking). */

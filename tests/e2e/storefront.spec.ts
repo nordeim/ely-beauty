@@ -207,3 +207,62 @@ test.describe("storefront", () => {
     await expect(page).toHaveURL(/\/wishlist/);
   });
 });
+
+test.describe("storefront — the S75 measured frame (desktop layout geometry)", () => {
+  test("the page gutter, tiles, and banner match the reference's measured geometry", async ({ page }) => {
+    await gotoHydrated(page, "/");
+
+    // D-2 (S75-1): the universal gutter is max-w-7xl px-6 lg:px-16 → the
+    // 1440px viewport renders 1152px of content (was 1216 under the old
+    // px-4 sm:px-6 lg:px-8 container-page).
+    const ritual = page.locator("section").filter({
+      has: page.getByRole("heading", { name: "Shop by Ritual" }),
+    });
+
+    // D-4: the tiles are 264px wide in the 32px-gap 4-col grid (was 292
+    // under gap-4 + the wider gutter).
+    const firstTile = ritual.locator("a").first();
+    const tileBox = await firstTile.boundingBox();
+    expect(tileBox?.width).toBeCloseTo(264, 0);
+
+    // D-5: the ritual banner is the measured aspect pair — 1152×384 at
+    // this viewport (aspect-[21/9] md:aspect-[3/1]; was auto-height).
+    const banner = page.locator("section").filter({
+      has: page.getByRole("heading", { name: "Complete Your Ritual" }),
+    });
+    const bannerMedia = banner.locator("div[class*='aspect-']").first();
+    const bannerBox = await bannerMedia.boundingBox();
+    expect(bannerBox?.width).toBeCloseTo(1152, 0);
+    expect(bannerBox?.height).toBeCloseTo(384, 0);
+
+    // D-3: the "Shop by Ritual" heading is centered (the reference's
+    // editorial treatment; the kitchen clone was left-aligned).
+    const heading = page.getByRole("heading", { name: "Shop by Ritual" });
+    const hBox = await heading.boundingBox();
+    const px = await page.evaluate(() => window.innerWidth);
+    if (hBox) {
+      const leftMargin = hBox.x;
+      const rightMargin = px - (hBox.x + hBox.width);
+      expect(Math.abs(leftMargin - rightMargin)).toBeLessThan(2);
+    }
+  });
+
+  test("the product detail frame renders 544px columns (gap-8 lg:gap-16 + the gutter)", async ({ page, request }) => {
+    // Any in-stock product — resolved through the search API (the authored
+    // order's lead piece is reference-true sold-out; "silk" hits the stocked
+    // Pillowcase). The request fixture carries the absolute base URL — a
+    // relative fetch inside page.evaluate on a fresh context fails to parse.
+    const res = await request.get("/api/search?q=silk");
+    const data = (await res.json()) as { results?: { id: string }[] };
+    const productId = data.results?.[0]?.id;
+    expect(productId).toBeTruthy();
+    await gotoHydrated(page, `/product/${productId}`);
+
+    // D-6 (S75-6): 1152px content − 64px grid gap = 544px columns (was 588
+    // under gap-10 + the wider gutter).
+    const addToCart = page.getByRole("button", { name: /Add to Cart/i }).first();
+    await expect(addToCart).toBeVisible();
+    const box = await addToCart.boundingBox();
+    expect(box?.width).toBeCloseTo(544, 0);
+  });
+});

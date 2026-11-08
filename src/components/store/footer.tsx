@@ -18,6 +18,27 @@ const COMPANY_LINKS = [
   { href: "/about#sustainability", label: "Sustainability" },
 ];
 
+/**
+ * splitWordmark — the bicolor wordmark's head/tail split (S75-14, N-3).
+ * The reference brands "Ely" gold + "Beauty" rose; the split falls at the
+ * first word boundary (a space, or the second camelCase hump) so a renamed
+ * store still breaks at a sensible seam instead of an arbitrary character
+ * index. Single-word, single-case names stay monochrome-safe (the tail is
+ * empty → one span renders nothing).
+ */
+export function splitWordmark(name: string): { head: string; tail: string } {
+  const trimmed = name.trim();
+  const spaceAt = trimmed.indexOf(" ");
+  if (spaceAt > 0) {
+    return { head: trimmed.slice(0, spaceAt), tail: trimmed.slice(spaceAt + 1) };
+  }
+  const camelAt = trimmed.slice(1).search(/[A-Z]/);
+  if (camelAt > 0) {
+    return { head: trimmed.slice(0, camelAt + 1), tail: trimmed.slice(camelAt + 1) };
+  }
+  return { head: trimmed, tail: "" };
+}
+
 export function Footer({
   settings,
 }: {
@@ -37,12 +58,18 @@ export function Footer({
   return (
     <>
       <footer className="border-t border-border bg-background">
-        <div className="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
+        {/* S75-9 (D-10, measured): the reference's footer vertical rhythm —
+            py-16 lg:py-24 (was py-14). */}
+        <div className="container-page grid gap-10 py-16 sm:grid-cols-2 lg:grid-cols-4 lg:py-24">
           {/* Brand */}
           <div>
             <p className="font-display text-2xl font-medium tracking-tight">
-              <span className="text-[#c99a3a]">{settings.storeName.slice(0, 3)}</span>
-              <span className="text-[#d95577]">{settings.storeName.slice(3)}</span>
+              {/* S75-14 (N-3): the bicolor split falls at the FIRST WORD
+                  BOUNDARY (camelCase or space) — the literal slice(0, 3)
+                  split was correct only for "ElyBeauty" and rendered an
+                  arbitrary color break on any renamed store. */}
+              <span className="text-[#c99a3a]">{splitWordmark(settings.storeName).head}</span>
+              <span className="text-[#d95577]">{splitWordmark(settings.storeName).tail}</span>
             </p>
             <p className="mt-4 max-w-xs text-sm leading-6 text-muted-foreground">{settings.tagline}</p>
             <SocialLinks settings={settings} />

@@ -1,4 +1,5 @@
 import { db } from "./db";
+import { formatMoney } from "./money";
 
 /**
  * Coupon math — pure functions + a DB lookup seam. Discount is computed in
@@ -26,7 +27,12 @@ export type CouponApplication =
  */
 export function couponLabel(type: string, value: number): string {
   if (type === "free_shipping") return "Free shipping";
-  if (type === "fixed") return `$${(value / 100).toFixed(2)} off`;
+  // S75-10b (H-1): fixed labels format through formatMoney — ৳ whole-taka
+  // with poisha only when present ("৳20 off" / "৳6.95 off"). The `$`
+  // prefix was a kitchen-era residual that shipped on the ৳ store (the
+  // run-72 money sweep missed this seam; the minSubtotal error already
+  // used ৳).
+  if (type === "fixed") return `${formatMoney(value)} off`;
   return `${value}% off`;
 }
 

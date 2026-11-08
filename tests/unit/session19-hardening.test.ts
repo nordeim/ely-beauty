@@ -158,8 +158,11 @@ describe("couponLabel (S19-5)", () => {
   it("formats percent and fixed labels identically to the coupon engine", () => {
     expect(couponLabel("percent", 10)).toBe("10% off");
     expect(couponLabel("percent", 100)).toBe("100% off");
-    expect(couponLabel("fixed", 695)).toBe("$6.95 off");
-    expect(couponLabel("fixed", 10000)).toBe("$100.00 off");
+    // S75-10b: fixed labels format through formatMoney — ৳ whole-taka,
+    // poisha only when present (the run-72 money sweep missed this seam;
+    // the `$` strings shipped on a ৳ store until session 75).
+    expect(couponLabel("fixed", 695)).toBe("৳6.95 off");
+    expect(couponLabel("fixed", 10000)).toBe("৳100 off");
   });
 
   it("is the same helper the coupon engine consumes (single-sourced in coupons.ts)", () => {
@@ -167,7 +170,7 @@ describe("couponLabel (S19-5)", () => {
     // identical through the engine path (the coupons.test.ts engine pins
     // assert the same strings end-to-end).
     expect(couponLabel("percent", 20)).toBe("20% off");
-    expect(couponLabel("fixed", 2000)).toBe("$20.00 off");
+    expect(couponLabel("fixed", 2000)).toBe("৳20 off");
   });
 });
 

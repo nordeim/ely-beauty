@@ -30,9 +30,11 @@ type SearchResult = { id: string; name: string; image: string; price: number; ca
 
 /**
  * Header — the reference anatomy: [nav links | centered logo | icon cluster]
- * in a fixed 80px bar. Over the home hero the bar is TRANSPARENT with white
- * text (verified live); on every other route it is solid ivory with a hairline
- * bottom border and dark text.
+ * in a fixed bar that is 64px on mobile and 80px on desktop (S75-2, D-1
+ * measured live: the reference's header inner is `h-16 lg:h-20`). Over the
+ * home hero the bar is TRANSPARENT with white text (verified live); on
+ * every other route it is solid ivory with a hairline bottom border and
+ * dark text.
  */
 export function Header({
   user,
@@ -46,16 +48,18 @@ export function Header({
   const [searchOpen, setSearchOpen] = React.useState(false);
 
   // Over-hero styling applies on the home route only (the hero image sits
-  // directly under the fixed bar there) — and only while the mobile panel is
-  // CLOSED (run-72 fix: an open push-down panel needs the solid bar, or its
-  // white-on-transparent labels sit on the ivory panel below the fold line).
-  const overHero = pathname === "/" && !mobileNavOpen;
+  // directly under the fixed bar there). S75-2: this stays true while the
+  // mobile panel is OPEN too — the reference's bar keeps its transparent
+  // white-on-hero treatment with the ivory panel riding below it inside
+  // the same fixed header (the run-72 solid-bar workaround retired when
+  // the panel moved into the header element).
+  const overHero = pathname === "/";
 
   return (
     <>
       <div
         className={cn(
-          "container-page grid h-20 grid-cols-[auto_1fr_auto] items-center gap-4 lg:grid-cols-[1fr_auto_1fr]",
+          "container-page grid h-16 grid-cols-[auto_1fr_auto] items-center gap-4 lg:h-20 lg:grid-cols-[1fr_auto_1fr]",
           overHero ? "text-white" : "text-foreground",
         )}
       >
@@ -68,7 +72,10 @@ export function Header({
             )}
             aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileNavOpen}
-            aria-haspopup="dialog"
+            // S75-14 (N-2): the push-down panel is a non-modal disclosure —
+            // `menu` is the accurate haspopup value (the panel carries no
+            // dialog role and does not trap focus).
+            aria-haspopup="menu"
             data-testid="mobile-menu-button"
             onClick={() => {
               setMobileNavSearch(false);
@@ -201,7 +208,9 @@ function DesktopSearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
   if (!open) return null;
 
   return (
-    <div className="fixed inset-x-0 top-20 z-50 border-b border-border bg-background shadow-sm" data-testid="search-overlay">
+    // S75-2 (D-1): tracks the responsive header bar (64px mobile / 80px
+    // desktop) so the sheet always slides directly under it.
+    <div className="fixed inset-x-0 top-16 z-50 border-b border-border bg-background shadow-sm lg:top-20" data-testid="search-overlay">
       <div className="container-page py-6">
         <div className="flex items-center gap-4 border-b border-border pb-4">
           <Search className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />

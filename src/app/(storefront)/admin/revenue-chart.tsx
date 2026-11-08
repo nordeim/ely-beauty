@@ -17,9 +17,11 @@ export function RevenueChart({ data }: { data: RevenuePoint[] }) {
       <ResponsiveContainer width="100%" height={280}>
         <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
           <defs>
+            {/* S75-11 (L-2): the taupe brand anchor (the kitchen-era orange
+                was retired with the run-75 sweep). */}
             <linearGradient id="adminRevenueFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#d96e26" stopOpacity={0.35} />
-              <stop offset="95%" stopColor="#d96e26" stopOpacity={0} />
+              <stop offset="5%" stopColor="#897a6c" stopOpacity={0.35} />
+              <stop offset="95%" stopColor="#897a6c" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
@@ -35,13 +37,15 @@ export function RevenueChart({ data }: { data: RevenuePoint[] }) {
             tickLine={false}
             axisLine={false}
             width={56}
-            tickFormatter={(value: number) => `$${Math.round(value / 100).toLocaleString("en-US")}`}
+            // S75-11: ৳ axis ticks — the `$` prefix was a kitchen-era
+            // residual on a BDT store (formatMoney owns the symbol).
+            tickFormatter={(value: number) => `৳${Math.round(value / 100).toLocaleString("en-US")}`}
           />
           <Tooltip formatter={(value: unknown) => formatMoney(Number(value ?? 0))} />
           <Area
             type="monotone"
             dataKey="revenue"
-            stroke="#d96e26"
+            stroke="#897a6c"
             strokeWidth={2}
             fill="url(#adminRevenueFill)"
           />

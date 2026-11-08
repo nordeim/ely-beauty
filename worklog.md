@@ -1705,3 +1705,37 @@ Work Log:
 
 Stage Summary:
 - Run 74 complete: the measured-geometry parity cycle — 14 live-measured visual deltas closed to byte-exact (including one run-73 measurement that itself proved wrong: the pills), the dormant Stripe USD/BDT ~120× overcharge closed with the explicit FX-rate gate, and the audit residuals aligned. The suite grew 536 → 550 unit / 69 → 70 e2e. Five new traps encoded in the SKILL: re-measure pinned geometry every cycle (a prior run's measurement can be wrong); an FX-denominated payment path must re-derive its currency semantics with a re-skin; fixed headers paint where the viewport was in fullPage captures; lazy below-fold images report naturalWidth 0 until scrolled; always confirm VLM visual claims against the DOM.
+
+---
+Task ID: 75-a
+Agent: deep audit 75-a (read-only subagent, run-75 cycle)
+Task: Read-only deep audit 75-a — the 9 standing code anchors + the run-74 delta (commit 24b07d1) on the pulled 951ca57 tree.
+
+Work Log:
+- Methodology: skills/web-application/SKILL.md + skills/code-review-checklist/SKILL.md; skills/ excluded from all checking per the operator contract.
+- The 9 anchors verified from scratch with file:line evidence: db-path PASS, money/order-money PASS, validation PASS, checkout/order-placement PASS, auth/password PASS, order-access/tracking PASS, mobile-nav/store-chrome PASS, sitemap/robots/noindex PASS, CSP/proxy/auth/404 PASS.
+- Findings: 0 CRITICAL/HIGH code defects; 2 MEDIUM docs-truth (M-1 the PAD body's ~26 kitchen-era claims contradicting the "PAD v2.2 aligned" commit; M-2 DEPLOYMENT.md still HomeNest-branded with wrong credentials + self-heal SQL); 4 LOW (L-1 the Stripe Element appearance's kitchen palette + false comment; L-2 the admin charts' kitchen orange; L-3 the 404 CookingPot icon; L-4 the favicon's dull pre-S74-10 anchors); 3 NIT (the stale "sequential" comment; aria-haspopup="dialog"; the footer slice(0,3) split); 3 INFO (the deliberate cookie names; verified-accurate test counts; the AGENTS suspicion refuted). Conflict-marker gate CLEAN; secrets spot-check clean.
+
+Stage Summary:
+- 9/9 anchors PASS, 0 CRITICAL/HIGH — the findings list that fed the Session 75 docs-truth + residual work, alongside the parent agent's live-measured layout-frame deltas.
+
+---
+Task ID: 75
+Agent: Super Z (main agent + 75-a read-only audit subagent)
+Task: Run-75 cycle for github.com/nordeim/ely-beauty — workspace refresh, docs review, gates re-validation, deep audit 75-a, live-reference whole-page re-measurement, TDD remediation (S75-1..S75-16), screenshots, the docs-truth sweep, commit + SSH push to main.
+
+Work Log:
+- git pull to 951ca57 (the operator's session-log commit); docs re-read (AGENTS/CLAUDE/README/PAD v2.2/SKILL v2.2.0/session_4/session_5/REMEDIATION_PLAN/worklog); skills/ excluded per contract.
+- Environment: DATABASE_URL shadow converged (same inode); .env/.env.example/db contract verified (10 env vars).
+- Gates on the pulled tree: lint ✓ · typecheck ✓ · typecheck:tests ✓ · 550/550 unit ✓ · build ✓ · 70/70 e2e ✓.
+- Deep audit 75-a (Task 75-a above): 9/9 anchors PASS, 2M/4L/3N — the Session 75 findings list.
+- Live-reference whole-page re-measurement (agent-browser, both sites, both viewports, logged in): 10 layout-frame deltas found (the universal gutter, the responsive header, the home rhythm/grids/banner, the product clearance/gap, the hero lh, the panel padding CSS-order bug, the footer rhythm, the WhatsApp glyph) + the plan-validation pass found the couponLabel $ bug (H-1).
+- Remediation plan (Session 75) appended with the measured-values table, validated against the codebase, executed TDD-first: RED batch (13 layout-tokens pins + 5 coupon re-pins) → GREEN implementations across globals.css, header/store-chrome/mobile-nav (the panel moved INSIDE the fixed header — the reference's DOM order, caught by the new e2e geometry pin), home/product/hero/footer/whatsapp/stripe-pay/charts/not-found/icon.svg/coupons.ts/order-tracking.ts.
+- Final gates: lint ✓ · typecheck ✓ · typecheck:tests ✓ · 563/563 unit (+13) · build ✓ · 74/74 e2e (+4 geometry pins).
+- The fixed surfaces re-measured GREEN against the live reference (byte-exact: sections y:900/566/128px, tiles 264×198, banner 1152×384, h1 720×192, columns 544×48, shop h1 @176, footer 96px, panel @64/24px padding).
+- 25/25 screenshots regenerated (single clean pass after restore-stock + the 60s limiter window).
+- Docs sweep: REMEDIATION_PLAN Session 75 (execution log), AGENTS.md (the S75 mobile-menu + layout-frame contracts), CLAUDE.md (the S75 parity paragraph), README (563/74 + 19 models), PAD v2.3 (the revision block + ~26 corrected claims + rows 94-95), DEPLOYMENT.md (rebranded), ely-beauty_SKILL.md v2.3.0, docs/session_6.md, worklog (this entry).
+- Commit + push to main through the SSH wrapper (fast-forward, no new branches; remote verified).
+
+Stage Summary:
+- Run 75 complete: the measured LAYOUT FRAME cycle — the universal gutter + responsive header + panel-inside-header structure closed to byte-exact against the live reference, the fixed-coupon ৳ currency bug fixed (customer-facing), the kitchen-era residual family (Stripe appearance, chart hexes + $ axes, 404 icon, favicon, WhatsApp glyph) retired, and the docs-truth debt (PAD body, DEPLOYMENT branding) paid. The suite grew 550 → 563 unit / 70 → 74 e2e. New traps encoded: the element-px-loses-to-container-page CSS-order class; measure the shared frame, not just the surfaces; the sandbox thread-budget exhaustion class (kill abandoned browser daemons before blaming the harnesses).

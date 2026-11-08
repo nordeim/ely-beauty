@@ -9926,3 +9926,198 @@ the seed title-cased it to "Full Silicon Scalp Massager".
   the hero's gold ornamental wave is baked into the reference's photo.
 - **Screenshots**: 25/25 regenerated in one clean pass (the login-limiter
   discipline).
+
+---
+
+## Session 75 — The Container-Gutter & Responsive-Header Parity Cycle
+
+Cycle: workspace refresh → docs review (AGENTS/CLAUDE/README/PAD v2.2/SKILL
+v2.2.0/session_4/REMEDIATION_PLAN/worklog/session_5) → gates re-validated on
+the pulled tree (lint ✓ · typecheck ✓ · typecheck:tests ✓ · 550/550 unit ✓ ·
+build ✓ · 70/70 e2e ✓) → deep audit 75-a (read-only) → live-reference
+re-measurement (the reference ONLINE, logged in with the operator
+credentials; agent-browser computed styles on BOTH sites, 390×844 + 1440×900)
+→ this plan → TDD execution.
+
+### Audit 75-a findings (read-only subagent)
+
+- **9/9 standing code anchors PASS** (db-path, money/order-money, validation,
+  checkout/order-placement, auth/password, order-access/tracking,
+  mobile-nav/store-chrome, sitemap/robots/noindex, CSP/proxy/auth/404);
+  0 CRITICAL / 0 HIGH.
+- **M-1**: the PAD body was NOT swept in run-74 despite the commit claim —
+  ~26 stale claims survive (kitchenware identity §1.1, Playfair fonts §1.2,
+  536/68 test counts, ORD-YYYY-NNN glossary, nest-culinary-hub reference,
+  "18 models" ×3, "500 tests" §8.1, the stale mobile-menu ledger row, the
+  demo-payment claim §6, "Eleven server actions" §3.3 vs "14" §12, etc.).
+- **M-2**: `docs/DEPLOYMENT.md` still brands/credentials the store as HomeNest
+  Kitchen (`admin@homenestkitchen.com`, the 'Jordan Rivera' self-heal SQL,
+  the indexable `/products`).
+- **L-1**: the Stripe Payment Element appearance is the HomeNest kitchen
+  palette (`#d96e26` orange, white bg, 12px radius) with a comment that
+  falsely claims it maps the current theme.
+- **L-2**: the admin charts hardcode the kitchen-era orange `#d96e26`
+  (revenue-chart + analytics charts). Plan-validation pass found MORE
+  kitchen-currency residuals in the same files: both chart AXES format
+  ticks as `$…` on a ৳ store.
+- **H-1 (found validating the plan — customer-facing currency bug)**:
+  `couponLabel("fixed", …)` renders "`$6.95 off`" (`src/lib/coupons.ts:29`)
+  — the cart's applied-coupon block, the checkout mirror and the admin
+  coupon list all render USD labels for fixed coupons on a ৳ store
+  (`minSubtotal` errors correctly say ৳; the run-72 money sweep missed this
+  seam). Never surfaced visually because no seeded coupon is fixed — but
+  the admin dialog can create one. The `$` strings are PINNED in
+  `session19-hardening.test.ts:161-162` + `coupons.test.ts:45,57` (re-pin
+  RED-first).
+- **L-3**: the 404 page's icon is a kitchen `CookingPot` on a beauty store.
+- **L-4**: the favicon still carries the pre-S74-10 dull logo anchors
+  (`#b08d57`/`#c4717d`).
+- **N-1**: `order-tracking.ts` comment still says "sequential" order numbers.
+- **N-2**: the hamburger carries `aria-haspopup="dialog"` but the push-down
+  panel is a non-modal disclosure (no dialog role).
+- **N-3**: the footer wordmark bicolor splits on `slice(0, 3)` — correct only
+  for the literal "ElyBeauty".
+- README: "18 models" ×2 → 19 (the only stale README spots).
+
+### The measured deltas (all values live-measured 2026-11-08, both sites)
+
+The run-74 cycle closed 14 surface deltas but measured each surface in
+isolation; this cycle's whole-page walk found the SHARED layout frame the
+surfaces sit in differs — one root cause (the page gutter) plus a responsive
+header-height miss.
+
+| # | Surface | Reference (measured) | Clone (measured) |
+|---|---|---|---|
+| D-1 | Header height | `h-16 lg:h-20` — 64px mobile / 80px desktop (header inner class captured) | `h-20` — 80px on every viewport (panel pushed 16px low) |
+| D-2 | Universal page gutter | `max-w-7xl mx-auto px-6 lg:px-16` on EVERY surface (header inner, home sections, /shop, product, footer ×2) → 1152px content @1440 | `container-page` = `max-w-7xl px-4 sm:px-6 lg:px-8` → 1216px content @1440 (tiles 292 vs 264, product cols 588 vs 544, banner 1216 vs 1152) |
+| D-3 | Home section rhythm | per-section `py-20 lg:py-32` (80/128px); "Shop by Ritual" heading `text-center mb-16`; "Curated" header `mb-12`; `lg:text-5xl` breakpoint | ONE wrapper `gap-16 py-16 sm:gap-20 sm:py-20`; left-aligned heading `mt-8`; `mb-8`; `sm:text-5xl` |
+| D-4 | Home grids | tiles `gap-6 lg:gap-8` (24/32px); curated `gap-6 lg:gap-x-8 lg:gap-y-12` | tiles `gap-4` (16px); curated `gap-x-4 gap-y-10` |
+| D-5 | Ritual banner | `aspect-[21/9] md:aspect-[3/1]` (1152×384 @1440; 342×147 @390) | auto height `py-20 sm:py-28` (1216×365) |
+| D-6 | Product page frame | main `pt-20 lg:pt-24`; grid `gap-8 lg:gap-16`; 544px columns (back-link y123) | container `py-10 sm:py-14`; grid `gap-10`; 588px columns (back-link y136) |
+| D-7 | Hero h1 | lh 1.1 @ mobile (52.8px), lh 1.0 @ desktop (96px); `md:text-7xl` breakpoint | `leading-none` at every size (96px @ mobile — 10px short); `sm:text-7xl` |
+| D-8 | WhatsApp float glyph | the real WhatsApp logo path (`fill-white`, w-7 h-7) | lucide `message-circle` stroke icon |
+| D-9 | Mobile panel content x | 24px (`px-6` inner) | 16px — `container-page`'s `px-4` wins over the element's `px-6` (CSS order bug, mobile-nav.tsx:61) |
+| D-10 | Footer vertical | `py-16 lg:py-24` (96px @lg) | `py-14` (56px) |
+
+Verified NON-findings (measured, both sides): the hero is `h-screen
+min-h-[600px]` on both; the panel content/styles byte-match (14px/1.4px/400,
+16px rhythm, border-b, bg); the shop pills byte-match (34px/0-radius/
+borderless-active/hairline-inactive/16px thumbs/12px/1.2px); the purchase
+column byte-matches (stacked, outlined/filled, 2px radius, 48px tall); the
+category eyebrow + micro-label headings hold; the reference's hero scrim is
+flat `bg-black/30` while the clone ships an sRGB-interpolated gradient — the
+residual brightness delta is the documented independently-generated-imagery
+deviation, not a code delta; the reference /cart 404s and /checkout requires
+login (the clone's pages are the documented superset — no parity target);
+the reference /shop renders all 19 products unpaginated while the clone
+paginates at 12 (the documented superset with e2e pins — KEPT).
+
+### ToDo (TDD-first: RED tests → GREEN implementations)
+
+- [x] **S75-1 (D-2 root — the universal gutter)**:
+      `globals.css` `.container-page` → `mx-auto w-full max-w-7xl px-6
+      lg:px-16` (the reference's measured universal gutter; drops the sm
+      step). Single-source fix — every container-page consumer (header,
+      footer, home, shop, product, cart, checkout, about, contact, legal,
+      account, wishlist, track-order, admin, error) aligns at once.
+- [x] **S75-2 (D-1 + D-9 — responsive header + panel)**: header.tsx grid
+      `h-16 lg:h-20`; the search overlay `top-16 lg:top-20`;
+      store-chrome.tsx body offset `pt-16 lg:pt-20`; mobile-nav.tsx panel
+      inner `container-page py-6` (the element-level px overrides retire —
+      container-page now carries the measured px-6; closes the CSS-order
+      override bug).
+- [x] **S75-3 (D-3 — home section rhythm)**: per-section wrappers
+      `py-20 lg:py-32`; "Shop by Ritual" heading `text-center mb-16` +
+      `lg:text-5xl`; "Curated" header `mb-12`; the trailing home spacer
+      re-evaluated against the reference's section paddings.
+- [x] **S75-4 (D-4 — home grids)**: tiles `gap-6 lg:gap-8` +
+      `md:grid-cols-2`; curated `gap-6 lg:gap-x-8 lg:gap-y-12`.
+- [x] **S75-5 (D-5 — banner aspect)**: `aspect-[21/9] md:aspect-[3/1]` on
+      the banner media box.
+- [x] **S75-6 (D-6 — product frame)**: page container `pt-20 lg:pt-24` (+
+      bottom padding to the reference's pb-20); grid `gap-8 lg:gap-16`.
+- [x] **S75-7 (D-7 — hero h1)**: `leading-[1.1] lg:leading-none` +
+      `md:text-7xl` (the reference's measured mobile lh 1.1 / desktop 1.0
+      and md breakpoint).
+- [x] **S75-8 (D-8 — WhatsApp glyph)**: the reference's WhatsApp logo SVG
+      path (fill-white) replaces the lucide message-circle inside the float.
+- [x] **S75-9 (D-10 — footer vertical)**: `py-16 lg:py-24`.
+- [x] **S75-10 (L-1 — Stripe appearance)**: ELEMENT_APPEARANCE re-derived
+      from the current tokens (taupe primary, ivory card bg, 4px radius) +
+      the false mapping comment corrected.
+- [x] **S75-10b (H-1 — the fixed-coupon currency)**: `couponLabel`'s fixed
+      branch formats through `formatMoney` (৳ whole-taka, poisha when
+      present) — "৳6.95 off"/"৳20 off", never `$`; the
+      session19/coupons test pins re-pinned RED-first.
+- [x] **S75-11 (L-2 — admin charts + chart axes)**: `#d96e26` → the current
+      primary token hex in revenue-chart + analytics charts (the pie
+      palette re-anchored on the taupe family); BOTH chart axis
+      `tickFormatter`s drop the `$` prefix (formatMoney-style ৳ ticks).
+- [x] **S75-12 (L-3 — 404 icon)**: `CookingPot` → `Sparkles`.
+- [x] **S75-13 (L-4 — favicon)**: `#b08d57`/`#c4717d` → `#c99a3a`/`#d95577`
+      (the S74-10 logo anchors).
+- [x] **S75-14 (N-1 + N-2 + N-3)**: the order-tracking comment; the
+      hamburger `aria-haspopup` (dialog → menu semantics); the footer
+      wordmark split hardened beyond the literal 3-char slice.
+- [x] **S75-15 (M-1 + M-2 + README — the docs-truth sweep)**: the PAD body
+      sweep (every stale claim in the audit's ledger); DEPLOYMENT.md
+      rebrand + credentials + self-heal SQL + `/shop`; README "18 models"
+      ×2 → 19.
+- [x] **S75-16 (evidence + docs)**: re-measure every fixed surface against
+      the live reference (both viewports); full gates; 25 screenshots;
+      AGENTS/CLAUDE/SKILL/session_5/worklog updates; commit + push via the
+      SSH wrapper.
+
+### Test strategy (RED first)
+
+- `tests/unit/layout-tokens.test.ts` (NEW): pins the measured frame in the
+  source — the `.container-page` gutter definition, the header/overlay/
+  body-offset responsive heights, the panel inner classes, the home/banner/
+  product-grid class contracts, the hero h1 leading + breakpoint, the
+  footer padding, the WhatsApp SVG, the 404 icon, the favicon anchors, the
+  Stripe appearance constants, the chart hexes.
+- `tests/e2e/mobile-navigation.spec.ts` (EXTEND): the rendered geometry —
+  header 64px @390, panel content x=24, toggle 44×44 (kept).
+- `tests/e2e/storefront.spec.ts` (EXTEND): the rendered frame @1440 — tile
+  width 264, banner 1152×384, product purchase column 544.
+
+### Execution log (run 75)
+
+- **TDD discipline held**: the RED batch (`tests/unit/layout-tokens.test.ts`
+  13 pins + the couponLabel re-pins in session19/coupons/session22) ran
+  18-failing before any implementation; every fix flipped its pins green.
+- **The e2e caught a real bug the DOM walk missed**: the first S75 build
+  kept the panel as the shell's first in-flow child, so the new pt-20
+  lg:pt-24 clearance pushed it 16px below the bar (panel y:80 vs 64). The
+  fix is structural — the panel moved INSIDE the fixed header element (the
+  reference's own DOM order), which also retired the run-72
+  solid-bar-while-open workaround (the reference's bar stays transparent
+  over the hero with the panel open; measured). The search-overlay top and
+  the hamburger's aria-haspopup were corrected in the same pass.
+- **The fixed surfaces re-measured GREEN against the live reference**
+  (agent-browser computed styles, both sites, 390×844 + 1440×900): mobile
+  header 64px + toggle 44×44 @24,10; panel @y:64 h:212 with SEARCH @24,88
+  and About @24,232 (ref 25,233); home sections y:900/566/640 with 128px
+  pads + tiles 264×198 + centered 48px h2 (all byte-exact); banner
+  1152×384; hero h1 720×192 fs:96 lh:96 (desktop) + lh 52.8 @48px
+  (mobile); product columns 544×48; the back-link at 104/120 (ref 107/123
+  — the ±3 is the reference link's own inline-box offset); shop h1 @y:176
+  byte-exact; footer pad 96px.
+- **Gates (all observed green)**: lint · typecheck · typecheck:tests ·
+  **563/563 unit** (56 files; +13 layout-tokens pins) · build zero errors ·
+  **74/74 e2e** (the 4 new geometry pins).
+- **Environmental lessons encoded**: (1) the temp-SQLite harnesses'
+  `npx prisma db push` fails with `spawn EAGAIN` / `pthread_create:
+  Resource temporarily unavailable` when the sandbox's system thread budget
+  is exhausted — abandoned agent-browser Chromium daemons (~500 threads)
+  were the cause; kill them (`pkill -f .agent-browser/browsers`) and the
+  suite goes green with zero code changes. (2) A running standalone server
+  on :3000 can contend with harness CLI spawns — kill the port owner before
+  unit runs when harnesses flake.
+- **Screenshots**: 25/25 regenerated in one clean pass (the documented
+  restore-stock → 60s limiter window → cold-server sequence).
+- **Docs sweep**: PAD v2.3 (the revision block + the ~26 stale claims),
+  DEPLOYMENT.md rebranded, README counts (563/74) + 19 models,
+  AGENTS.md (the S75 mobile-menu + layout-frame contracts),
+  CLAUDE.md (the S75 parity paragraph), session_6.md, worklog,
+  ely-beauty_SKILL.md v2.3.0.

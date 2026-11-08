@@ -58,7 +58,11 @@ export function MobileNav() {
       className="animate-in slide-in-from-top-2 fade-in duration-200 border-b border-border bg-background lg:hidden"
       data-testid="mobile-menu"
     >
-      <div className="container-page px-6 py-6 sm:px-6 lg:px-8">
+      {/* S75-2 (D-9): horizontal padding comes from container-page's px-6 —
+          NO element-level px overrides (an element px-* loses to the later
+          container-page utility in stylesheet order, the run-75 bug that
+          rendered 16px instead of the reference's 24px). */}
+      <div className="container-page py-6">
         {mobileNavSearch ? (
           <PanelSearch onExit={() => setMobileNavSearch(false)} />
         ) : (

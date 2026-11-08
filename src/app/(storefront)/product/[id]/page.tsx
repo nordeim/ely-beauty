@@ -121,7 +121,16 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
   });
 
   return (
-    <div className="container-page flex flex-col gap-14 py-10 sm:py-14">
+    <div
+      // S75-6 (D-6, measured): the reference's product frame — the shell
+      // clears the fixed bar with the reference's own main clearance
+      // (pt-20 lg:pt-24 = 80/96px), then this container adds pt-6 (24px)
+      // so the back-link lands at the reference's measured ~104px mobile /
+      // ~120px desktop (their wrapper + py-6, measured live), with the
+      // pb-20 (80px) bottom margin. The detail grid gap-8 lg:gap-16 (64px)
+      // renders the measured 544px columns at 1440.
+      className="container-page flex flex-col gap-14 pt-6 pb-20"
+    >
       <script
         type="application/ld+json"
         // Serialized through jsonLdScript (session-7 S7-9): `<` and line
@@ -140,8 +149,8 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
         </Link>
       </div>
 
-      {/* Two-column detail */}
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
+      {/* Two-column detail — S75-6 (D-6): the measured 64px column gap. */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-16">
         {/* LEFT — gallery */}
         <ProductGallery images={images} name={product.name} />
 

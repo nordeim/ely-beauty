@@ -63,23 +63,24 @@ type PaymentIntentSession = {
 
 // The site tokens, as hex, for the Element's iframe styling (the iframe
 // cannot read the page's CSS — Stripe's appearance variables are the only
-// channel). Mapped from src/app/globals.css @theme inline:
-//   --color-primary: hsl(24 70% 50%) → #d96e26
-//   --color-foreground: hsl(20 14% 12%) → #231d1a
-//   --color-card: hsl(0 0% 100%) → #ffffff
-//   --color-muted-foreground: hsl(25 9% 45%) → #7d7168
-//   --color-destructive: hsl(0 72% 51%) → #dc2828
-//   radius: the --radius-xl pin (12px); font: Inter (the layout's font-sans)
+// channel). S75-10 (L-1): mapped from the CURRENT ElyBeauty theme in
+// src/app/globals.css @theme inline (the kitchen-era mapping was stale):
+//   --color-primary: hsl(30 12% 48%) → #897a6c (warm taupe)
+//   --color-foreground: hsl(0 0% 10%) → #1a1a1a
+//   --color-card: hsl(30 20% 97%) → #f9f7f6 (warm ivory)
+//   --color-muted-foreground: hsl(0 0% 40%) → #666666
+//   --color-destructive: hsl(0 84.2% 60.2%) → #ef4444
+//   radius: the reference's sharp 4px editorial corners; font: Inter.
 const ELEMENT_APPEARANCE: StripeElementsOptions["appearance"] = {
   theme: "flat",
   variables: {
-    colorPrimary: "#d96e26",
-    colorBackground: "#ffffff",
-    colorText: "#231d1a",
-    colorTextSecondary: "#7d7168",
-    colorDanger: "#dc2828",
+    colorPrimary: "#897a6c",
+    colorBackground: "#f9f7f6",
+    colorText: "#1a1a1a",
+    colorTextSecondary: "#666666",
+    colorDanger: "#ef4444",
     fontFamily: '"Inter", ui-sans-serif, system-ui, sans-serif',
-    borderRadius: "12px",
+    borderRadius: "4px",
     spacingUnit: "4px",
   },
 };
