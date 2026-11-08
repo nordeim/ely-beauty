@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.5.0
+version: 2.6.0
 last_updated: 2026-11-08
-project_state: "599 unit tests · 77 e2e tests · lint/typecheck/typecheck:tests/build green · RUN-77 (session 10): the search-overlay parity & dependency-hygiene cycle — the audit's 9/9 anchors PASSed with 0 critical code defects; the live re-measurement found ONE delta family (the search surface: the reference opens a FULL-SCREEN overlay `fixed inset-0 z-[70] bg-background/95 backdrop-blur-xs` with a max-w-2xl column + a Cormorant text-lg/lg:text-2xl input from BOTH the header icon and the mobile panel's SEARCH row, single-column 80px rows with name + shortDescription + font-light price, description-inclusive matching, authored-order results — the clone shipped a header-anchored dropdown + an in-panel swap with category labels and rating ordering). Fixed TDD-first (576 → 599 unit, 77 e2e): the shared search-overlay.tsx component (store-provider state, StoreChrome render site), the /api/search field/order/payload contract, the seed's db-path seam (datasourceUrl), next 16.4.0 → 16.4.5 (3 critical CVEs closed; lockfile root-name fix), the push-target cluster (wrapper DEFAULT_REMOTE + runbook + CLAUDE.md all say ely-beauty), the twitter-card metadata fallback, and the docs-truth sweep (CLAUDE.md 599/77 + 19-product + push target, REMEDIATION_PLAN 21→19, the SKILL H1 retitle). Every fixed surface re-measured byte-exact against the live reference (overlay 1440×900 + col x:384 w:672 + input 24px Cormorant + rows 624×80 @84px rhythm; mobile input 18px/20px @y:104 ±1px; 4 description-matched rows in the authored order)."
+project_state: "613 unit tests · 79 e2e tests · lint/typecheck/typecheck:tests/build green · RUN-78 (session 12): the search-overlay reachability & micro-parity cycle — audit 78-a: 9/9 anchors PASS, 0 CRITICAL/HIGH code defects (3 MEDIUM: the overlay list's missing scroll container, the over-broad scroll-lock comment, CLAUDE.md's stale e2e count); the live re-measurement measured FOUR new deltas on the otherwise byte-exact search surface: the list's scroll container (mt-6 max-h-[60vh] overflow-y-auto — the clone's uncapped list left the 8th row unreachable on sub-816px windows), the 1-char search floor (the reference returns 8 rows for "e"), the rows' 2px corners (its rounded-md under the shadcn scale), and the no-results copy. Fixed TDD-first (599 → 613 unit, 77 → 79 e2e) plus the invisible a11y superset (role=dialog + aria-modal + the shell's inert widened to the overlay). PRECEDING RUN-77 (session 10): the search-overlay parity & dependency-hygiene cycle — the audit's 9/9 anchors PASSed with 0 critical code defects; the live re-measurement found ONE delta family (the search surface: the reference opens a FULL-SCREEN overlay `fixed inset-0 z-[70] bg-background/95 backdrop-blur-xs` with a max-w-2xl column + a Cormorant text-lg/lg:text-2xl input from BOTH the header icon and the mobile panel's SEARCH row, single-column 80px rows with name + shortDescription + font-light price, description-inclusive matching, authored-order results — the clone shipped a header-anchored dropdown + an in-panel swap with category labels and rating ordering). Fixed TDD-first (576 → 599 unit, 77 e2e): the shared search-overlay.tsx component (store-provider state, StoreChrome render site), the /api/search field/order/payload contract, the seed's db-path seam (datasourceUrl), next 16.4.0 → 16.4.5 (3 critical CVEs closed; lockfile root-name fix), the push-target cluster (wrapper DEFAULT_REMOTE + runbook + CLAUDE.md all say ely-beauty), the twitter-card metadata fallback, and the docs-truth sweep (CLAUDE.md 599/77 + 19-product + push target, REMEDIATION_PLAN 21→19, the SKILL H1 retitle). Every fixed surface re-measured byte-exact against the live reference (overlay 1440×900 + col x:384 w:672 + input 24px Cormorant + rows 624×80 @84px rhythm; mobile input 18px/20px @y:104 ±1px; 4 description-matched rows in the authored order)."
 tags:
   - nextjs16
   - react19
@@ -4505,6 +4505,56 @@ docs sweep.
 Key files: `scripts/capture-screenshots.mjs` · `docs/session_132.md` ·
 `research/parity-grid.mjs` (git-ignored) · `research/a11y-audit.mjs`
 (git-ignored) · `research/agent-browser-crosscheck.sh` (git-ignored)
+
+- **Session 78 (run 78, session 12 of the ely-beauty repo): the
+  search-overlay reachability & micro-parity cycle.** Gates on the
+  pulled tree 599/599 · 77/77 · clean build — all green (docs matched
+  reality). Deep audit 78-a (read-only, skills/ excluded,
+  web-application + code-review-checklist methodology): **9/9 anchors
+  PASS, 0 CRITICAL/HIGH code defects** — 3 MEDIUM (the overlay's
+  result list had NO scroll container: ~784px of rows over a 664px
+  viewport with nothing scrollable; the store-provider scroll-lock
+  comment claimed "any overlay" while the code locked panel+drawer
+  only; CLAUDE.md still said "74 e2e") + 4 LOW (the overlay's missing
+  dialog semantics/inert; two stale backdrop-blur-sm comments; the
+  undocumented eslint-chain moderates in the audit ledger; the
+  half-repaired S76-9 historical line) + 1 NIT accepted (LIKE
+  wildcards unescaped — the LIVE reference behaves identically, so
+  escaping would diverge; parameterized + take-8 bounded).
+  The live re-measurement (both sites, both viewports) re-verified
+  every S75/S76/S77 pinned surface GREEN byte-exact (the operator's
+  mobile-menu priority included: panel y:64 h:213/214, 4×14px links
+  @36px rhythm, SEARCH row, toggle/navigate-close) and measured FOUR
+  new deltas on the search surface: **D-1** the list container (the
+  reference's `mt-6 space-y-1 max-h-[60vh] overflow-y-auto` —
+  scrollH 668 vs clientH 506 with 8 rows), **D-2** the 1-char floor
+  (the reference returns its capped 8-row set for "e"), **D-3** the
+  rows' 2px corners (its `rounded-md` computes to 2px under the shadcn
+  radius scale), **D-4** the no-results copy (`No products found for
+  "zzzzq"`). Fixed TDD-first (RED 12 → GREEN; 599 → 613 unit, 77 →
+  79 e2e): the list gained `mt-6 flex flex-col gap-1 overflow-y-auto
+  max-h-[60vh]` (byte-exact: both sites 506.4px cap, 668/506 scroll
+  geometry), the floor dropped to ONE character (route `!q` + overlay
+  `< 1`), the rows gained `rounded-[2px]`, the copy matched, and the
+  overlay gained `role="dialog"` + `aria-modal` with StoreChrome's
+  shell inert widened to `cartDrawerOpen || searchOverlayOpen` (the
+  invisible a11y superset — the reference ships no dialog semantics;
+  the overlay renders OUTSIDE the inert shell). The overlay still
+  deliberately does NOT lock body scroll (the recorded reference
+  deviation — session-10; the comment now states the real contract).
+  **Encoded traps**: (1) A full-screen overlay needs its OWN scroll
+  surface — `fixed inset-0` never scrolls and the page behind it does
+  not move it; cap the list (max-h-[60vh]) and let it scroll itself,
+  exactly like the reference. (2) Parity includes FAILURE copy and
+  INPUT FLOORS, not just happy-path geometry — the reference's
+  1-char typeahead and its no-results verb were invisible until
+  measured. (3) Tailwind radius scales are theme-relative: the
+  reference's `rounded-md` = 2px (shadcn `--radius .25rem` − 2px)
+  while v4's default `rounded-md` = 6px — pin MEASURED pixel values
+  (`rounded-[2px]`), not scale names, when the themes differ. (4)
+  Comments quoting retired class names (`backdrop-blur-sm` after the
+  xs refinement) are prose-scan landmines — the S78-6 pin now forbids
+  them in the chrome sources.
 
 - **Session 77 (run 77, session 10 of the ely-beauty repo): the
   search-overlay parity & dependency-hygiene cycle.** Deep audit 77-a:

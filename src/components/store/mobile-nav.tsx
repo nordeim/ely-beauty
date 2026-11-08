@@ -11,7 +11,7 @@
  * S77-2: the SEARCH row opens the shared FULL-SCREEN search overlay (the
  * reference's single search surface — measured live: both the header icon
  * and the panel's SEARCH row open `fixed inset-0 z-[70]
- * bg-background/95 backdrop-blur-sm`). The old in-panel content swap is
+ * bg-background/95 backdrop-blur-xs`). The old in-panel content swap is
  * retired; the panel stays open underneath the overlay, exactly like
  * the reference.
  *

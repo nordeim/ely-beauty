@@ -3,10 +3,13 @@
 //
 // The run-77 live re-measurement found the reference's search — from BOTH
 // the header icon AND the mobile panel's SEARCH row — opens a FULL-SCREEN
-// overlay (`fixed inset-0 z-[70] bg-background/95 backdrop-blur-sm`, the
+// overlay (`fixed inset-0 z-[70] bg-background/95 backdrop-blur-xs`, the
 // content column `max-w-2xl mx-auto px-6 pt-24 lg:pt-32`, the input in the
 // display serif at `text-lg lg:text-2xl`), with single-column 80px result
 // rows (p-3, gap-1) carrying name + shortDescription + a font-light price.
+// The run-78 additions pin the measured scroll container (mt-6 max-h-[60vh]
+// overflow-y-auto), the 2px row corners, the 1-char floor, the reference's
+// no-results copy, and the dialog-semantics superset.
 // The clone shipped a top-16 dropdown with a two-column grid and category
 // labels instead. These tests drive the REAL SearchOverlay through stubbed
 // fetch (the cart-widgets component-test precedent) so the anatomy cannot
@@ -178,5 +181,102 @@ describe("SearchOverlay — the S77 result rows (D-2)", () => {
     const price = screen.getByText("৳288");
     expect(price.className).toContain("font-light");
     expect(price.className).not.toContain("font-semibold");
+  });
+});
+
+describe("SearchOverlay — the S78 reachability + micro-parity (D-1..D-4 + a11y)", () => {
+  it("the result list scrolls inside a 60vh cap below the input row (the reference's reachability)", async () => {
+    stubSearch();
+    renderOverlay();
+    const input = screen.getByRole("searchbox", { name: "Search products" });
+    fireEvent.change(input, { target: { value: "silk" } });
+
+    const row = await waitFor(() => {
+      const link = screen.getByRole("link", { name: /Pure Satin Silk Pillowcase/ });
+      expect(link).toBeInTheDocument();
+      return link;
+    });
+    const list = row.closest("ul");
+    // S78-1 (D-1, measured live): the reference's list is `mt-6 space-y-1
+    // max-h-[60vh] overflow-y-auto` — 24px below the input row, capped at
+    // 60% of the viewport height, scrolling its OWN rows. Without the cap
+    // the 8 capped rows (~784px) overflow every sub-816px window with no
+    // scroll anywhere (a fixed container does not scroll; the page behind
+    // it does not move it).
+    expect(list?.className).toContain("mt-6");
+    expect(list?.className).toContain("max-h-[60vh]");
+    expect(list?.className).toContain("overflow-y-auto");
+    // The 4px rhythm survives (space-y-1 ≡ gap-1).
+    expect(list?.className).toContain("gap-1");
+  });
+
+  it("the rows carry the reference's 2px corner radius (its rounded-md under the shadcn scale)", async () => {
+    stubSearch();
+    renderOverlay();
+    const input = screen.getByRole("searchbox", { name: "Search products" });
+    fireEvent.change(input, { target: { value: "silk" } });
+
+    const row = await waitFor(() => {
+      const link = screen.getByRole("link", { name: /Pure Satin Silk Pillowcase/ });
+      expect(link).toBeInTheDocument();
+      return link;
+    });
+    // S78-3 (D-3, measured live): the reference's rows carry rounded-md,
+    // which computes to 2px under its shadcn radius scale (--radius .25rem
+    // − 2px). v4's default rounded-md is 6px — the arbitrary value pins
+    // the measured geometry.
+    expect(row.className).toContain("rounded-[2px]");
+  });
+
+  it("a 1-character query fires the typeahead (the reference's floor is 1, not 2)", async () => {
+    stubSearch();
+    renderOverlay();
+    const input = screen.getByRole("searchbox", { name: "Search products" });
+    // S78-2 (D-2, measured live): the reference returns a full 8-row result
+    // set for a 1-char query ("e"); the clone floored at 2.
+    fireEvent.change(input, { target: { value: "e" } });
+    await waitFor(() => {
+      expect(screen.getByRole("link", { name: /Pure Satin Silk Pillowcase/ })).toBeInTheDocument();
+    });
+    expect(globalThis.fetch).toHaveBeenCalled();
+  });
+
+  it("an empty query still renders nothing (the floor is 1, empty stays empty)", async () => {
+    stubSearch();
+    renderOverlay();
+    const input = screen.getByRole("searchbox", { name: "Search products" });
+    fireEvent.change(input, { target: { value: "" } });
+    // The debounce timer is 250ms — no fetch, no rows, no no-results copy.
+    await new Promise((r) => setTimeout(r, 400));
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    expect(screen.queryByText(/No products found/)).not.toBeInTheDocument();
+  });
+
+  it("the no-results copy is the reference's 'No products found for' shape", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({ json: async () => ({ results: [] }) }) as unknown as Response),
+    );
+    renderOverlay();
+    const input = screen.getByRole("searchbox", { name: "Search products" });
+    fireEvent.change(input, { target: { value: "zzzzq" } });
+
+    await waitFor(() => {
+      // S78-4 (D-4, measured live): the reference renders `No products
+      // found for "zzzzq"` — the verb + quoted-term shape.
+      expect(screen.getByText('No products found for “zzzzq”.')).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/No products match/)).not.toBeInTheDocument();
+  });
+
+  it("the overlay declares dialog semantics (the invisible a11y superset)", () => {
+    stubSearch();
+    renderOverlay();
+    // S78-5 (A-4): the reference ships no dialog semantics either — this is
+    // the repo's invisible-superset lane (the aria-current precedent), not
+    // a parity fix. The full-screen sheet is a real modal to assistive
+    // tech while the shell behind it goes inert.
+    expect(screen.getByRole("dialog", { name: "Search products" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Search products" })).toHaveAttribute("aria-modal", "true");
   });
 });

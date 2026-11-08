@@ -167,6 +167,48 @@ test.describe("storefront", () => {
     await expect(page.getByTestId("search-overlay")).toHaveCount(0);
   });
 
+  test("the search overlay's list scrolls inside the reference's 60vh cap (S78 reachability)", async ({ page }) => {
+    await gotoHydrated(page, "/shop");
+
+    // Open the header's search overlay.
+    await page.getByRole("button", { name: "Search products" }).click();
+    const overlay = page.getByTestId("search-overlay");
+    await expect(overlay).toBeVisible();
+
+    // S78-5: the full-screen sheet declares dialog semantics (the invisible
+    // a11y superset — the reference ships none).
+    await expect(overlay).toHaveAttribute("role", "dialog");
+    await expect(overlay).toHaveAttribute("aria-modal", "true");
+
+    // S78-2 (D-2, measured live): the reference's typeahead floor is ONE
+    // character — a 1-char query returns the capped 8-row set.
+    const input = overlay.getByRole("searchbox", { name: "Search products" });
+    await input.fill("e");
+    const rows = overlay.locator("ul > li");
+    await expect(rows).toHaveCount(8, { timeout: 10_000 });
+
+    // S78-1 (D-1, measured live): the list carries the reference's scroll
+    // geometry — mt-6 below the input row, max-h capped at 60% of the
+    // viewport, scrolling its own rows.
+    const list = overlay.locator("ul").first();
+    await expect(list).toHaveClass(/mt-6/);
+    await expect(list).toHaveClass(/max-h-\[60vh\]/);
+    await expect(list).toHaveClass(/overflow-y-auto/);
+    const listBox = await list.boundingBox();
+    const viewport = page.viewportSize();
+    expect(listBox?.height).toBeLessThanOrEqual((viewport?.height ?? 900) * 0.6 + 1);
+
+    // S78-3 (D-3, measured live): the rows carry the reference's 2px
+    // corners (its rounded-md under the shadcn radius scale).
+    const firstRow = rows.first().locator("a");
+    await expect(firstRow).toHaveClass(/rounded-\[2px\]/);
+
+    // The capped list actually scrolls: the 8th row scrolls into view.
+    const lastRow = rows.nth(7);
+    await lastRow.scrollIntoViewIfNeeded();
+    await expect(lastRow).toBeVisible();
+  });
+
   test("product detail renders gallery, price, variant selector and reviews", async ({ page }) => {
     await openDetailFromShop(page, "Pure Satin Silk Pillowcase", "/shop?q=pillowcase");
     await expect(page).toHaveURL(/\/product\//);

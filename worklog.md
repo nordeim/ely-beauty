@@ -223,3 +223,76 @@ Stage Summary:
   13 descriptor's 664px viewport; source-pin comments must not quote the retired pattern; a
   search-ordering change is a test-fixture blast radius; npm audit fix's safe lane vs the
   deliberate-epic majors.
+
+---
+Task ID: 78
+Agent: Super Z (main agent + 78-a read-only audit subagent)
+Task: Run-78 cycle for github.com/nordeim/ely-beauty — workspace refresh (fresh clone; the sandbox
+was recycled), docs review, gates re-validation, deep audit 78-a, live-reference re-measurement
+(the mobile-menu priority surface included), TDD remediation (S78-1..S78-10), screenshots, the
+docs sweep, commit + SSH push to main.
+
+Work Log:
+- Fresh clone to 1ccecc5 (the operator's run-77 log commits); docs re-read
+  (AGENTS/CLAUDE/README/PAD v2.5/SKILL v2.5.0/session_10/session_11/REMEDIATION_PLAN/worklog +
+  the skills catalog, web-application, tdd, agent-browser, tailwind-patterns,
+  code-review-checklist skills); skills/ excluded from all checking per contract; the
+  homenest-store-s reference repo spot-cloned for the tech-stack patterns (task context).
+- Environment: .env from .env.example (fresh AUTH_SECRET), db/ at the repo root, db:setup seeded
+  (19 products); the sandbox's ambient DATABASE_URL (outside the repo) converged via the
+  documented symlink; Playwright chromium binaries installed for the fresh sandbox.
+- Gates on the pulled tree: lint ✓ · typecheck ✓ · typecheck:tests ✓ · 599/599 unit ✓ · clean
+  build ✓ · 77/77 e2e ✓ — the docs' claimed state matched reality.
+- Deep audit 78-a (read-only subagent; web-application + code-review-checklist methodology):
+  9/9 anchors PASS, 0 CRITICAL/HIGH code defects; 3 MEDIUM (the search overlay's result list
+  has NO scroll container — 8 capped rows (~784px) overflow the 664px e2e viewport with nothing
+  scrollable; the store-provider scroll-lock comment claims "any overlay" while the code locks
+  panel+drawer only; CLAUDE.md still says "74 e2e") + 4 LOW (the overlay's missing dialog
+  semantics + shell inert; two stale backdrop-blur-sm comments; the undocumented
+  eslint-chain moderates; the half-repaired S76-9 historical line) + 1 NIT accepted (LIKE
+  wildcards — the live reference behaves identically; escaping would diverge) + 2 INFO.
+- Live-reference re-measurement (agent-browser, both sites, 390×844 + 1440×900, logged in):
+  every S75/S76/S77 pinned surface re-verified GREEN byte-exact — the mobile-menu priority
+  surface included (panel y:64 h:214, 4×14px links @36px rhythm, the SEARCH row,
+  toggle/navigate-close, the conditional-mount pattern). FOUR new deltas measured on the search
+  surface: D-1 the list container (the reference's mt-6 space-y-1 max-h-[60vh] overflow-y-auto —
+  scrollH 668 vs clientH 506 with 8 rows; the clone's uncapped flex flex-col gap-1), D-2 the
+  1-char floor (the reference returns its capped 8-row set for "e"; the clone floored at 2),
+  D-3 the rows' 2px corners (its rounded-md under the shadcn radius scale), D-4 the no-results
+  copy (No products found for "zzzzq" vs the clone's No products match).
+- The Session 78 plan (S78-1..S78-10) appended to docs/REMEDIATION_PLAN.md and validated
+  against the codebase (every change site named and pre-read), then executed TDD-first:
+  the RED batch (14 new unit pins across search-overlay ×6, search-route ×2, layout-tokens ×6)
+  ran 12-failing → GREEN implementations → 613/613 unit. The list gained the reference's scroll
+  geometry (byte-exact: both sites 506.4px cap, 668/506 scroll), the floor dropped to 1 char,
+  the rows gained rounded-[2px], the no-results copy matched, and the overlay gained
+  role="dialog" + aria-modal with StoreChrome's shell inert widened to cover the open overlay.
+- E2E: +2 specs (the mobile 8-row reachability guard on the 664px viewport; the desktop
+  scroll/dialog-geometry pin) → 79/79 e2e after a clean rebuild.
+- Refined post-measurement: byte-exact list-cap parity confirmed on both viewports
+  (506.4px @844vh, 540px @900vh); the mobile nav re-verified ±1px.
+- Docs sweep: AGENTS.md (the S78 search-surface contract + the S78-8 ledger entry), CLAUDE.md
+  (613/79 counts), README (counts + the search row + the reachability guard), PAD v2.6 (the
+  revision block), ely-beauty_SKILL.md v2.6.0 (project_state + the Session 78 entry with five
+  encoded traps), REMEDIATION_PLAN Session 78 (the plan + this execution log), session_12.md,
+  worklog (this entry).
+- Screenshots regenerated to docs/screenshots/ (the capture script against the dev server);
+  .env.example verified to match the codebase (DATABASE_URL="file:../db/custom.db" contract,
+  Stripe vars, SITE_URL, AUTH_SECRET, TRUST_CF_CONNECTING_IP, DEMO_MODE) and included in the
+  commit.
+- Final gates: lint ✓ · typecheck ✓ · typecheck:tests ✓ · 613/613 unit ✓ · clean build ✓ ·
+  79/79 e2e ✓. Commit + push to main through the SSH wrapper (fast-forward, no new branches;
+  remote verified).
+
+Stage Summary:
+- Run 78 complete: the search-overlay reachability & micro-parity cycle — the overlay's result
+  list now scrolls inside the reference's measured 60vh cap (the run-77 bug: 8 broad-term rows
+  permanently unreachable below the fold), the search floor is the reference's 1 character, the
+  rows carry its measured 2px corners, the no-results copy matches, and the full-screen sheet
+  is a real modal to assistive tech (role=dialog + aria-modal + the inert shell — the invisible
+  a11y superset). The suite grew 599 → 613 unit / 77 → 79 e2e. The operator's mobile-menu
+  priority surface re-verified byte-exact; the Tailwind v4 conditional-mount pattern holds.
+- New traps encoded: a full-screen overlay needs its OWN scroll surface (fixed inset-0 never
+  scrolls); parity includes failure copy and input floors, not just happy-path geometry; theme
+  radius scales are relative (the reference's rounded-md = 2px vs v4's 6px — pin measured
+  pixels); comments quoting retired class names are prose-scan landmines (now pinned).

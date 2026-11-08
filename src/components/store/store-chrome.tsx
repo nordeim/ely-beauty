@@ -51,17 +51,21 @@ export function StoreChrome({
 
   return (
     <>
-      {/* Session-16 S16-3: while the cart drawer is open (role="dialog" +
-          aria-modal="true") the page behind it must be inert — the dialog
-          declared modal semantics but the background stayed keyboard-tabbable
-          (the carried S8-7 deferral, closed here). `inert` is a boolean
-          attribute, not a display utility, so the Tailwind v4 trap does not
-          apply; the SSR/client contexts both start closed, so hydration is
-          unaffected. Native focus containment: inert content is skipped by
-          Tab, so focus cycles inside the dialog with no JS trap loop. */}
+      {/* Session-16 S16-3 + S78-5: while the cart drawer is open
+          (role="dialog" + aria-modal="true") the page behind it must be
+          inert — the dialog declared modal semantics but the background
+          stayed keyboard-tabbable (the carried S8-7 deferral, closed here).
+          S78-5 widened the same inert to the search overlay's open state
+          (it too declares role="dialog" + aria-modal and renders OUTSIDE
+          this shell, so it stays reachable while everything behind it is
+          not). `inert` is a boolean attribute, not a display utility, so
+          the Tailwind v4 trap does not apply; the SSR/client contexts both
+          start closed, so hydration is unaffected. Native focus containment:
+          inert content is skipped by Tab, so focus cycles inside the dialog
+          with no JS trap loop. */}
       <div
         data-testid="page-shell"
-        inert={cartDrawerOpen}
+        inert={cartDrawerOpen || searchOverlayOpen}
         // S75-2 (D-1): the reference's MAIN wrapper clearance — pt-20
         // lg:pt-24 (80/96px), exactly 16px past the fixed bar at both
         // breakpoints (their header is 64/80px). Pages then add their own

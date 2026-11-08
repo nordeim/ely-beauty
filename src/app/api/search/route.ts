@@ -17,9 +17,12 @@ export async function GET(request: NextRequest) {
 
     // Same 100-char cap every search surface applies via clampSearchTerm
     // (session-9 S9-7; single-sourced in validation.ts since S15-4) — an
-    // oversized term feeds three LIKE clauses for nothing.
+    // oversized term feeds three LIKE clauses for nothing. S78-2 (D-2,
+    // measured live): the floor is ONE character — the reference returns
+    // its capped 8-row set for a 1-char query ("e"); clampSearchTerm's
+    // trim means the only short-circuit left is emptiness.
     const q = clampSearchTerm(request.nextUrl.searchParams.get("q") ?? "");
-    if (q.length < 2) return NextResponse.json({ results: [] });
+    if (!q) return NextResponse.json({ results: [] });
 
     const products = await db.product.findMany({
       where: {

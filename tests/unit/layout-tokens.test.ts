@@ -278,6 +278,53 @@ describe("S77 measured search-overlay anatomy (source pins)", () => {
     expect(header).not.toContain("searchOpen");
   });
 
+  it("S78-1: the overlay's result list carries the reference's scroll cap (mt-6 max-h-[60vh] overflow-y-auto)", () => {
+    const overlay = src("components/store/search-overlay.tsx");
+    // S78-1 (D-1, measured live): the reference's list is `mt-6 space-y-1
+    // max-h-[60vh] overflow-y-auto` — the clone's uncapped list left the
+    // 8th row unreachable on every sub-816px window.
+    expect(overlay).toMatch(/mt-6 flex flex-col gap-1 overflow-y-auto max-h-\[60vh\]/);
+  });
+
+  it("S78-3: the result rows carry the reference's measured 2px corners", () => {
+    const overlay = src("components/store/search-overlay.tsx");
+    expect(overlay).toMatch(/p-3 transition-colors hover:bg-secondary rounded-\[2px\]/);
+  });
+
+  it("S78-4: the no-results copy is the reference's 'No products found for' shape", () => {
+    const overlay = src("components/store/search-overlay.tsx");
+    expect(overlay).toContain("No products found for “{query.trim()}”.");
+    expect(overlay).not.toContain("No products match");
+  });
+
+  it("S78-5: the overlay declares dialog semantics and the chrome shell goes inert behind it", () => {
+    const overlay = src("components/store/search-overlay.tsx");
+    expect(overlay).toContain('role="dialog"');
+    expect(overlay).toContain('aria-modal="true"');
+    const chrome = src("components/store/store-chrome.tsx");
+    // The shell's inert condition covers the search overlay alongside the
+    // cart drawer (the overlay itself renders OUTSIDE the shell).
+    expect(chrome).toMatch(/inert=\{cartDrawerOpen \|\| searchOverlayOpen\}/);
+  });
+
+  it("S78-2: the search floor is 1 character (the route's gate is emptiness, not length)", () => {
+    const route = src("app/api/search/route.ts");
+    expect(route).not.toContain("q.length < 2");
+    const overlay = src("components/store/search-overlay.tsx");
+    expect(overlay).not.toContain("term.length < 2");
+  });
+
+  it("S78-6: the chrome comments quote the REAL blur token (xs, not sm — the v4 rename trap)", () => {
+    // The run-77 refinement pinned backdrop-blur-xs (v4's xs = the
+    // reference's measured 4px); two prose comments still quoted the
+    // pre-refinement sm. Comments quoting retired patterns are how the
+    // prose-scan family of bugs starts.
+    const provider = src("components/store/store-provider.tsx");
+    expect(provider).not.toMatch(/backdrop-blur-sm/);
+    const nav = src("components/store/mobile-nav.tsx");
+    expect(nav).not.toMatch(/backdrop-blur-sm/);
+  });
+
   it("S77-7a: the product twitter card uses the metaDescription fallback", () => {
     const page = src("app/(storefront)/product/[id]/page.tsx");
     // The twitter description composes from the same metaDescription

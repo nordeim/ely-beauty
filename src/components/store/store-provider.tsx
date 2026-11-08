@@ -11,7 +11,8 @@ type StoreState = {
   /** The shared full-screen search overlay (S77-2): the header's search
    *  icon AND the mobile panel's SEARCH row toggle the SAME overlay — the
    *  reference's single search surface (measured live: `fixed inset-0
-   *  z-[70] bg-background/95 backdrop-blur-sm` from both entry points). */
+   *  z-[70] bg-background/95 backdrop-blur-xs` from both entry points —
+   *  v4's xs is the reference's measured 4px blur). */
   searchOverlayOpen: boolean;
   setSearchOverlayOpen: (open: boolean) => void;
   cartDrawerOpen: boolean;
@@ -34,7 +35,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [cartDrawerOpen, setCartDrawerOpen] = React.useState(false);
   const [cartCount, setCartCount] = React.useState<number | null>(null);
 
-  // Lock body scroll while any overlay is open.
+  // Lock body scroll while the mobile panel or the cart drawer is open.
+  // The search overlay deliberately does NOT lock scroll here (session-10's
+  // recorded deviation — the reference does not lock body scroll under its
+  // overlay either, and the overlay's own result list scrolls instead
+  // since S78-1).
   React.useEffect(() => {
     const locked = mobileNavOpen || cartDrawerOpen;
     document.body.style.overflow = locked ? "hidden" : "";

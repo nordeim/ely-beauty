@@ -102,3 +102,32 @@ describe("GET /api/search — the S77 reference parity (D-3 + D-4)", () => {
     expect(call?.take).toBe(8);
   });
 });
+
+describe("GET /api/search — the S78 1-character floor (D-2)", () => {
+  it("a 1-character query reaches the catalog (the reference's floor is 1, not 2)", async () => {
+    db.product.findMany.mockResolvedValue([
+      {
+        id: "prod-1",
+        name: "Pure Satin Silk Pillowcase",
+        images: '["/images/pillowcase-main.jpg"]',
+        price: 28800,
+        shortDescription: "Sleep in smooth comfort.",
+        description: "The long copy.",
+      },
+    ]);
+
+    // S78-2 (D-2, measured live on the reference): a 1-char query ("e")
+    // returns a full 8-row result set there; the clone's 2-char gate
+    // returned [] before the query ever ran.
+    const res = await GET(nextReq("/api/search?q=e"));
+    const data = (await res.json()) as { results?: Array<{ id: string }> };
+    expect(db.product.findMany).toHaveBeenCalledTimes(1);
+    expect(data.results?.[0]).toMatchObject({ id: "prod-1" });
+  });
+
+  it("an empty or whitespace-only query still short-circuits to []", async () => {
+    await GET(nextReq("/api/search?q="));
+    await GET(nextReq("/api/search?q=%20%20"));
+    expect(db.product.findMany).not.toHaveBeenCalled();
+  });
+});

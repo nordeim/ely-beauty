@@ -64,13 +64,16 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
 
   // Debounced typeahead against /api/search (the S77-4 fields: name,
   // shortDescription, tags AND the long description — the reference's
-  // coverage); <2 chars renders nothing (the endpoint's own floor, checked
-  // inside the timer so the effect never calls setState synchronously).
+  // coverage). S78-2 (D-2, measured live): the floor is ONE character —
+  // the reference returns its capped 8-row set for a 1-char query ("e");
+  // empty still renders nothing (the endpoint's own `!q` gate mirrors
+  // this, checked inside the timer so the effect never calls setState
+  // synchronously).
   React.useEffect(() => {
     let cancelled = false;
     const t = setTimeout(() => {
       const term = query.trim();
-      if (term.length < 2) {
+      if (term.length < 1) {
         setResults([]);
         return;
       }
@@ -88,7 +91,13 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[70] bg-background/95 backdrop-blur-xs" data-testid="search-overlay">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Search products"
+      className="fixed inset-0 z-[70] bg-background/95 backdrop-blur-xs"
+      data-testid="search-overlay"
+    >
       <div className="max-w-2xl mx-auto px-6 pt-24 lg:pt-32">
         <div className="flex items-center gap-4 border-b border-border pb-4">
           <Search className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
@@ -111,13 +120,13 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
           </button>
         </div>
         {results.length > 0 && (
-          <ul className="flex flex-col gap-1">
+          <ul className="mt-6 flex flex-col gap-1 overflow-y-auto max-h-[60vh]">
             {results.map((r) => (
               <li key={r.id}>
                 <Link
                   href={`/product/${r.id}`}
                   onClick={onClose}
-                  className="flex items-center gap-4 p-3 transition-colors hover:bg-secondary"
+                  className="flex items-center gap-4 p-3 transition-colors hover:bg-secondary rounded-[2px]"
                 >
                   <span className="relative h-14 w-14 shrink-0 overflow-hidden bg-secondary">
                     <Image src={r.image} alt="" fill sizes="56px" className="object-cover" />
@@ -134,8 +143,8 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
             ))}
           </ul>
         )}
-        {query.trim().length >= 2 && results.length === 0 && (
-          <p className="pt-4 text-sm text-muted-foreground">No products match “{query.trim()}”.</p>
+        {query.trim().length >= 1 && results.length === 0 && (
+          <p className="pt-4 text-sm text-muted-foreground">No products found for “{query.trim()}”.</p>
         )}
       </div>
     </div>

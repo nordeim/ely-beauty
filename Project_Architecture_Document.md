@@ -1,4 +1,4 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.5
+# ElyBeauty — Master Project Architecture Document (PAD) v2.6
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
@@ -7,6 +7,38 @@
 **Audience:** Senior Engineers, Tech Leads, DevOps, and Onboarding Engineers
 **Rule:** Every architectural decision in this document traces to a specific rationale. Nothing is here "because it's popular."
 
+
+#### Revision Block — v2.6 (Run 78 — the search-overlay reachability & micro-parity cycle)
+
+- `[SR]` **The overlay's result list scrolls inside the reference's
+  measured cap** (`mt-6 flex flex-col gap-1 overflow-y-auto
+  max-h-[60vh]`): the run-77 list was uncapped — 8 broad-term rows
+  (~784px) overflowed every sub-816px window with nothing scrollable
+  (the fixed container does not scroll; the page behind it does not
+  move it), leaving the last rows permanently unreachable on the 664px
+  e2e viewport. Byte-exact vs the live reference (both 506.4px cap and
+  668/506 scroll geometry).
+- `[SR]` **The search floor is ONE character** (route `!q` gate +
+  overlay `< 1` floor): the reference returns its capped 8-row set for
+  a 1-char query ("e"); the clone floored at 2.
+- `[SR]` **The rows carry the reference's 2px corners**
+  (`rounded-[2px]` — its rounded-md computes to 2px under the shadcn
+  radius scale) and the no-results copy is its exact shape
+  (`No products found for "…".`).
+- `[SR]` **The overlay declares dialog semantics + the shell goes
+  inert behind it** (`role="dialog"` + `aria-modal` + StoreChrome's
+  `inert={cartDrawerOpen || searchOverlayOpen}`) — the invisible a11y
+  superset lane (the reference ships none); the overlay still does not
+  lock body scroll (the reference does not either — the recorded
+  deviation, now stated accurately in the store-provider comment).
+- `[SR]` **Docs-truth**: CLAUDE.md's stale "74 e2e" count; the
+  REMEDIATION_PLAN S76-9 garbled historical line; the AGENTS.md
+  dependency-risk ledger gained the accepted `@typescript-eslint/*`
+  moderate chain (9 moderates, dev-only).
+- `[SR]` **Tests**: 599 → 613 unit (+14: the S78 overlay pins ×6, the
+  route floor pins ×2, the layout-token S78 pins ×6), 77 → 79 e2e
+  (+2: the mobile 8-row reachability guard, the desktop scroll/dialog
+  geometry pin).
 
 #### Revision Block — v2.5 (Run 77 — the search-overlay parity & dependency-hygiene cycle)
 
@@ -136,8 +168,8 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, select, sheet, label, tabs, radio) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^3.25 | Single validation boundary (ADR-005) |
-| Unit tests | Vitest | ^3.2 | Node-env suite (599 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins — see §8.1) |
-| E2E tests | Playwright | ^1.64 | 77 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins |
+| Unit tests | Vitest | ^3.2 | Node-env suite (613 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins — see §8.1) |
+| E2E tests | Playwright | ^1.64 | 79 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
 ### 1.3 Architecture Decision Records
@@ -386,7 +418,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 599 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 613 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -441,7 +473,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 | `validation.test.ts` (S17-2 addendum) | `MAX_CART_QUANTITY` is 99 and the cart schemas interpolate the shared constant |
 | `api-boundaries.test.ts` (C7 addendum) | Cart DELETE `?all=1`: no cart → `{itemCount:0}` with `deleteMany` never called; guest cart → cartId-scoped `deleteMany` + the fresh summary's `itemCount` |
 
-### 8.2 E2E (Playwright — 77 tests: 70 desktop + 7 mobile-navigation, `tests/e2e/`)
+### 8.2 E2E (Playwright — 79 tests: 71 desktop + 8 mobile-navigation, `tests/e2e/`)
 
 Two projects: `mobile-navigation` (iPhone-13 device emulation on Chromium — WebKit is not installable in the target sandbox) and `desktop-chromium` (1440×900). The config first runs `scripts/restore-demo-stock.ts` (S14-4 — e2e checkouts permanently drain the traffic-owned demo stock) and then boots the standalone production build on :3100 with `/api/health` as the readiness probe (reusing an existing healthy server, whose state is already restored).
 
@@ -640,7 +672,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
 | `prisma/schema.prisma` / `seed.ts` | 19 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 599 unit · 77 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins) |
+| `tests/unit/*` · `tests/e2e/*` | 613 unit · 79 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---

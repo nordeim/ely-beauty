@@ -193,6 +193,43 @@ test.describe("mobile navigation (Tailwind v4 regression guard)", () => {
     await expect(page.getByTestId("search-overlay")).toHaveCount(0);
     await expect(page.getByTestId("mobile-menu")).toHaveCount(0);
   });
+
+  test("a broad query's 8 capped rows stay reachable inside the scrolling 60vh list (S78-1)", async ({ page }) => {
+    // S78-1 (D-1 + A-1, measured live): the reference's result list is
+    // `mt-6 space-y-1 max-h-[60vh] overflow-y-auto` — on the 664px iPhone
+    // viewport the 8 capped rows (~784px of content) MUST scroll inside
+    // the capped list or the last rows are permanently unreachable (a
+    // fixed container does not scroll; the page behind it does not move
+    // it). The run-77 clone shipped an uncapped list — this is the
+    // reachability regression guard.
+    const menuButton = page.getByTestId("mobile-menu-button");
+    await menuButton.click();
+    const panel = page.getByTestId("mobile-menu");
+    await panel.getByRole("button", { name: "Search", exact: true }).click();
+
+    const overlay = page.getByTestId("search-overlay");
+    await expect(overlay).toBeVisible();
+    const input = overlay.getByRole("searchbox", { name: "Search products" });
+
+    // S78-2 (D-2): the 1-char floor — "e" matches the capped 8 rows now.
+    await input.fill("e");
+    const rows = overlay.locator("ul > li");
+    await expect(rows).toHaveCount(8, { timeout: 10_000 });
+
+    // The list box is capped at 60% of the viewport height.
+    const list = overlay.locator("ul").first();
+    await expect(list).toHaveClass(/max-h-\[60vh\]/);
+    await expect(list).toHaveClass(/overflow-y-auto/);
+    const listBox = await list.boundingBox();
+    const viewport = page.viewportSize();
+    expect(listBox?.height).toBeLessThanOrEqual((viewport?.height ?? 664) * 0.6 + 1);
+
+    // The 8th row scrolls into view inside the capped list — the S78-1
+    // reachability contract.
+    const lastRow = rows.nth(7);
+    await lastRow.scrollIntoViewIfNeeded();
+    await expect(lastRow).toBeVisible();
+  });
 });
 
 test.describe("mobile navigation — the S75 measured frame (header + panel geometry)", () => {
