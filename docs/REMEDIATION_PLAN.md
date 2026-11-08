@@ -10358,7 +10358,7 @@ stretch, NOT a fixed-height block; verified mobile 3-line names + desktop
 
 ## Session 77 — The Search-Overlay Parity & Dependency-Hygiene Cycle
 
-> **Status:** PLANNED → EXECUTING (this cycle)
+> **Status:** EXECUTED (this cycle)
 > **Date:** 2026-11-08
 > **Inputs:** deep audit 77-a (read-only subagent, 9/9 anchors PASS, 0
 > CRITICAL code defects) + the live-reference re-measurement (agent-browser,
@@ -10589,7 +10589,7 @@ thumb buttons, the 36px round swatches). ONE new delta family measured:**
 
 ## Session 78 — The Search-Overlay Reachability & Micro-Parity Cycle
 
-> **Status:** PLANNED → EXECUTING (this cycle)
+> **Status:** EXECUTED (this cycle)
 > **Date:** 2026-11-08
 > **Inputs:** deep audit 78-a (read-only subagent, 9/9 anchors PASS, 0
 > CRITICAL/HIGH code defects) + the live-reference re-measurement
@@ -10812,7 +10812,7 @@ measured:**
 
 ## Session 79 — The Overlay Focus-Management, Fresh-Sheet & Body-Hardening Cycle
 
-> **Status:** PLANNED → EXECUTING (this cycle)
+> **Status:** EXECUTED (this cycle)
 > **Date:** 2026-11-08
 > **Inputs:** deep audit 79-a (read-only subagent, 12/12 standing anchors
 > PASS, 0 CRITICAL/HIGH code defects) + the operator's fresh-eyes pass
@@ -11048,3 +11048,145 @@ during the debounce window (reference behaves identically).
   docs-truth), CLAUDE.md (634/82 counts), README (counts), PAD v2.7,
   ely-beauty_SKILL.md v2.7.0 (project_state + the Session 79
   Appendix B entry).
+
+---
+
+## Session 80 — The Overlay Empty-State, No-Results Centering & Webhook Raw-Body Cycle
+
+> **Status:** EXECUTED (this cycle)
+> **Date:** 2026-11-09
+> **Inputs:** deep audit 80-a (read-only subagent: **12/12 standing anchors
+> PASS, 0 CRITICAL/HIGH, 1 LOW, 3 INFO**) + the live-reference
+> re-measurement (agent-browser 0.41.1, logged in, mobile 390×844 +
+> desktop; the mobile-menu priority surface byte-exact ±1px; the shop
+> catalog order unchanged — 19/19 positions identical to the seed's
+> authored order, closing the run-79 "re-baseline if the reference
+> re-orders" concern) + `npm audit` (12 advisories — the documented
+> accepted ledger, unchanged; the zod 3→4 migration epic remains the
+> documented deferred debt, deliberately deferred again: a major-version
+> schema migration deserves its own dedicated cycle with full gate
+> validation, not a tail-end of a parity session).
+
+### Findings feeding this cycle
+
+**Audit 80-a (1 LOW / 3 INFO):**
+
+- **L-1 (LOW, security posture)**: the Stripe webhook buffers the full
+  body BEFORE signature verification — `await request.text()` unbounded
+  at `api/stripe/webhook/route.ts:122`, on an unauthenticated, unmetered
+  route (the unconfigured default 400s before any read, so the demo
+  build is unaffected; a Stripe-configured deploy is exposed to
+  memory-amplification DoS). The S79-7 seam's stated goal — "an
+  attacker-supplied payload is never fully buffered into memory" — is
+  unmet on this one path (it was outside the 9-JSON-route scope).
+- I-1: npm-audit family attribution phrasing in AGENTS.md (no action).
+- I-2: LIKE wildcards unescaped (documented accepted parity, unchanged).
+- I-3: two window-scoped Tab-wrap listeners (drawer + overlay) —
+  unreachable double-open through the UI (the inert shell); recorded.
+
+**Live-reference re-measurement (every S74..S79 pinned surface
+re-verified GREEN — the mobile panel y:64 h:214 with rows @36px rhythm
+125/161/197/233; the overlay Cormorant input 18px/300 + the serif row
+price 14px/300 + the fresh-sheet reset + the 60vh cap + the 8-row cap;
+the detail-page price Inter 24px ৳; the shop pills; the catalog order
+19/19). TWO new deltas measured on the reference's empty/failure
+states:**
+
+- **D-80-1: the empty-query hint.** The reference renders
+  `Start typing to search our collection` at query `""` — class
+  `text-sm text-muted-foreground py-8 text-center` (14px, centered,
+  84px box, muted color) — on BOTH entry paths (header icon and the
+  panel's SEARCH row; also the state the fresh-sheet reset lands on).
+  The clone renders NOTHING on empty.
+- **D-80-2: the no-results copy punctuation + centering.** The
+  reference renders `No products found for "zzzzq"` — STRAIGHT ASCII
+  quotes (codepoint 34, verified at the codepoint level), NO trailing
+  period, in the SAME `text-sm text-muted-foreground py-8 text-center`
+  centered style as the hint. The clone renders curly quotes
+  (U+201C/U+201D) + a trailing period, left-aligned `pt-4`. (S78-4
+  pinned the verb + quoted-term shape; the punctuation and centering
+  were never measured — the same surface re-measured deeper, exactly
+  the run-79 "failure copy is part of the measured surface" trap
+  generalizing to the empty state.)
+
+### ToDo (TDD-first: RED tests → GREEN implementations)
+
+- [x] **S80-1 (D-80-1)**: the overlay renders the reference's hint at
+      query `""` — `Start typing to search our collection`,
+      `py-8 text-center text-sm text-muted-foreground`, visible on a
+      fresh open AND after the fresh-sheet reset; gone as soon as the
+      query is non-empty. RED: the search-overlay unit spec (jsdom)
+      + an e2e pin (fresh open → hint; typing → hint gone; the
+      fresh-sheet reopen lands back on the hint).
+- [x] **S80-2 (D-80-2)**: the no-results copy becomes the reference's
+      exact bytes — straight quotes, no trailing period — and the
+      centered `py-8` style (the hint's own class family). RED: the
+      S78-4 unit pin rewritten to the codepoint-exact expectation
+      (curly/period form forbidden) + the centered-style class pins +
+      an e2e computed-style pin (text-align: center).
+- [x] **S80-3 (L-1)**: the bounded RAW-body seam —
+      `readRawBody(request, cap)` in `src/lib/json-body.ts` (declared
+      content-length fast-fail, streamed byte-count cancel mid-read,
+      `string | null` keeping the webhook's 400 family; no
+      content-type gate — constructEvent needs the exact raw bytes and
+      does its own post-HMAC parse). The webhook route migrates from
+      `request.text()` and 400s `Payload too large.` on null. RED: the
+      json-body unit spec's raw-body truth table (declared fast-fail,
+      streamed cancel, exact-bytes round-trip under the cap, the
+      default 64 KB constant) + a source pin that no `request.text()`
+      call remains outside the seam.
+- [x] **S80-4**: the docs sweep — this log, `docs/session_16.md`,
+      worklog (Task 74), AGENTS.md (the S80 contract lines: the
+      overlay's empty-state hint + the raw-body seam note), CLAUDE.md /
+      README (counts), PAD v2.8, ely-beauty_SKILL.md v2.8.0.
+- [x] **S80-5**: 25 dev-server screenshots regenerated +
+      pixel-validated.
+- [x] **S80-6**: `.env.example` re-verified against every
+      code-referenced env var; final full gate chain
+      (lint · typecheck · typecheck:tests · unit · build · e2e);
+      commit + SSH-wrapper push to main.
+
+### Session 80 execution log
+
+- **Environment (fresh clone)**: `npm install` (12 advisories — the
+  documented accepted ledger, unchanged) · `.env` from the example
+  with a generated `AUTH_SECRET` (the build's module-load gate threw
+  on the empty example value — the documented production refusal) ·
+  `db:setup` seeded (19/4/11/3) · the ambient `DATABASE_URL` shadow
+  converged via the documented symlink (same inode at
+  `<repo>/db/custom.db`).
+- **Gates on the pulled tree**: lint ✓ · typecheck ✓ ·
+  typecheck:tests ✓ · 634/634 unit ✓ · clean build ✓ · 82/82 e2e ✓
+  — the docs matched reality.
+- **Audit 80-a**: 12/12 anchors PASS, 0 CRITICAL/HIGH, 1 LOW (L-1)
+  + 3 INFO; the run-79 fixes all verified present.
+- **TDD (RED 16 → GREEN)**: the hint unit batch ×4, the no-results
+  unit batch ×3 (the S78-4 pin rewritten to the codepoint-exact
+  expectation), the raw-body truth table ×7, the source pins ×3
+  went RED together; the GREEN implementations landed as three
+  surgical changes (the hint + copy in search-overlay.tsx, the
+  readRawBody seam + the webhook migration). Two test-side fixes
+  surfaced mid-GREEN: the custom-cap case reused one Request
+  (ReadableStream locked — a body reads once; two Requests minted)
+  and the old S78-4 pin expected the retired curly form. The raw
+  quote in JSX text tripped `react/no-unescaped-entities` — the
+  `&quot;` entity renders the identical codepoint (codepoint-probed
+  against the live reference's DOM) and the source pins assert the
+  entity form.
+- **Gates (all observed green)**: lint ✓ · typecheck ✓ ·
+  typecheck:tests ✓ · **650/650 unit** (+16) · clean build ✓ ·
+  **85/85 e2e** (+3).
+- **Evidence**: the clone-side hint + no-results verified against
+  the live reference's exact codepoints/styles (centered, 32px
+  padding, straight quotes, no period) via the standalone build; the
+  mobile panel re-measured byte-exact (±1px); 25 dev-server
+  screenshots regenerated + validated; `.env.example` re-verified
+  against every code-referenced env var.
+- **Docs sweep**: AGENTS.md (the S80 contract lines + the raw-body
+  seam note + the 2..80 range), CLAUDE.md (650/85), README (counts),
+  PAD v2.8, ely-beauty_SKILL.md v2.8.0 (project_state + the Session
+  80 Appendix B entry), docs/session_16.md, worklog (Task 74), this
+  log.
+- **Deferred (documented)**: the zod 3→4 migration epic — a
+  major-version schema migration deserves its own dedicated cycle
+  with full gate validation, not a tail-end of a parity session.

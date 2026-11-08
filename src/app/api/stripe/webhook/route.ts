@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCartSummary } from "@/lib/cart";
 import { applyCouponCode } from "@/lib/coupons";
 import { db } from "@/lib/db";
+import { readRawBody } from "@/lib/json-body";
 import { generateOrderNumber } from "@/lib/order-number";
 import { computeOrderMoney, shippingMethodForCity } from "@/lib/order-money";
 import { CheckoutError, placeOrderTx, type PlaceOrderArgs } from "@/lib/order-placement";
@@ -117,9 +118,17 @@ export async function POST(request: NextRequest) {
     return safe400("Missing signature.");
   }
 
-  // The EXACT raw bytes (constructEvent is byte-sensitive — request.json()
-  // would re-serialize and break the HMAC).
-  const body = await request.text();
+  // The EXACT raw bytes (constructEvent is byte-sensitive — a JSON parse
+  // would re-serialize and break the HMAC), read through the bounded
+  // raw-body seam (S80-3, audit 80-a L-1): the declared content-length
+  // fast-fails over the 64 KB cap and a streamed body past the cap is
+  // cancelled mid-read — an unauthenticated POST can no longer force the
+  // full payload into memory before constructEvent can reject the
+  // signature.
+  const body = await readRawBody(request);
+  if (body === null) {
+    return safe400("Payload too large.");
+  }
 
   let event;
   try {

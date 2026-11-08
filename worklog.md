@@ -314,3 +314,21 @@ Stage Summary:
 - Every fixed surface pinned: the serif price (e2e computed-style), the fresh sheet + focus restoration (e2e), the seam contract (8-case truth table), the source contracts (7 layout-token pins).
 - Dev-server screenshots: 25/25 regenerated and validated.
 - Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.
+
+---
+
+Task ID: 74
+Agent: run-80 executor (the overlay empty-state, no-results centering & webhook raw-body cycle)
+Task: The full remediation cycle on the RESET workspace (fresh clone at 8feb3d1): environment rebuild (npm install, .env with a generated AUTH_SECRET, db:setup, the DATABASE_URL shadow converged via the documented symlink) → docs review → gates re-validation (634/634 unit, 82/82 e2e, clean build — docs matched reality) → deep audit 80-a (read-only subagent, web-application + code-review-checklist methodology, skills/ excluded: 12/12 anchors PASS, 0 CRITICAL/HIGH, 1 LOW, 3 INFO) → live-reference re-measurement (agent-browser, logged in, both viewports; the mobile-menu priority surface byte-exact ±1px; the shop catalog order 19/19 — the re-baseline concern closed; TWO new deltas measured on the empty/failure states: the empty-query hint + the no-results copy's straight quotes/period-free/centered form) → the Session 80 plan (S80-1..S80-6, validated against the codebase) → TDD execution (RED 16 → GREEN; 634 → 650 unit, 82 → 85 e2e) → 25 screenshots off the dev server → the docs sweep (AGENTS/CLAUDE/README/PAD v2.8/SKILL v2.8.0/session_16/this worklog/REMEDIATION_PLAN Session 80) → commit + SSH-wrapper push to main.
+
+Work Log:
+- The [h-eating bash display artifact struck this session's own probes twice (the audit's S79-5 read-back + this session's parity probes) — byte-level codepoint probes (JSON.stringify + codePointAt) proved both files correct; no phantom findings actioned.
+- The bounded readRawBody seam (src/lib/json-body.ts): the shared readBodyTextBounded byte-walk under both seams; declared content-length fast-fail over the 64 KB cap, streamed cancel mid-read, string | null → 400 "Payload too large." feeding constructEvent; the only sanctioned request.text() site is the seam module itself (source-pinned).
+- The overlay's empty state: the hint (Start typing to search our collection, py-8 text-center) gated on the query — the fresh-sheet reset lands on it; the no-results copy is the reference's codepoint-exact bytes (&quot; entities render the straight quotes react/no-unescaped-entities forbids in raw JSX text).
+- The zod 3→4 migration epic: deliberately deferred again (documented) — a major-version schema migration deserves its own dedicated cycle with full gate validation.
+
+Stage Summary:
+- All gates green: lint · typecheck · typecheck:tests · 650/650 unit · clean build · 85/85 e2e.
+- Every fixed surface pinned: the hint (4 unit + 2 e2e), the no-results copy (3 unit + 1 e2e with computed style + codepoints), the raw-body seam (7-case truth table + source pins).
+- Dev-server screenshots: 25/25 regenerated and validated (dimensions + non-blank).
+- Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.

@@ -476,3 +476,66 @@ test.describe("storefront — the S79 overlay serif-price, fresh-sheet & focus c
     await expect(opener).toHaveAttribute("aria-expanded", "false");
   });
 });
+
+test.describe("storefront — the S80 overlay empty-state & centered no-results cycle", () => {
+  test("a fresh open renders the reference's 'Start typing' hint (S80-1)", async ({ page }) => {
+    await gotoHydrated(page, "/shop");
+    await page.getByRole("button", { name: "Search products" }).click();
+    const overlay = page.getByTestId("search-overlay");
+    await expect(overlay).toBeVisible();
+
+    // S80-1 (D-80-1, measured live): the reference renders
+    // `Start typing to search our collection` at query "" — centered,
+    // py-8, muted — on a fresh open. The clone rendered nothing.
+    const hint = overlay.getByText("Start typing to search our collection");
+    await expect(hint).toBeVisible();
+    const textAlign = await hint.evaluate((el) => getComputedStyle(el).textAlign);
+    expect(textAlign).toBe("center");
+    // Typing removes the hint immediately (it is gated on the query, not
+    // on results).
+    const input = overlay.getByRole("searchbox", { name: "Search products" });
+    await input.fill("silk");
+    await expect(hint).toBeHidden();
+  });
+
+  test("the fresh-sheet reopen lands back on the hint (S79-2 × S80-1)", async ({ page }) => {
+    await gotoHydrated(page, "/shop");
+    await page.getByRole("button", { name: "Search products" }).click();
+    const overlay = page.getByTestId("search-overlay");
+    const input = overlay.getByRole("searchbox", { name: "Search products" });
+    await input.fill("silk");
+    await expect(overlay.locator("ul > li")).toHaveCount(4, { timeout: 10_000 });
+
+    // Close → reopen: the reference's reset (query "") now lands on the
+    // reference's empty-state hint, exactly like the live sheet.
+    await overlay.getByRole("button", { name: "Close search" }).click();
+    await expect(overlay).toBeHidden();
+    await page.getByRole("button", { name: "Search products" }).click();
+    await expect(overlay).toBeVisible();
+    await expect(overlay.getByRole("searchbox", { name: "Search products" })).toHaveValue("");
+    await expect(overlay.getByText("Start typing to search our collection")).toBeVisible();
+    await expect(overlay.locator("ul > li")).toHaveCount(0);
+  });
+
+  test("the no-results copy is the reference's straight-quote centered form (S80-2)", async ({ page }) => {
+    await gotoHydrated(page, "/shop");
+    await page.getByRole("button", { name: "Search products" }).click();
+    const overlay = page.getByTestId("search-overlay");
+    const input = overlay.getByRole("searchbox", { name: "Search products" });
+
+    // S80-2 (D-80-2, codepoint-verified live): the reference renders
+    // `No products found for "zzzzq"` — straight quotes, no trailing
+    // period, centered py-8.
+    await input.fill("zzzzq");
+    const copy = overlay.getByText('No products found for "zzzzq"');
+    await expect(copy).toBeVisible({ timeout: 10_000 });
+    expect(await copy.textContent()).not.toContain("”");
+    expect(await copy.textContent()).not.toMatch(/\.$/);
+    const styles = await copy.evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return { textAlign: cs.textAlign, py: cs.paddingTop };
+    });
+    expect(styles.textAlign).toBe("center");
+    expect(styles.py).toBe("32px");
+  });
+});

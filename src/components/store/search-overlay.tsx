@@ -204,8 +204,18 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
             ))}
           </ul>
         )}
+        {query.trim().length === 0 && (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            Start typing to search our collection
+          </p>
+        )}
         {query.trim().length >= 1 && results.length === 0 && (
-          <p className="pt-4 text-sm text-muted-foreground">No products found for “{query.trim()}”.</p>
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            {/* S80-2: the entity renders the straight ASCII quote (codepoint
+                34), no trailing period — the reference's exact bytes,
+                codepoint-verified live. */}
+            No products found for &quot;{query.trim()}&quot;
+          </p>
         )}
       </div>
     </div>

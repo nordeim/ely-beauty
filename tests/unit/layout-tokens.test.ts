@@ -293,7 +293,12 @@ describe("S77 measured search-overlay anatomy (source pins)", () => {
 
   it("S78-4: the no-results copy is the reference's 'No products found for' shape", () => {
     const overlay = src("components/store/search-overlay.tsx");
-    expect(overlay).toContain("No products found for “{query.trim()}”.");
+    // S80-2 (D-80-2, codepoint-verified live): the copy's quotes are
+    // STRAIGHT ASCII with no trailing period — the reference's exact
+    // bytes. The curly-quote + period form this pin used to assert was
+    // the un-measured residue, retired in S80-2.
+    expect(overlay).toContain("No products found for &quot;{query.trim()}&quot;");
+    expect(overlay).not.toContain("No products found for “");
     expect(overlay).not.toContain("No products match");
   });
 
@@ -405,5 +410,49 @@ describe("S79 overlay focus-management, fresh-sheet & wrap-repair pins (source p
       expect(text, `${route} uses the shared bounded seam`).toMatch(/parseJsonBody|readJsonBody/);
       expect(text, `${route} no longer parses request.json() directly`).not.toMatch(/await request\.json\(\)/);
     }
+  });
+});
+
+describe("S80 overlay empty-state, centered no-results & raw-body pins (source pins)", () => {
+  it("S80-1: the overlay renders the reference's empty-query hint", () => {
+    const overlay = src("components/store/search-overlay.tsx");
+    // S80-1 (D-80-1, measured live at query ""): the reference renders
+    // `Start typing to search our collection` — text-sm
+    // text-muted-foreground py-8 text-center (14px centered, 84px box) —
+    // the state a fresh open AND the fresh-sheet reset land on. The clone
+    // rendered nothing on empty.
+    expect(overlay).toContain("Start typing to search our collection");
+    expect(overlay).toMatch(/py-8 text-center text-sm text-muted-foreground/);
+  });
+
+  it("S80-2: the no-results copy is the reference's straight-quote, period-free form", () => {
+    const overlay = src("components/store/search-overlay.tsx");
+    // S80-2 (D-80-2, codepoint-verified live): the reference renders
+    // `No products found for "zzzzq"` — straight ASCII quotes (codepoint
+    // 34), NO trailing period, the SAME centered py-8 family as the hint.
+    // The clone's curly quotes + period + pt-4 were the un-measured
+    // residue.
+    expect(overlay).toContain("No products found for &quot;");
+    expect(overlay).not.toContain("No products found for “");
+    expect(overlay).not.toContain('.”');
+    // The centered style rides the copy line (the hint's class family).
+    expect(overlay).not.toMatch(/pt-4 text-sm text-muted-foreground">No products found/);
+  });
+
+  it("S80-3: the Stripe webhook reads through the bounded raw-body seam", () => {
+    const webhook = src("app/api/stripe/webhook/route.ts");
+    // Audit 80-a L-1: the webhook buffered the full body before signature
+    // verification (unbounded request.text() on an unauthenticated route).
+    // The seam returns string | null; null renders the 400 family.
+    expect(webhook).toMatch(/readRawBody/);
+    expect(webhook).not.toMatch(/await request\.text\(\)/);
+    expect(webhook).toMatch(/Payload too large/);
+  });
+
+  it("S80-3b: no request.text() call remains outside the seam module itself", () => {
+    // The seam's own text-path fallback is the single sanctioned
+    // request.text() site in the codebase.
+    const seam = src("lib/json-body.ts");
+    expect(seam).toMatch(/request\.text\(\)/);
   });
 });

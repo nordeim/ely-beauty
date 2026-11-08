@@ -26,6 +26,16 @@
 /** The body-read ceiling: 32 KB. */
 export const MAX_JSON_BODY_BYTES = 32 * 1024;
 
+/**
+ * The raw-body ceiling (session 80 S80-3, audit 80-a L-1): 64 KB.
+ *
+ * The Stripe webhook reads its constructEvent payload through
+ * {@link readRawBody} — the events this app listens for (plain
+ * PaymentIntents, charges, refunds — no object expansions) are tens of
+ * KB at most; 64 KB is the documented ceiling with margin.
+ */
+export const MAX_RAW_BODY_BYTES = 64 * 1024;
+
 function isJsonContentType(request: Request): boolean {
   const contentType = request.headers.get("content-type");
   if (contentType === null) return false;
@@ -33,21 +43,22 @@ function isJsonContentType(request: Request): boolean {
 }
 
 /**
- * Parse a JSON request body defensively.
+ * Read the request body as text, bounded to `maxBytes`.
  *
- * @returns the parsed value, or `null` for ANY refusal (wrong type, too
- *   large, malformed) — the caller renders its existing 400 envelope.
+ * The shared byte-walk for both seams: a declared `content-length` over
+ * the cap fast-fails before any read, and a streamed body past the cap is
+ * CANCELLED mid-read so an attacker-supplied payload is never fully
+ * buffered into memory.
+ *
+ * @returns the body text, or `null` when refused as too large.
  */
-export async function parseJsonBody(request: Request): Promise<unknown> {
-  if (!isJsonContentType(request)) return null;
-
+async function readBodyTextBounded(request: Request, maxBytes: number): Promise<string | null> {
   const declared = request.headers.get("content-length");
   if (declared !== null) {
     const declaredBytes = Number(declared);
-    if (!Number.isNaN(declaredBytes) && declaredBytes > MAX_JSON_BODY_BYTES) return null;
+    if (!Number.isNaN(declaredBytes) && declaredBytes > maxBytes) return null;
   }
 
-  let text: string;
   if (request.body) {
     // Streamed body: count bytes chunk-by-chunk and cancel past the cap so
     // an attacker-supplied payload is never fully buffered into memory.
@@ -60,7 +71,7 @@ export async function parseJsonBody(request: Request): Promise<unknown> {
       if (done) break;
       if (value === undefined) continue;
       total += value.byteLength;
-      if (total > MAX_JSON_BODY_BYTES) {
+      if (total > maxBytes) {
         cancelled = true;
         try {
           await reader.cancel();
@@ -78,11 +89,41 @@ export async function parseJsonBody(request: Request): Promise<unknown> {
       merged.set(chunk, offset);
       offset += chunk.byteLength;
     }
-    text = new TextDecoder().decode(merged);
-  } else {
-    text = await request.text();
-    if (text.length > MAX_JSON_BODY_BYTES) return null;
+    return new TextDecoder().decode(merged);
   }
+
+  const text = await request.text();
+  return text.length > maxBytes ? null : text;
+}
+
+/**
+ * Read a RAW request body defensively (byte-sensitive consumers).
+ *
+ * For consumers that need the exact payload text — the Stripe webhook's
+ * `constructEvent` HMAC — with the same bounded-read guarantees as
+ * {@link parseJsonBody} but WITHOUT the content-type gate or JSON parse:
+ * the consumer owns the payload's meaning.
+ *
+ * @returns the raw body text, or `null` when refused as too large.
+ */
+export async function readRawBody(
+  request: Request,
+  maxBytes: number = MAX_RAW_BODY_BYTES,
+): Promise<string | null> {
+  return readBodyTextBounded(request, maxBytes);
+}
+
+/**
+ * Parse a JSON request body defensively.
+ *
+ * @returns the parsed value, or `null` for ANY refusal (wrong type, too
+ *   large, malformed) — the caller renders its existing 400 envelope.
+ */
+export async function parseJsonBody(request: Request): Promise<unknown> {
+  if (!isJsonContentType(request)) return null;
+
+  const text = await readBodyTextBounded(request, MAX_JSON_BODY_BYTES);
+  if (text === null) return null;
 
   try {
     return JSON.parse(text) as unknown;

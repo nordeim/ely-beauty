@@ -241,12 +241,13 @@ describe("SearchOverlay — the S78 reachability + micro-parity (D-1..D-4 + a11y
     expect(globalThis.fetch).toHaveBeenCalled();
   });
 
-  it("an empty query still renders nothing (the floor is 1, empty stays empty)", async () => {
+  it("an empty query fires no typeahead and renders no rows (the floor is 1)", async () => {
     stubSearch();
     renderOverlay();
     const input = screen.getByRole("searchbox", { name: "Search products" });
     fireEvent.change(input, { target: { value: "" } });
-    // The debounce timer is 250ms — no fetch, no rows, no no-results copy.
+    // The debounce timer is 250ms — no fetch, no rows, no no-results copy
+    // (the S80-1 hint below is the ONLY empty-state content).
     await new Promise((r) => setTimeout(r, 400));
     expect(screen.queryByRole("link")).not.toBeInTheDocument();
     expect(screen.queryByText(/No products found/)).not.toBeInTheDocument();
@@ -264,9 +265,39 @@ describe("SearchOverlay — the S78 reachability + micro-parity (D-1..D-4 + a11y
     await waitFor(() => {
       // S78-4 (D-4, measured live): the reference renders `No products
       // found for "zzzzq"` — the verb + quoted-term shape.
-      expect(screen.getByText('No products found for “zzzzq”.')).toBeInTheDocument();
+      // S80-2 (D-80-2, codepoint-verified live): the reference's quotes
+      // are STRAIGHT ASCII (codepoint 34) with NO trailing period, in
+      // the centered py-8 style (the empty-state hint's own class
+      // family). The clone's curly quotes + period + pt-4 were the
+      // un-measured residue.
+      expect(screen.getByText('No products found for "zzzzq"')).toBeInTheDocument();
     });
     expect(screen.queryByText(/No products match/)).not.toBeInTheDocument();
+    // The retired curly/period forms are gone for good.
+    expect(screen.queryByText("No products found for “zzzzq”.")).not.toBeInTheDocument();
+  });
+
+  it("the no-results copy rides the reference's centered py-8 style (S80-2)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({ json: async () => ({ results: [] }) }) as unknown as Response),
+    );
+    renderOverlay();
+    const input = screen.getByRole("searchbox", { name: "Search products" });
+    fireEvent.change(input, { target: { value: "zzzzq" } });
+
+    const copy = await waitFor(() => {
+      const el = screen.getByText('No products found for "zzzzq"');
+      expect(el).toBeInTheDocument();
+      return el;
+    });
+    // The reference's class: text-sm text-muted-foreground py-8 text-center.
+    expect(copy.className).toContain("py-8");
+    expect(copy.className).toContain("text-center");
+    expect(copy.className).toContain("text-sm");
+    expect(copy.className).toContain("text-muted-foreground");
+    // The old left-aligned pt-4 rhythm is retired.
+    expect(copy.className).not.toContain("pt-4");
   });
 
   it("the overlay declares dialog semantics (the invisible a11y superset)", () => {
@@ -389,5 +420,60 @@ describe("SearchOverlay — the S79 fresh-sheet, focus & serif-price cycle", () 
     if (input.className.includes("focus:outline-none")) {
       expect(input.className).toMatch(/focus-visible:ring|focus:ring/);
     }
+  });
+});
+
+describe("SearchOverlay — the S80 empty-state hint & centered no-results cycle", () => {
+  it("an empty query renders the reference's 'Start typing' hint (D-80-1)", () => {
+    stubSearch();
+    renderOverlay();
+    // S80-1 (D-80-1, measured live on the reference at query ""): the
+    // reference renders `Start typing to search our collection` — class
+    // `text-sm text-muted-foreground py-8 text-center` (14px centered,
+    // 84px box) — the state a fresh open lands on. The clone rendered
+    // nothing on empty.
+    const hint = screen.getByText("Start typing to search our collection");
+    expect(hint.className).toContain("py-8");
+    expect(hint.className).toContain("text-center");
+    expect(hint.className).toContain("text-sm");
+    expect(hint.className).toContain("text-muted-foreground");
+  });
+
+  it("the hint is the empty query's ONLY state content — no rows, no no-results copy", () => {
+    stubSearch();
+    renderOverlay();
+    expect(screen.getByText("Start typing to search our collection")).toBeInTheDocument();
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    expect(screen.queryByText(/No products found/)).not.toBeInTheDocument();
+  });
+
+  it("the hint disappears as soon as the query is non-empty (before results land)", () => {
+    stubSearch();
+    renderOverlay();
+    expect(screen.getByText("Start typing to search our collection")).toBeInTheDocument();
+    const input = screen.getByRole("searchbox", { name: "Search products" });
+    fireEvent.change(input, { target: { value: "s" } });
+    // Synchronous re-render: the hint is gated on the query, not on
+    // results — the reference swaps it for the rows/no-results copy the
+    // moment typing starts.
+    expect(screen.queryByText("Start typing to search our collection")).not.toBeInTheDocument();
+  });
+
+  it("the fresh-sheet reopen lands back on the hint (S79-2 × S80-1)", async () => {
+    stubSearch();
+    const { rerender } = renderOverlay();
+    const input = screen.getByRole("searchbox", { name: "Search products" });
+    fireEvent.change(input, { target: { value: "silk" } });
+    await waitFor(() => {
+      expect(screen.getByRole("link", { name: /Pure Satin Silk Pillowcase/ })).toBeInTheDocument();
+    });
+
+    // Close → reopen: the reference's reset (query "") now lands on the
+    // reference's empty-state hint, exactly like the live sheet.
+    rerender(<SearchOverlay open={false} onClose={() => {}} />);
+    rerender(<SearchOverlay open onClose={() => {}} />);
+    expect(screen.getByRole("searchbox", { name: "Search products" })).toHaveValue("");
+    expect(screen.getByText("Start typing to search our collection")).toBeInTheDocument();
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
   });
 });

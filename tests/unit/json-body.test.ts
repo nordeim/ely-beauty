@@ -13,7 +13,7 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { MAX_JSON_BODY_BYTES, parseJsonBody } from "@/lib/json-body";
+import { MAX_JSON_BODY_BYTES, MAX_RAW_BODY_BYTES, parseJsonBody, readRawBody } from "@/lib/json-body";
 
 function jsonRequest(body: string, headers: Record<string, string> = {}): Request {
   return new Request("http://localhost:3000/api/test", {
@@ -94,5 +94,94 @@ describe("parseJsonBody — the bounded JSON body seam (S79-7)", () => {
     // cannot silently drop it to something the checkout would trip on —
     // or inflate it into uselessness.
     expect(MAX_JSON_BODY_BYTES).toBe(32 * 1024);
+  });
+});
+
+describe("readRawBody — the bounded raw-body seam (S80-3, audit 80-a L-1)", () => {
+  it("round-trips the exact raw bytes under the cap (the webhook's constructEvent contract)", async () => {
+    // constructEvent is byte-sensitive: the raw text that reaches the HMAC
+    // must be byte-identical to what request.text() would have returned.
+    const payload = JSON.stringify({ id: "evt_123", type: "payment_intent.succeeded" });
+    const request = new Request("http://localhost:3000/api/stripe/webhook", {
+      method: "POST",
+      body: payload,
+      headers: { "content-type": "application/json" },
+    });
+    expect(await readRawBody(request)).toBe(payload);
+  });
+
+  it("returns the empty string for an empty body (an empty webhook POST is not a refusal)", async () => {
+    const request = new Request("http://localhost:3000/api/stripe/webhook", {
+      method: "POST",
+      body: "",
+      headers: { "content-type": "application/json" },
+    });
+    expect(await readRawBody(request)).toBe("");
+  });
+
+  it("does NOT gate on content-type (constructEvent owns the payload's meaning)", async () => {
+    // Unlike parseJsonBody, the raw seam never parses — the content-type is
+    // irrelevant to the HMAC over the bytes (Stripe posts JSON, but the seam
+    // must not refuse a body on content-type grounds).
+    const request = new Request("http://localhost:3000/api/stripe/webhook", {
+      method: "POST",
+      body: '{"id":"evt_1"}',
+      headers: { "content-type": "application/octet-stream" },
+    });
+    expect(await readRawBody(request)).toBe('{"id":"evt_1"}');
+  });
+
+  it("fast-fails a declared content-length over the cap without reading the body", async () => {
+    const request = new Request("http://localhost:3000/api/stripe/webhook", {
+      method: "POST",
+      body: "{}".padEnd(64, " "),
+      headers: {
+        "content-type": "application/json",
+        // A declared length over the cap fast-fails before any buffering.
+        "content-length": String(MAX_RAW_BODY_BYTES + 1),
+      },
+    });
+    expect(await readRawBody(request)).toBeNull();
+  });
+
+  it("cancels a streamed body past the cap (no content-length declared)", async () => {
+    // The DoS shape from audit 80-a L-1: an unauthenticated POST with a
+    // huge streamed body. The reader must count bytes and cancel mid-read
+    // instead of buffering the whole payload before constructEvent can
+    // reject the signature.
+    const payload = "x".repeat(MAX_RAW_BODY_BYTES + 4096);
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode(payload));
+        controller.close();
+      },
+    });
+    const request = new Request("http://localhost:3000/api/stripe/webhook", {
+      method: "POST",
+      body: stream,
+      headers: { "content-type": "application/json" },
+      duplex: "half",
+    } as RequestInit);
+    expect(await readRawBody(request)).toBeNull();
+  });
+
+  it("honors a custom cap (the seam is parameterized, the default is the webhook's)", async () => {
+    // A Request body can be read once — each read gets its own Request.
+    const mk = () =>
+      new Request("http://localhost:3000/api/stripe/webhook", {
+        method: "POST",
+        body: "0123456789",
+        headers: { "content-type": "application/json" },
+      });
+    expect(await readRawBody(mk(), 5)).toBeNull();
+    expect(await readRawBody(mk(), 10)).toBe("0123456789");
+  });
+
+  it("the default cap is 64 KB — generous for Stripe events, merciless for junk", () => {
+    // Stripe events (no object expansions — this app mints plain PaymentIntents
+    // and listens for charges/refunds) are tens of KB at most; 64 KB is the
+    // documented ceiling with margin. Pin the constant so a refactor cannot
+    // silently drop or inflate it.
+    expect(MAX_RAW_BODY_BYTES).toBe(64 * 1024);
   });
 });

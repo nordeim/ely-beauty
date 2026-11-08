@@ -1,12 +1,39 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.7
+# ElyBeauty — Master Project Architecture Document (PAD) v2.8
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
-**Last Updated:** 2026-11-08
+**Last Updated:** 2026-11-09
 **Audience:** Senior Engineers, Tech Leads, DevOps, and Onboarding Engineers
 **Rule:** Every architectural decision in this document traces to a specific rationale. Nothing is here "because it's popular."
 
+
+#### Revision Block — v2.8 (Run 80 — the overlay empty-state, no-results centering & webhook raw-body cycle)
+
+- `[SR]` **The overlay renders the reference's empty-query hint**
+  (`Start typing to search our collection`, `py-8 text-center
+  text-sm text-muted-foreground`): the state a fresh open AND the
+  fresh-sheet reset land on — measured live at query "" (the clone
+  previously rendered nothing on empty).
+- `[SR]` **The no-results copy is the reference's exact bytes**:
+  `No products found for "query"` — straight ASCII quotes (codepoint
+  34, verified at the codepoint level), NO trailing period, the SAME
+  centered py-8 family as the hint (the curly-quote + period +
+  left-aligned pt-4 forms retired).
+- `[SE]` **The bounded RAW-body seam** (`readRawBody`,
+  `src/lib/json-body.ts`, 64 KB cap): the Stripe webhook's
+  byte-sensitive constructEvent payload now reads through the same
+  bounded family as parseJsonBody (declared content-length fast-fail,
+  streamed cancel mid-read) — an unauthenticated POST can no longer
+  force full buffering before signature verification (audit 80-a L-1;
+  the only sanctioned `request.text()` site is the seam module
+  itself).
+- `[TE]` Suite: 634 → **650 unit** (+16: the hint ×4, the centered
+  no-results ×2, the raw-body truth table ×7, the source pins ×3) ·
+  82 → **85 e2e** (+3: the fresh-open hint, the fresh-sheet-lands-on-
+  hint, the straight-quote centered no-results). The shop catalog
+  order re-verified 19/19 against the live reference (no re-baseline
+  needed).
 
 #### Revision Block — v2.7 (Run 79 — the overlay focus-management, fresh-sheet & body-hardening cycle)
 

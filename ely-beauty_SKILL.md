@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.7.0
-last_updated: 2026-11-08
-project_state: "634 unit tests · 82 e2e tests · lint/typecheck/typecheck:tests/build green · RUN-79 (session 14): the overlay focus-management, fresh-sheet & body-hardening cycle — audit 79-a: 12/12 anchors PASS, 0 CRITICAL/HIGH code defects (2 MEDIUM: the overlay never restored focus on close, unbounded request.json() reads with the limiter after the parse); the live re-measurement re-verified every pinned surface byte-exact (the mobile panel ±1px, the pills, the detail anatomy) and measured TWO new deltas on the search surface: the row price rides the DISPLAY SERIF (the reference’s computed Cormorant 14px/300 — the clone rode Inter) and the reference RESETS the overlay on close/reopen (the clone persisted the query/results). Fixed TDD-first (613 → 634 unit, 79 → 82 e2e): font-display on the price, the render-time prev-open reset (lint’s set-state-in-effect-clean form), openerRef focus restoration + the drawer’s Tab-wrap handler + focus-visible rings on the overlay, aria-expanded/haspopup on the header button, and the bounded parseJsonBody seam (content-type gate + 32KB cap + limiter-first on all 9 JSON routes; the aref] “selector bug” was retracted as a bash-display artifact — byte-level verification showed a[href] was always correct). PRECEDING RUN-78 (session 12): the search-overlay reachability & micro-parity cycle — audit 78-a: 9/9 anchors PASS, 0 CRITICAL/HIGH code defects (3 MEDIUM: the overlay list's missing scroll container, the over-broad scroll-lock comment, CLAUDE.md's stale e2e count); the live re-measurement measured FOUR new deltas on the otherwise byte-exact search surface: the list's scroll container (mt-6 max-h-[60vh] overflow-y-auto — the clone's uncapped list left the 8th row unreachable on sub-816px windows), the 1-char search floor (the reference returns 8 rows for "e"), the rows' 2px corners (its rounded-md under the shadcn scale), and the no-results copy. Fixed TDD-first (599 → 613 unit, 77 → 79 e2e) plus the invisible a11y superset (role=dialog + aria-modal + the shell's inert widened to the overlay). PRECEDING RUN-77 (session 10): the search-overlay parity & dependency-hygiene cycle — the audit's 9/9 anchors PASSed with 0 critical code defects; the live re-measurement found ONE delta family (the search surface: the reference opens a FULL-SCREEN overlay `fixed inset-0 z-[70] bg-background/95 backdrop-blur-xs` with a max-w-2xl column + a Cormorant text-lg/lg:text-2xl input from BOTH the header icon and the mobile panel's SEARCH row, single-column 80px rows with name + shortDescription + font-light price, description-inclusive matching, authored-order results — the clone shipped a header-anchored dropdown + an in-panel swap with category labels and rating ordering). Fixed TDD-first (576 → 599 unit, 77 e2e): the shared search-overlay.tsx component (store-provider state, StoreChrome render site), the /api/search field/order/payload contract, the seed's db-path seam (datasourceUrl), next 16.4.0 → 16.4.5 (3 critical CVEs closed; lockfile root-name fix), the push-target cluster (wrapper DEFAULT_REMOTE + runbook + CLAUDE.md all say ely-beauty), the twitter-card metadata fallback, and the docs-truth sweep (CLAUDE.md 599/77 + 19-product + push target, REMEDIATION_PLAN 21→19, the SKILL H1 retitle). Every fixed surface re-measured byte-exact against the live reference (overlay 1440×900 + col x:384 w:672 + input 24px Cormorant + rows 624×80 @84px rhythm; mobile input 18px/20px @y:104 ±1px; 4 description-matched rows in the authored order)."
+version: 2.8.0
+last_updated: 2026-11-09
+project_state: "650 unit tests · 85 e2e tests · lint/typecheck/typecheck:tests/build green · RUN-80 (session 15 cycle): the overlay empty-state, no-results centering & webhook raw-body cycle — audit 80-a: 12/12 anchors PASS, 0 CRITICAL/HIGH code defects (1 LOW: the Stripe webhook buffered the full body before signature verification); the live re-measurement re-verified every pinned surface byte-exact (the mobile panel ±1px; the shop catalog order 19/19 — the re-baseline concern closed) and measured TWO new deltas on the reference's empty/failure states: the empty-query hint (Start typing to search our collection, py-8 text-center — the clone rendered nothing on empty) and the no-results copy's straight-ASCII quotes + no trailing period + centered py-8 style (codepoint-verified). Fixed TDD-first (634 → 650 unit, 82 → 85 e2e): the hint gated on the query, the exact-byte no-results copy, and the bounded readRawBody seam (64 KB cap, declared fast-fail + streamed cancel) feeding constructEvent — no request.text() outside the seam module. PRECEDING RUN-79 (session 14): the overlay focus-management, fresh-sheet & body-hardening cycle — audit 79-a: 12/12 anchors PASS, 0 CRITICAL/HIGH code defects (2 MEDIUM: the overlay never restored focus on close, unbounded request.json() reads with the limiter after the parse); the live re-measurement re-verified every pinned surface byte-exact (the mobile panel ±1px, the pills, the detail anatomy) and measured TWO new deltas on the search surface: the row price rides the DISPLAY SERIF (the reference’s computed Cormorant 14px/300 — the clone rode Inter) and the reference RESETS the overlay on close/reopen (the clone persisted the query/results). Fixed TDD-first (613 → 634 unit, 79 → 82 e2e): font-display on the price, the render-time prev-open reset (lint’s set-state-in-effect-clean form), openerRef focus restoration + the drawer’s Tab-wrap handler + focus-visible rings on the overlay, aria-expanded/haspopup on the header button, and the bounded parseJsonBody seam (content-type gate + 32KB cap + limiter-first on all 9 JSON routes; the aref] “selector bug” was retracted as a bash-display artifact — byte-level verification showed a[href] was always correct). PRECEDING RUN-78 (session 12): the search-overlay reachability & micro-parity cycle — audit 78-a: 9/9 anchors PASS, 0 CRITICAL/HIGH code defects (3 MEDIUM: the overlay list's missing scroll container, the over-broad scroll-lock comment, CLAUDE.md's stale e2e count); the live re-measurement measured FOUR new deltas on the otherwise byte-exact search surface: the list's scroll container (mt-6 max-h-[60vh] overflow-y-auto — the clone's uncapped list left the 8th row unreachable on sub-816px windows), the 1-char search floor (the reference returns 8 rows for "e"), the rows' 2px corners (its rounded-md under the shadcn scale), and the no-results copy. Fixed TDD-first (599 → 613 unit, 77 → 79 e2e) plus the invisible a11y superset (role=dialog + aria-modal + the shell's inert widened to the overlay). PRECEDING RUN-77 (session 10): the search-overlay parity & dependency-hygiene cycle — the audit's 9/9 anchors PASSed with 0 critical code defects; the live re-measurement found ONE delta family (the search surface: the reference opens a FULL-SCREEN overlay `fixed inset-0 z-[70] bg-background/95 backdrop-blur-xs` with a max-w-2xl column + a Cormorant text-lg/lg:text-2xl input from BOTH the header icon and the mobile panel's SEARCH row, single-column 80px rows with name + shortDescription + font-light price, description-inclusive matching, authored-order results — the clone shipped a header-anchored dropdown + an in-panel swap with category labels and rating ordering). Fixed TDD-first (576 → 599 unit, 77 e2e): the shared search-overlay.tsx component (store-provider state, StoreChrome render site), the /api/search field/order/payload contract, the seed's db-path seam (datasourceUrl), next 16.4.0 → 16.4.5 (3 critical CVEs closed; lockfile root-name fix), the push-target cluster (wrapper DEFAULT_REMOTE + runbook + CLAUDE.md all say ely-beauty), the twitter-card metadata fallback, and the docs-truth sweep (CLAUDE.md 599/77 + 19-product + push target, REMEDIATION_PLAN 21→19, the SKILL H1 retitle). Every fixed surface re-measured byte-exact against the live reference (overlay 1440×900 + col x:384 w:672 + input 24px Cormorant + rows 624×80 @84px rhythm; mobile input 18px/20px @y:104 ±1px; 4 description-matched rows in the authored order)."
 tags:
   - nextjs16
   - react19
@@ -4651,3 +4651,56 @@ Key files: `scripts/capture-screenshots.mjs` · `docs/session_132.md` ·
   safe lane: in-range bumps only; the breaking-major fixes (zod 4,
   vitest 5) are deliberate epics, not drive-by upgrades — record the
   accepted risks in a ledger (AGENTS.md), not in silence.
+
+- **Session 80 (run 80, session 15 cycle of the ely-beauty repo): the
+  overlay empty-state, no-results centering & webhook raw-body cycle.**
+  Gates on the pulled tree 634/634 · 82/82 · clean build — all green
+  (docs matched reality; the fresh-clone environment rebuilt: the
+  DATABASE_URL ambient shadow converged via the documented symlink,
+  AUTH_SECRET generated, db:setup re-run). Deep audit 80-a (read-only,
+  skills/ excluded): **12/12 standing anchors PASS, 0 CRITICAL/HIGH
+  code defects** — 1 LOW (the Stripe webhook buffered the full body
+  before signature verification: unbounded request.text() on an
+  unauthenticated, unmetered route — memory-amplification DoS on a
+  Stripe-configured deploy; the S79-7 seam's stated goal unmet on
+  this one path) + 3 INFO (npm-audit family phrasing; LIKE wildcards
+  — documented accepted parity; the two window-scoped Tab-wrap
+  listeners — unreachable double-open through the inert shell). The
+  live re-measurement (agent-browser, logged in, 390×844 + desktop):
+  every S74..S79 pinned surface re-verified GREEN (the mobile panel
+  y:64 h:214 rows @36px rhythm; the overlay Cormorant input + serif
+  price + fresh-sheet + 60vh cap; the detail-page Inter 24px ৳ price;
+  the shop pills) and **the shop catalog order re-verified 19/19
+  positions identical to the seed's authored order — the run-79
+  "re-baseline if the reference re-orders" concern closed**. TWO new
+  deltas measured on the reference's EMPTY/FAILURE states: D-80-1 the
+  empty-query hint (Start typing to search our collection,
+  text-sm text-muted-foreground py-8 text-center, 14px centered —
+  the clone rendered NOTHING on empty) and D-80-2 the no-results
+  copy's exact bytes (straight ASCII quotes codepoint 34, NO
+  trailing period, the SAME centered py-8 family — the clone's
+  curly quotes + period + left-aligned pt-4 were the un-measured
+  residue). Fixed TDD-first (RED 16 → GREEN; 634 → 650 unit, 82 → 85
+  e2e): the hint gated on the query (fresh open AND the fresh-sheet
+  reset land on it; gone the moment the query is non-empty), the
+  codepoint-exact no-results copy (the &quot; entity renders the
+  straight quote — react/no-unescaped-entities forbids the raw form
+  in JSX text), and the bounded readRawBody seam (64 KB cap:
+  declared content-length fast-fail + streamed byte-count cancel
+  mid-read, string | null → 400 "Payload too large." feeding
+  constructEvent; the only sanctioned request.text() site is the
+  seam module itself). Docs: AGENTS.md (the S80 contract lines + the
+  raw-body seam note + the 2..80 range), CLAUDE/README (650/85),
+  PAD v2.8, SKILL v2.8.0, REMEDIATION_PLAN Session 80, session_16,
+  worklog Task 74. 25 dev-server screenshots regenerated + validated.
+  **New traps encoded**: (1) the [h-eating bash display artifact
+  struck AGAIN in this session's own probes — a codepoint-level
+  probe (JSON.stringify + codePointAt listing) is the only
+  trustworthy form for verifying quote-bearing strings; (2) parity
+  includes the EMPTY state, not just results and failure copy —
+  measure what a surface renders at its zero-content state; (3) a
+  Request body can be read once — tests that exercise a body seam
+  twice must mint two Request objects (ReadableStream is locked
+  after the first read); (4) react/no-unescaped-entities forbids raw
+  quotes in JSX text — the &quot; entity renders the identical
+  codepoint, and source pins must assert the entity form.
