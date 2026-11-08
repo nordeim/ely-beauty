@@ -30,22 +30,25 @@ export type StoreSettings = {
   socialPinterest: string;
   socialFacebook: string;
   socialTikTok: string;
+  /** ElyBeauty (run-72): the floating WhatsApp chat number (wa.me). */
+  whatsappNumber: string;
 };
 
 const DEFAULTS: StoreSettings = {
-  storeName: "HomeNest",
-  tagline: "Premium home & kitchen products for the modern lifestyle",
-  contactEmail: "hello@homenest.com",
-  contactPhone: "+1 (555) 123-4567",
-  address: "123 Kitchen Lane, Home City, HC 10001",
-  taxRatePercent: 7.5,
-  standardShippingCents: 695,
-  expressShippingCents: 1895,
-  freeShippingThresholdCents: 5000,
-  socialInstagram: "https://instagram.com",
-  socialPinterest: "https://pinterest.com",
-  socialFacebook: "https://facebook.com",
-  socialTikTok: "https://tiktok.com",
+  storeName: "ElyBeauty",
+  tagline: "Luxury skincare crafted from nature's finest botanicals. Clean beauty, elevated.",
+  contactEmail: "helloelybeauty@gmail.com",
+  contactPhone: "01787385459",
+  address: "Dhaka, Bangladesh",
+  taxRatePercent: 0,
+  standardShippingCents: 7000,
+  expressShippingCents: 13000,
+  freeShippingThresholdCents: 300000,
+  socialInstagram: "",
+  socialPinterest: "",
+  socialFacebook: "https://www.facebook.com/triggersafu",
+  socialTikTok: "",
+  whatsappNumber: "8801787385459",
 };
 
 /** Load all settings with defaults for anything missing. One query. */
@@ -68,6 +71,7 @@ export async function getSettings(): Promise<StoreSettings> {
     socialPinterest: str("socialPinterest", DEFAULTS.socialPinterest),
     socialFacebook: str("socialFacebook", DEFAULTS.socialFacebook),
     socialTikTok: str("socialTikTok", DEFAULTS.socialTikTok),
+    whatsappNumber: str("whatsappNumber", DEFAULTS.whatsappNumber),
   };
 }
 

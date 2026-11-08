@@ -3,8 +3,8 @@ import { expect, test } from "@playwright/test";
 import { gotoHydrated } from "./helpers";
 
 /**
- * SEO + platform contracts (session-5 audit S5-1/S5-4/S5-5):
- * structured data, sitemap/robots, web manifest, app icon, and the
+ * SEO + platform contracts (session-5 audit S5-1/S5-4/S5-5; run-72 BDT
+ * re-pins): structured data, sitemap/robots, web manifest, app icon, and the
  * framework-fingerprint security headers — pinned against regressions.
  */
 
@@ -38,12 +38,12 @@ test.describe("seo + platform", () => {
 
     const site = blocks.find((b) => b["@type"] === "WebSite");
     expect(site, "WebSite JSON-LD present").toBeTruthy();
-    expect((site!.potentialAction as { target: string }).target).toContain("/products?q=");
+    expect((site!.potentialAction as { target: string }).target).toContain("/shop?q=");
   });
 
   test("product page emits Product JSON-LD with price, stock and rating", async ({ page, request }) => {
     // Discover an active product from the public catalog page.
-    await gotoHydrated(page, "/products");
+    await gotoHydrated(page, "/shop");
     const detailLink = page.locator('a[href^="/product/"]').first();
     const href = await detailLink.getAttribute("href");
     expect(href).toBeTruthy();
@@ -61,10 +61,11 @@ test.describe("seo + platform", () => {
     expect(data, "Product JSON-LD present").toBeTruthy();
     expect(data!.name).toBeTruthy();
     expect(data!.sku).toBeTruthy();
-    // Integer cents are converted to decimal dollars in the offer.
+    // Integer cents are converted to decimal taka in the offer.
     expect(typeof data!.offers.price).toBe("number");
     expect(data!.offers.price).toBeGreaterThan(0);
-    expect(data!.offers.priceCurrency).toBe("USD");
+    // Run-72: the store prices in Bangladeshi Taka.
+    expect(data!.offers.priceCurrency).toBe("BDT");
     expect(data!.offers.availability).toMatch(/schema\.org\/(In|OutOf)Stock$/);
     expect(data!.aggregateRating?.reviewCount ?? 0).toBeGreaterThan(0);
     // Canonical URL is present in the metadata.
@@ -87,8 +88,8 @@ test.describe("seo + platform", () => {
     const homeCanonical = await page.locator('link[rel="canonical"]').getAttribute("href");
     expect(homeCanonical).toMatch(/\/$|:\d+\/?(\?.*)?$/);
 
-    // /products with faceted params canonicalizes to the un-parameterized URL.
-    await gotoHydrated(page, "/products?category=cookware&sort=price-asc&page=2");
+    // /shop with faceted params canonicalizes to the un-parameterized URL.
+    await gotoHydrated(page, "/shop?category=beauty-tools&sort=price-asc&page=2");
     const productsCanonical = await page.locator('link[rel="canonical"]').getAttribute("href");
     expect(productsCanonical).toBeTruthy();
     expect(productsCanonical!).not.toContain("category=");
@@ -117,7 +118,10 @@ test.describe("seo + platform", () => {
     const res = await request.get("/sitemap.xml");
     expect(res.status()).toBe(200);
     const body = await res.text();
-    expect(body).toContain("/products");
+    // Run-72: the listing route is /shop (the /products redirect is never
+    // a sitemap entry).
+    expect(body).toContain("/shop");
+    expect(body).not.toContain("/products");
     expect(body).not.toContain("/login");
     expect(body).not.toContain("/checkout");
   });
@@ -126,7 +130,7 @@ test.describe("seo + platform", () => {
     const manifest = await request.get("/manifest.webmanifest");
     expect(manifest.status()).toBe(200);
     const data = (await manifest.json()) as { name?: string; icons?: unknown[] };
-    expect(data.name).toBe("HomeNest Kitchen");
+    expect(data.name).toBe("ElyBeauty");
     expect(Array.isArray(data.icons) && data.icons.length > 0).toBe(true);
 
     const icon = await request.get("/icon.svg");

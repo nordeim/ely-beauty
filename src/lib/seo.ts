@@ -154,7 +154,7 @@ export function buildOrganizationJsonLd(input: OrganizationJsonLdInput): JsonLdO
   return ld;
 }
 
-/** schema.org/WebSite node — carries the typeahead SearchAction (`/products?q=`). */
+/** schema.org/WebSite node — carries the typeahead SearchAction (`/shop?q=`). */
 export function buildWebsiteJsonLd(input: { baseUrl: string; name: string }): JsonLdObject {
   return {
     "@context": "https://schema.org",
@@ -163,7 +163,7 @@ export function buildWebsiteJsonLd(input: { baseUrl: string; name: string }): Js
     url: input.baseUrl,
     potentialAction: {
       "@type": "SearchAction",
-      target: `${input.baseUrl}/products?q={search_term_string}`,
+      target: `${input.baseUrl}/shop?q={search_term_string}`,
       "query-input": "required name=search_term_string",
     },
   };

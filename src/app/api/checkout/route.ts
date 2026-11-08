@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { findCartId, getCartSummary, readCartToken } from "@/lib/cart";
 import { applyCouponCode } from "@/lib/coupons";
 import { db } from "@/lib/db";
+import { generateOrderNumber } from "@/lib/order-number";
 import { computeOrderMoney } from "@/lib/order-money";
 import { orderAccessToken, replayAuthorized, resolveReplay, ReplayDeniedError } from "@/lib/order-access";
 import { CheckoutError, placeOrderTx, type PlaceOrderArgs } from "@/lib/order-placement";
@@ -216,6 +217,7 @@ export async function POST(request: NextRequest) {
       paymentMethod: data.paymentMethod,
       cardLast4: stripeIntentId ? stripeLast4 : data.paymentMethod === "card" ? (data.cardLast4 ?? null) : null,
       shippingAddressJson,
+      notes: data.notes ? data.notes.trim() : null,
       saveAddress: Boolean(user) && data.saveAddress === true,
       address: data.address,
       idempotencyKey: data.idempotencyKey ?? null,
@@ -241,21 +243,19 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * ORD-YYYY-NNN allocation. The counter is derived from existing rows; a unique
- * violation on the NUMBER (concurrent order) retries with the next suffix. A
- * unique violation on the IDEMPOTENCY KEY (two racing first-attempts with the
- * same key) resolves to the winning order instead. A unique violation on the
- * STRIPE INTENT ANCHOR (a retried submit whose intent already placed — the
- * PAY-STRIPE-1 anchor) resolves to the already-placed order: the customer
+ * ELY-XXXXXXXX allocation (run-72 — the reference's crypto-random format).
+ * A unique violation on the NUMBER (concurrent order) retries with a fresh
+ * candidate. A unique violation on the IDEMPOTENCY KEY (two racing first-attempts
+ * with the same key) resolves to the winning order instead. A unique violation
+ * on the STRIPE INTENT ANCHOR (a retried submit whose intent already placed —
+ * the PAY-STRIPE-1 anchor) resolves to the already-placed order: the customer
  * sees their confirmation, not an error, on a double-click/race. The whole
  * transaction retries, so a failed attempt never leaves partial writes.
  */
 async function placeOrderWithRetry(args: PlaceOrderArgs): Promise<string> {
-  const year = new Date().getFullYear();
   let lastError: unknown = null;
   for (let attempt = 0; attempt < 5; attempt++) {
-    const count = await db.order.count({ where: { number: { startsWith: `ORD-${year}-` } } });
-    const candidate = `ORD-${year}-${String(count + 1 + attempt).padStart(3, "0")}`;
+    const candidate = generateOrderNumber();
     try {
       return await placeOrderTx(db, candidate, args);
     } catch (error) {

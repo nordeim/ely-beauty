@@ -28,6 +28,7 @@ export type OrderItemCreate = {
   productId: string;
   nameSnapshot: string;
   imageSnapshot: string;
+  variantLabel?: string | null;
   unitPrice: number;
   quantity: number;
 };
@@ -44,6 +45,8 @@ export type PlaceOrderArgs = {
   cardLast4: string | null;
   shippingAddressJson: string;
   saveAddress: boolean;
+  /** ElyBeauty (run-72): the checkout's optional Order Notes. */
+  notes: string | null;
   address: CheckoutAddress;
   idempotencyKey: string | null;
   /** Cart token that placed the order — binds replays to this client (S6-8). */
@@ -127,6 +130,7 @@ export async function placeOrderTx(
         productId: product.id,
         nameSnapshot: product.name,
         imageSnapshot: line.image,
+        variantLabel: line.variant || null,
         unitPrice: product.price,
         quantity: line.quantity,
       });
@@ -216,6 +220,7 @@ export async function placeOrderTx(
         couponCode: args.couponCode,
         shippingMethod: args.shippingMethod,
         shippingAddress: args.shippingAddressJson,
+        notes: args.notes,
         paymentMethod: args.paymentMethod,
         cardLast4: args.cardLast4,
         // The Stripe paid-payment columns: the UNIQUE intent id is the

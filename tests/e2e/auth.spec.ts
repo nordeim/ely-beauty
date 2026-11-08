@@ -1,27 +1,49 @@
 import { expect, test } from "@playwright/test";
-import { gotoHydrated } from "./helpers";
+import { gotoHydrated, DEMO_CUSTOMER, addToCartViaDetailPage, PILLOWCASE, openDetailFromShop } from "./helpers";
 
 /**
  * Auth — demo-account login (success + wrong password), register
  * validation, and the account dashboard. Credentials come from the seed:
- *   admin@homenestkitchen.com / Admin123!
- *   demo@homenestkitchen.com / Demo1234!
+ *   admin@elybeauty.com / Admin123!
+ *   demo@elybeauty.com / Demo1234!
  */
+
+/** Heart a product from its detail page; returns the product's name. */
+async function heartFromDetail(
+  page: import("@playwright/test").Page,
+  cardText: string,
+): Promise<string> {
+  await openDetailFromShop(page, cardText);
+  const heart = page.getByRole("button", { name: /^Add .* to wishlist$/ });
+  const name = ((await heart.getAttribute("aria-label")) ?? "").replace(
+    /^Add (.*) to wishlist$/,
+    "$1",
+  );
+  expect(name).not.toBe("");
+  await heart.click();
+  await expect(page.getByText("Added to wishlist").first()).toBeVisible({ timeout: 10_000 });
+  return name;
+}
+
 test.describe("auth", () => {
   test("login page renders the reference card", async ({ page }) => {
     await gotoHydrated(page, "/login");
-    await expect(page.getByRole("heading", { name: "Welcome to HomeNest Kitchen" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
+    await expect(page.getByText("Log in to your account")).toBeVisible();
+    // The reference's Google affordance renders honestly disabled (no OAuth
+    // client is configured on this clone).
+    await expect(page.getByRole("button", { name: /Continue with Google/ })).toBeDisabled();
     await expect(page.getByLabel("Email")).toBeVisible();
     await expect(page.getByLabel("Password")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Log in" })).toBeVisible();
     await expect(page.getByRole("link", { name: /Create an account/i })).toBeVisible();
   });
 
   test("demo customer can sign in and sees the account dashboard", async ({ page }) => {
     await gotoHydrated(page, "/login");
-    await page.getByLabel("Email").fill("demo@homenestkitchen.com");
-    await page.getByLabel("Password").fill("Demo1234!");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByLabel("Email").fill(DEMO_CUSTOMER.email);
+    await page.getByLabel("Password").fill(DEMO_CUSTOMER.password);
+    await page.getByRole("button", { name: "Log in" }).click();
 
     await expect(page).toHaveURL(/\/account/, { timeout: 10_000 });
     await expect(page.getByRole("heading", { name: "My Account" })).toBeVisible();
@@ -29,9 +51,9 @@ test.describe("auth", () => {
 
   test("wrong password shows an inline error, never a redirect", async ({ page }) => {
     await gotoHydrated(page, "/login");
-    await page.getByLabel("Email").fill("demo@homenestkitchen.com");
+    await page.getByLabel("Email").fill(DEMO_CUSTOMER.email);
     await page.getByLabel("Password").fill("WrongPassword1!");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Log in" }).click();
 
     const alert = page.locator("div[role=alert]").first();
     await expect(alert).toBeVisible();
@@ -44,13 +66,14 @@ test.describe("auth", () => {
     await gotoHydrated(page, "/login");
     await page.getByLabel("Email").fill("nobody@nowhere.test");
     await page.getByLabel("Password").fill("Whatever123!");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByRole("button", { name: "Log in" }).click();
     await expect(page.locator("div[role=alert]").first()).toContainText(/invalid email or password/i);
   });
 
   test("register rejects a short password via the server action", async ({ page }) => {
     await gotoHydrated(page, "/register");
-    await page.getByLabel("Name").fill("New User");
+    await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
+    await page.getByLabel("Full name").fill("New User");
     await page.getByLabel("Email").fill("newuser@example.com");
     await page.getByLabel("Password").fill("short");
     await page.getByRole("button", { name: /Create account/i }).click();
@@ -68,23 +91,20 @@ test.describe("auth", () => {
   });
 
   test("guest cart merges into the account cart on login (S3-4)", async ({ page }) => {
-    // As a guest: add the first catalog product to the cart.
-    await gotoHydrated(page, "/products");
-    const productName = (await page.locator("article").first().locator("h3").innerText()).trim();
-    await page.locator("article").first().getByRole("button", { name: "Add to Cart" }).click();
-    await expect(page.getByTestId("cart-count")).toHaveText("1");
+    // As a guest: add a product to the cart through its detail page.
+    await addToCartViaDetailPage(page, PILLOWCASE.cardText);
 
     // Sign in — the server action must claim the guest cart right here.
     await gotoHydrated(page, "/login");
-    await page.getByLabel("Email").fill("demo@homenestkitchen.com");
-    await page.getByLabel("Password").fill("Demo1234!");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByLabel("Email").fill(DEMO_CUSTOMER.email);
+    await page.getByLabel("Password").fill(DEMO_CUSTOMER.password);
+    await page.getByRole("button", { name: "Log in" }).click();
     await expect(page).toHaveURL(/\/account/, { timeout: 10_000 });
 
     // The account cart already contains the guest's item — no re-add needed.
     await gotoHydrated(page, "/cart");
     await expect(page.getByRole("heading", { name: "Shopping Cart" })).toBeVisible();
-    await expect(page.getByRole("link", { name: productName }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: PILLOWCASE.name }).first()).toBeVisible();
   });
 
   test("first login CLAIMS the guest cart — a second device sees the same items (S7-1)", async ({
@@ -99,13 +119,10 @@ test.describe("auth", () => {
     const email = `s7-claim-${Date.now()}-${Math.floor(Math.random() * 1000)}@example.com`;
     const deviceA = await browser.newContext();
     const pageA = await deviceA.newPage();
-    await gotoHydrated(pageA, "/products");
-    const productName = (await pageA.locator("article").first().locator("h3").innerText()).trim();
-    await pageA.locator("article").first().getByRole("button", { name: "Add to Cart" }).click();
-    await expect(pageA.getByTestId("cart-count")).toHaveText("1");
+    await addToCartViaDetailPage(pageA, PILLOWCASE.cardText);
 
     await gotoHydrated(pageA, "/register");
-    await pageA.getByLabel("Name").fill("S7 Claim Check");
+    await pageA.getByLabel("Full name").fill("S7 Claim Check");
     await pageA.getByLabel("Email").fill(email);
     await pageA.getByLabel("Password").fill("ClaimCheck1!");
     await pageA.getByRole("button", { name: /Create account/i }).click();
@@ -119,40 +136,29 @@ test.describe("auth", () => {
     await gotoHydrated(pageB, "/login");
     await pageB.getByLabel("Email").fill(email);
     await pageB.getByLabel("Password").fill("ClaimCheck1!");
-    await pageB.getByRole("button", { name: "Sign in" }).click();
+    await pageB.getByRole("button", { name: "Log in" }).click();
     await expect(pageB).toHaveURL(/\/account/, { timeout: 10_000 });
 
     await gotoHydrated(pageB, "/cart");
     await expect(pageB.getByRole("heading", { name: "Shopping Cart" })).toBeVisible();
-    await expect(pageB.getByRole("link", { name: productName }).first()).toBeVisible();
+    await expect(pageB.getByRole("link", { name: PILLOWCASE.name }).first()).toBeVisible();
 
     await deviceA.close();
     await deviceB.close();
   });
 
   test("guest wishlist merges into the account at registration (S10-4 wiring)", async ({ page }) => {
-    // Guest hearts two products, then registers a fresh account. The merge tx
-    // plans through planWishlistMerge (dedupe + cap truncation) and upserts
-    // only plan.toAdd — this pins the WIRING end-to-end (the pure plan is
-    // unit-pinned in session10-hardening.test.ts).
-    await gotoHydrated(page, "/products");
-    const hearts = page.getByRole("button", { name: /to wishlist$/ });
-    const firstProduct = ((await hearts.nth(0).getAttribute("aria-label")) ?? "").replace(
-      /^Add (.*) to wishlist$/,
-      "$1",
-    );
-    await hearts.nth(0).click();
-    await expect(page.getByText("Added to wishlist").first()).toBeVisible({ timeout: 10_000 });
-    const secondProduct = ((await hearts.nth(1).getAttribute("aria-label")) ?? "").replace(
-      /^Add (.*) to wishlist$/,
-      "$1",
-    );
-    await hearts.nth(1).click();
-    await expect(page.getByText("Added to wishlist").first()).toBeVisible({ timeout: 10_000 });
+    // Guest hearts two products from their DETAIL pages (run-72: the heart
+    // lives there, not on the grid cards), then registers a fresh account.
+    // The merge tx plans through planWishlistMerge (dedupe + cap truncation)
+    // and upserts only plan.toAdd — this pins the WIRING end-to-end (the
+    // pure plan is unit-pinned in session10-hardening.test.ts).
+    const firstProduct = await heartFromDetail(page, "Pure Satin Silk Pillowcase");
+    const secondProduct = await heartFromDetail(page, "Natural Bamboo Hair Brush - Square");
 
     const email = `s12-wishlist-${Date.now()}-${Math.floor(Math.random() * 1000)}@example.com`;
     await gotoHydrated(page, "/register");
-    await page.getByLabel("Name").fill("S12 Wishlist Merge");
+    await page.getByLabel("Full name").fill("S12 Wishlist Merge");
     await page.getByLabel("Email").fill(email);
     await page.getByLabel("Password").fill("MergeCheck1!");
     await page.getByRole("button", { name: /Create account/i }).click();
@@ -204,7 +210,7 @@ test.describe("auth", () => {
     await gotoHydrated(page, "/login");
     await expect(page.locator("main")).toHaveCount(1);
     const signInInMain = await page
-      .getByRole("button", { name: "Sign in" })
+      .getByRole("button", { name: "Log in" })
       .evaluate((el) => el.closest("main") !== null);
     expect(signInInMain).toBe(true);
 
@@ -232,14 +238,21 @@ test.describe("auth", () => {
     // And because a run aborted between the edit and the restore leaves the
     // demo name dirty (the seed never re-resets it), the setup self-heals a
     // non-seed name back through the same form flow (the S20-1 discipline).
-    const seedName = "Jordan Rivera";
+    //
+    // Run-72: the account's DEFAULT tab is Order History — the profile form
+    // lives at ?tab=profile.
+    const seedName = "Ayesha Rahman";
     await gotoHydrated(page, "/login");
-    await page.getByLabel("Email").fill("demo@homenestkitchen.com");
-    await page.getByLabel("Password").fill("Demo1234!");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByLabel("Email").fill(DEMO_CUSTOMER.email);
+    await page.getByLabel("Password").fill(DEMO_CUSTOMER.password);
+    await page.getByRole("button", { name: "Log in" }).click();
     await expect(page).toHaveURL(/\/account/, { timeout: 10_000 });
 
-    // Profile is the default tab. Edit the display name and save.
+    // Orders is the default tab (the "Order History" eyebrow label renders).
+    await expect(page.getByText("Order History").first()).toBeVisible();
+
+    // Edit the display name on the Profile tab and save.
+    await gotoHydrated(page, "/account?tab=profile");
     const nameInput = page.getByLabel("Full name");
     const current = await nameInput.inputValue();
     if (current !== seedName) {
@@ -248,25 +261,29 @@ test.describe("auth", () => {
       await expect(page.getByText("Profile updated").first()).toBeVisible({ timeout: 10_000 });
     }
     await expect(nameInput).toHaveValue(seedName);
-    await nameInput.fill("Jordan Rivera Edited");
+    await nameInput.fill("Ayesha Rahman Edited");
     await page.getByRole("button", { name: "Save Changes" }).click();
 
     // The success toast confirms the action ran (Radix toast + auto-dismiss).
     await expect(page.getByText("Profile updated").first()).toBeVisible({ timeout: 10_000 });
 
     // The persisted name survives a full reload (server truth, not local state).
-    await gotoHydrated(page, "/account");
-    await expect(page.getByLabel("Full name")).toHaveValue("Jordan Rivera Edited");
+    await gotoHydrated(page, "/account?tab=profile");
+    await expect(page.getByLabel("Full name")).toHaveValue("Ayesha Rahman Edited");
 
     // Restore the seed name so the demo account stays pristine.
     await page.getByLabel("Full name").fill(seedName);
     await page.getByRole("button", { name: "Save Changes" }).click();
     await expect(page.getByText("Profile updated").first()).toBeVisible({ timeout: 10_000 });
 
-    // Sign Out → the session ends and the header offers Sign in again.
+    // Sign Out → the session ends and the header offers the anonymous
+    // Account icon again (run-72: the signed-out header link is the
+    // "Account" affordance routing to /login).
     await page.getByRole("button", { name: "Sign Out" }).click();
     await expect(page).toHaveURL(/\/$/, { timeout: 10_000 });
     await gotoHydrated(page, "/");
-    await expect(page.getByRole("link", { name: /sign in/i }).first()).toBeVisible();
+    const accountLink = page.getByRole("link", { name: "Account", exact: true });
+    await expect(accountLink).toBeVisible();
+    await expect(accountLink).toHaveAttribute("href", "/login");
   });
 });

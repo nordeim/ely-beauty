@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Track Your Order",
   description:
-    "Enter your HomeNest order number and the email you used at checkout to see live status and shipment history.",
+    "Enter your ElyBeauty order number and the email you used at checkout to see live status and shipment history.",
   // Session-8 S8-9: the deep link carries ?number=…&email=… permutations —
   // keep them out of the index (the sitemap already excludes this route).
   robots: { index: false, follow: true },
@@ -129,7 +129,7 @@ export default async function TrackOrderPage({
             id="order-number"
             name="number"
             defaultValue={rawNumber}
-            placeholder="ORD-2026-001"
+            placeholder="ELY-XXXXXXXX"
             autoComplete="off"
             required
             className="h-11 flex-1 rounded-lg border border-input bg-card px-4 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:border-primary"

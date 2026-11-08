@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Contact Us",
   description:
-    "Questions about an order, product advice, or a partnership? Reach the HomeNest Kitchen team by email, phone, or the contact form — we reply within 24 hours.",
+    "Questions about an order, product advice, or a partnership? Reach the ElyBeauty team by email, phone, or the contact form — we reply within 24 hours.",
   alternates: { canonical: `${siteBaseUrl()}/contact` },
 };
 

@@ -1,26 +1,24 @@
 import { expect, test } from "@playwright/test";
-import { gotoHydrated } from "./helpers";
+import { gotoHydrated, DEMO_ADMIN, DEMO_CUSTOMER } from "./helpers";
 
 /**
  * Admin — the role gate keeps customers out; the seeded admin account gets
  * the full back office (dashboard KPIs, products, orders).
  */
-const ADMIN = { email: "admin@homenestkitchen.com", password: "Admin123!" };
-
 async function loginAsAdmin(page: import("@playwright/test").Page) {
   await gotoHydrated(page, "/login");
-  await page.getByLabel("Email").fill(ADMIN.email);
-  await page.getByLabel("Password").fill(ADMIN.password);
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByLabel("Email").fill(DEMO_ADMIN.email);
+  await page.getByLabel("Password").fill(DEMO_ADMIN.password);
+  await page.getByRole("button", { name: "Log in" }).click();
   await expect(page).toHaveURL(/\/(account|admin)/, { timeout: 10_000 });
 }
 
 test.describe("admin back office", () => {
   test("a customer account cannot open /admin", async ({ page }) => {
     await gotoHydrated(page, "/login");
-    await page.getByLabel("Email").fill("demo@homenestkitchen.com");
-    await page.getByLabel("Password").fill("Demo1234!");
-    await page.getByRole("button", { name: "Sign in" }).click();
+    await page.getByLabel("Email").fill(DEMO_CUSTOMER.email);
+    await page.getByLabel("Password").fill(DEMO_CUSTOMER.password);
+    await page.getByRole("button", { name: "Log in" }).click();
     await expect(page).toHaveURL(/\/account/, { timeout: 10_000 });
 
     await gotoHydrated(page, "/admin");
@@ -43,9 +41,9 @@ test.describe("admin back office", () => {
     await expect(page.getByRole("button", { name: /add product/i })).toBeVisible();
     // The table paginates 10/page — search pins the reference product.
     const search = page.getByLabel("Search products by name");
-    await search.fill("Damascus");
+    await search.fill("Pillowcase");
     search.press("Enter");
-    await expect(page.getByText("Damascus Steel Chef Knife Set").first()).toBeVisible();
+    await expect(page.getByText("Pure Satin Silk Pillowcase – For Hair & Skin").first()).toBeVisible();
   });
 
   test("orders manager lists orders and opens management", async ({ page }) => {
@@ -65,7 +63,7 @@ test.describe("admin back office", () => {
 
   test("cancelling an order restores the reserved stock (S3-3)", async ({ page, request }) => {
     // Self-contained setup: place a fresh guest order through the real API.
-    const search = await request.get("/api/search?q=knife");
+    const search = await request.get("/api/search?q=pillowcase");
     const { results } = (await search.json()) as { results: Array<{ id: string }> };
     expect(results.length).toBeGreaterThan(0);
     const productId = results[0]!.id;
@@ -80,18 +78,18 @@ test.describe("admin back office", () => {
         idempotencyKey: crypto.randomUUID(),
         address: {
           fullName: "Restock Test",
-          phone: "+1 512 555 0166",
-          line1: "5 Cancel Way",
-          city: "Austin",
-          state: "TX",
-          postalCode: "73301",
-          country: "United States",
+          phone: "01712345666",
+          line1: "5 Cancel Way, Wari",
+          city: "Dhaka",
+          state: "Dhaka",
+          postalCode: "1203",
+          country: "Bangladesh",
         },
       },
     });
     expect(placed.ok()).toBeTruthy();
     const { orderNumber } = (await placed.json()) as { orderNumber: string };
-    expect(orderNumber).toMatch(/^ORD-\d{4}-\d{3}$/);
+    expect(orderNumber).toMatch(/^ELY-[A-Z0-9]{8}$/);
 
     await loginAsAdmin(page);
     await gotoHydrated(page, "/admin/orders");
@@ -112,19 +110,21 @@ test.describe("admin back office", () => {
     await expect(page.locator("tr", { hasText: orderNumber }).first()).toContainText(/cancelled/i);
   });
 
-  test("carousel manager lists the seeded hero slides", async ({ page }) => {
+  test("carousel manager lists the seeded hero slide", async ({ page }) => {
     await loginAsAdmin(page);
     await gotoHydrated(page, "/admin/carousel");
-    await expect(page.getByText("New Arrivals").first()).toBeVisible();
-    await expect(page.getByText("Elevate Your Kitchen").first()).toBeVisible();
-    await expect(page.getByText("Sale Up to 40% Off").first()).toBeVisible();
+    await expect(page.getByText("The Art of Radiance").first()).toBeVisible();
+    await expect(
+      page.getByText("Luxury botanicals. Clinical precision. Your skin, elevated.").first(),
+    ).toBeVisible();
+    await expect(page.getByText("SHOP THE COLLECTION").first()).toBeVisible();
   });
 
   test("settings manager loads the seeded store values", async ({ page }) => {
     await loginAsAdmin(page);
     await gotoHydrated(page, "/admin/settings");
     const emailInput = page.getByLabel(/contact email/i);
-    await expect(emailInput).toHaveValue(/homenest\.com/);
+    await expect(emailInput).toHaveValue(/elybeauty/);
   });
 
   test("an aborted settings save surfaces a visible error instead of silence (S13-2)", async ({

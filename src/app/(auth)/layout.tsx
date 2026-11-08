@@ -29,8 +29,8 @@ export default async function AuthLayout({ children }: { children: ReactNode }) 
         {/* Left brand panel — hidden on small screens to keep auth front and center */}
         <div className="relative hidden lg:block">
           <Image
-            src="/images/hero-elevate.png"
-            alt="A bright, modern kitchen styled with HomeNest cookware"
+            src="/images/ritual-banner.png"
+            alt="ElyBeauty skincare bottles on warm stone in soft light"
             fill
             priority
             sizes="(min-width: 1024px) 55vw, 0vw"
@@ -41,12 +41,12 @@ export default async function AuthLayout({ children }: { children: ReactNode }) 
             aria-hidden
           />
           <div className="absolute inset-x-0 bottom-0 z-10 p-10 text-background">
-            <p className="font-display text-3xl font-semibold leading-snug text-balance">
-              Transform your everyday cooking
+            <p className="font-display text-3xl font-medium leading-snug text-balance">
+              The Art of Radiance
             </p>
             <p className="mt-3 max-w-sm text-sm leading-6 text-background/80">
-              Premium home &amp; kitchen products for the modern lifestyle — trusted by
-              thousands of home chefs.
+              Luxury botanicals. Clinical precision. Your skin, elevated — curated
+              skincare and beauty rituals from ElyBeauty.
             </p>
           </div>
         </div>

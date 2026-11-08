@@ -42,3 +42,16 @@ export function computeOrderMoney(input: OrderMoneyInput): OrderMoney {
   const tax = Math.round((taxable * input.taxRatePercent) / 100);
   return { taxable, shipping, tax, total: taxable + shipping + tax };
 }
+
+/**
+ * ElyBeauty shipping tier (run-72) — the reference derives shipping from the
+ * City/District field: Dhaka ৳70, outside Dhaka ৳130 (verified live). The
+ * tier maps onto the existing standard|express plumbing (standard = Dhaka,
+ * express = outside) so every money invariant (threshold, FREESHIP coupon,
+ * server re-derivation) keeps working unchanged. Pure + unit-pinned.
+ */
+export function shippingMethodForCity(city: string): "standard" | "express" {
+  const normalized = city.trim().toLowerCase();
+  if (!normalized) return "standard";
+  return normalized.startsWith("dhaka") ? "standard" : "express";
+}

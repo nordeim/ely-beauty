@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Checkout",
-  description: "Complete your HomeNest order — shipping, payment and review.",
+  description: "Complete your ElyBeauty order — shipping, payment and review.",
   // Session-8 S8-9: per-visitor private content — noindex like checkout/success.
   robots: { index: false, follow: false },
 };
@@ -66,7 +66,7 @@ export default async function CheckoutPage() {
         taxRatePercent: settings.taxRatePercent,
       }}
       stripeEnabled={stripe.serverConfigured}
-      publishableKey={stripe.publishableKey}
+      publishableKey={stripe.publishableKey ?? undefined}
     />
   );
 }

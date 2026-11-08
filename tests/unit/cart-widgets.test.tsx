@@ -27,7 +27,7 @@ const FREESHIP_PAYLOAD = {
   code: "FREESHIP",
   discount: 0,
   label: "Free shipping",
-  description: "Free standard shipping on orders over $30",
+  description: "Free shipping on orders over ৳3,000",
   freeShipping: true,
 } as const;
 
@@ -76,7 +76,7 @@ describe("CartSummaryWidgets (S23-2 coupon-aware free-shipping hint)", () => {
     // The amount lives in an inner span (testing-library matches direct text
     // nodes only) — pin the nag via its direct-text tail and the amount span.
     expect(screen.getByText("more for free shipping", { exact: false })).toBeVisible();
-    expect(screen.getByText("$15.01")).toBeVisible();
+    expect(screen.getByText("৳15.01")).toBeVisible();
     expect(screen.getByRole("progressbar", { name: "Progress toward free shipping" })).toBeInTheDocument();
   });
 

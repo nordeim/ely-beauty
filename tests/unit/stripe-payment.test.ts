@@ -269,14 +269,14 @@ describe("chargeRefundedReflection", () => {
   it("a FULL refund of a paid order → paymentStatus refunded + the formatted note", () => {
     expect(chargeRefundedReflection({ paymentStatus: "paid" }, { refunded: true, amount: 3129, amount_refunded: 3129 })).toEqual({
       paymentStatus: "refunded",
-      eventNote: "Refunded $31.29 via Stripe",
+      eventNote: "Refunded ৳31.29 via Stripe",
     });
   });
 
   it("a PARTIAL refund → the note only (the paid capture state stays honest)", () => {
     expect(chargeRefundedReflection({ paymentStatus: "paid" }, { refunded: false, amount: 3129, amount_refunded: 1000 })).toEqual({
       paymentStatus: null,
-      eventNote: "Partially refunded $10.00 of $31.29 via Stripe",
+      eventNote: "Partially refunded ৳10 of ৳31.29 via Stripe",
     });
   });
 

@@ -115,7 +115,7 @@ describe("buildWebsiteJsonLd", () => {
     };
     expect(ld["@type"]).toBe("WebSite");
     expect(ld.url).toBe(BASE);
-    expect(ld.potentialAction.target).toBe(`${BASE}/products?q={search_term_string}`);
+    expect(ld.potentialAction.target).toBe(`${BASE}/shop?q={search_term_string}`);
   });
 });
 

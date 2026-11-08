@@ -1,19 +1,24 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Cormorant_Garamond, Inter } from "next/font/google";
 import { StoreProvider } from "@/components/store/store-provider";
 import { siteBaseUrl } from "@/lib/seo";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
+// The reference's font pair (verified from its Google Fonts request):
+// Cormorant Garamond 300–600 for display, Inter 300–600 for body.
 const inter = Inter({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
   variable: "--font-inter",
   display: "swap",
 });
 
-const playfair = Playfair_Display({
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
-  variable: "--font-playfair",
+  weight: ["300", "400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-cormorant",
   display: "swap",
 });
 
@@ -21,27 +26,31 @@ const playfair = Playfair_Display({
 // can never drift from the canonicals/sitemap/robots (one env, one fallback).
 const siteUrl = siteBaseUrl();
 
+const SITE_NAME = "ElyBeauty";
+const SITE_DESCRIPTION =
+  "A high-fashion, editorial e-commerce platform curated for premium skincare, focusing on tactile luxury and a seamless, immersive shopping experience.";
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "HomeNest Kitchen",
-    template: "%s | HomeNest Kitchen",
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
-  description: "Premium home & kitchen products for the modern lifestyle",
+  description: SITE_DESCRIPTION,
   openGraph: {
     type: "website",
-    siteName: "HomeNest Kitchen",
-    title: "HomeNest Kitchen",
-    description: "Premium home & kitchen products for the modern lifestyle",
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
     url: siteUrl,
     // Self-hosted branded card (session-6 S6-3); metadataBase resolves the
     // root-relative path to an absolute URL for crawlers.
-    images: [{ url: "/images/og-default.png", width: 1200, height: 630, alt: "HomeNest Kitchen" }],
+    images: [{ url: "/images/og-default.png", width: 1200, height: 630, alt: SITE_NAME }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "HomeNest Kitchen",
-    description: "Premium home & kitchen products for the modern lifestyle",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
     images: ["/images/og-default.png"],
   },
 };
@@ -53,7 +62,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${playfair.variable} font-sans`}>
+      <body className={`${inter.variable} ${cormorant.variable} font-sans`}>
         {/* The Toaster wraps children so every client island can call
             useToast(); the viewport portals toasts above everything. */}
         <StoreProvider>

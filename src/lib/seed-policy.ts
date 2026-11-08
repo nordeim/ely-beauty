@@ -29,6 +29,12 @@ const PRODUCT_UPDATE_FIELDS = [
   "images",
   "tags",
   "specs",
+  // ElyBeauty variant/content fields (run-72) — catalog content, same class
+  // as copy and imagery: a reseed refreshes them.
+  "colors",
+  "sizes",
+  "howToUse",
+  "ingredients",
 ] as const;
 
 export type ProductSeedData = Record<string, unknown> & { slug: string };
@@ -46,7 +52,7 @@ export function productSeedUpdate(data: ProductSeedData): Partial<ProductSeedDat
  * and session-34 S34-1) — the reference site's observable "Newest" order
  * is its authored catalog order (first-listed product first). Backdating
  * each seed row one minute older than its predecessor makes the seed list
- * order AND the `createdAt: desc` consumers agree, so `/products` default
+ * order AND the `createdAt: desc` consumers agree, so `/shop` default
  * sort and the home "New Arrivals" / "Featured" grids render the
  * reference's order (the live reference re-ordered its catalog twice since
  * the original pinning — session-33 and again in session-34, currently

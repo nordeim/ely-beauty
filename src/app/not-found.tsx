@@ -43,7 +43,7 @@ export default async function NotFound() {
             Go Home
           </Link>
           <Link
-            href="/products"
+            href="/shop"
             className="inline-flex h-11 w-full items-center justify-center rounded-lg border border-primary/30 px-6 text-sm font-semibold text-primary transition-colors hover:bg-accent sm:w-auto"
           >
             Browse Products

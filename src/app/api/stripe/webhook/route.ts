@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCartSummary } from "@/lib/cart";
 import { applyCouponCode } from "@/lib/coupons";
 import { db } from "@/lib/db";
+import { generateOrderNumber } from "@/lib/order-number";
 import { computeOrderMoney } from "@/lib/order-money";
 import { CheckoutError, placeOrderTx, type PlaceOrderArgs } from "@/lib/order-placement";
 import { isUniqueViolation, uniqueTargetField } from "@/lib/prisma-errors";
@@ -342,6 +343,7 @@ export async function POST(request: NextRequest) {
       customerName,
       lines: summary.lines,
       couponCode,
+      notes: null,
       shippingMethod,
       paymentMethod: "card",
       cardLast4: null,
@@ -409,7 +411,7 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * The webhook's ORD-YYYY-NNN allocation loop — the route's
+ * The webhook's ELY-XXXXXXXX allocation loop (run-72) — the route's
  * placeOrderWithRetry contract with the webhook's P2002 policy: the three
  * DUPLICATE-class anchors (eventId — a concurrent delivery won the dedup
  * race; stripePaymentIntentId — the client path placed; idempotencyKey —
@@ -418,11 +420,9 @@ export async function POST(request: NextRequest) {
  * suffix; anything else propagates.
  */
 async function placeBackstopWithRetry(args: PlaceOrderArgs): Promise<string> {
-  const year = new Date().getFullYear();
   let lastError: unknown = null;
   for (let attempt = 0; attempt < 5; attempt++) {
-    const count = await db.order.count({ where: { number: { startsWith: `ORD-${year}-` } } });
-    const candidate = `ORD-${year}-${String(count + 1 + attempt).padStart(3, "0")}`;
+    const candidate = generateOrderNumber();
     try {
       return await placeOrderTx(db, candidate, args);
     } catch (error) {

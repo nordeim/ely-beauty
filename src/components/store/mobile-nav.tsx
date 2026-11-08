@@ -1,7 +1,9 @@
 "use client";
 
 /**
- * MobileNav — the reference's push-down panel below the header.
+ * MobileNav — the reference's push-down panel below the fixed header: an
+ * ivory panel with a SEARCH row (icon + label) that swaps the panel content
+ * for a search input + live results, then the four uppercase nav links.
  *
  * Tailwind v4 trap-log note (the bug this file is structured around): v4
  * changed the generation order of display utilities, so JS-toggling the
@@ -16,98 +18,175 @@
  * The e2e regression guard is tests/e2e/mobile-navigation.spec.ts.
  */
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { formatMoney } from "@/lib/money";
 import { useStore } from "./store-provider";
 
 const NAV_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/products", label: "Products" },
-  { href: "/track-order", label: "Track Order" },
+  { href: "/shop", label: "Shop" },
+  { href: "/shop?category=beauty-tools", label: "Beauty Tools" },
+  { href: "/shop?category=brush-combs", label: "Brush & Combs" },
   { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
 ];
 
+type SearchResult = { id: string; name: string; image: string; price: number; category: string };
+
 export function MobileNav({ isAuthenticated, isAdmin }: { isAuthenticated: boolean; isAdmin: boolean }) {
-  const { mobileNavOpen, setMobileNavOpen } = useStore();
+  const { mobileNavOpen, setMobileNavOpen, mobileNavSearch, setMobileNavSearch } = useStore();
   const pathname = usePathname();
 
   // Close on route change (links navigate) — matches reference behavior.
   React.useEffect(() => {
     setMobileNavOpen(false);
+    setMobileNavSearch(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   if (!mobileNavOpen) return null;
 
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
+  return (
+    <div
+      className="animate-in slide-in-from-top-2 fade-in duration-200 border-t border-border bg-background lg:hidden"
+      data-testid="mobile-menu"
+    >
+      <div className="container-page px-6 py-6 sm:px-6 lg:px-8">
+        {mobileNavSearch ? (
+          <PanelSearch onExit={() => setMobileNavSearch(false)} />
+        ) : (
+          <nav aria-label="Mobile" className="flex flex-col gap-5">
+            <button
+              type="button"
+              onClick={() => setMobileNavSearch(true)}
+              className="flex items-center gap-3 text-sm uppercase tracking-[0.12em] text-foreground transition-colors hover:text-primary"
+            >
+              <Search className="h-4 w-4" aria-hidden />
+              Search
+            </button>
+            {NAV_LINKS.map((link) => (
+              <MobileNavLink key={link.href} href={link.href} label={link.label} />
+            ))}
+            <div className="my-1 h-px bg-border" />
+            <MobileNavLink
+              href={isAuthenticated ? "/account" : "/login"}
+              label={isAuthenticated ? "My Account" : "Sign In"}
+            />
+            <MobileNavLink href="/wishlist" label="Wishlist" />
+            {isAdmin && (
+              <MobileNavLink href="/admin" label="Admin Dashboard" className="text-primary" />
+            )}
+          </nav>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MobileNavLink({ href, label, className }: { href: string; label: string; className?: string }) {
+  const pathname = usePathname();
+  const base = href.split("?")[0] ?? href;
+  const isActive = base === "/shop" ? pathname === "/shop" : href === "/" ? pathname === "/" : pathname.startsWith(base);
+  return (
+    <Link
+      href={href}
+      aria-current={isActive ? "page" : undefined}
+      className={cn(
+        "block text-sm uppercase tracking-[0.12em] text-foreground transition-colors hover:text-primary",
+        isActive && "text-primary",
+        className,
+      )}
+    >
+      {label}
+    </Link>
+  );
+}
+
+/**
+ * PanelSearch — the in-panel search flow: input + Close search + live
+ * results (the reference's exact interaction). Navigating a result closes
+ * the panel via the route-change effect.
+ */
+function PanelSearch({ onExit }: { onExit: () => void }) {
+  const [query, setQuery] = React.useState("");
+  const [results, setResults] = React.useState<SearchResult[]>([]);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  // Debounced typeahead against /api/search — the same endpoint the desktop
+  // overlay uses; <2 chars renders nothing (the endpoint's own floor, checked
+  // inside the timer so the effect never calls setState synchronously).
+  React.useEffect(() => {
+    let cancelled = false;
+    const t = setTimeout(() => {
+      const term = query.trim();
+      if (term.length < 2) {
+        setResults([]);
+        return;
+      }
+      fetch(`/api/search?q=${encodeURIComponent(term)}`)
+        .then((r) => r.json())
+        .then((data: { results?: SearchResult[] }) => !cancelled && setResults(data.results ?? []))
+        .catch(() => !cancelled && setResults([]));
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [query]);
 
   return (
-    <div className="border-t border-border bg-card lg:hidden" data-testid="mobile-menu">
-      <div className="container-page animate-in slide-in-from-top-2 fade-in duration-200">
-        <div className="flex items-center justify-between py-3">
-          <form action="/products" className="relative flex-1" role="search">
-            <input
-              type="search"
-              name="q"
-              placeholder="Search products..."
-              aria-label="Search products"
-              className="h-10 w-2/3 max-w-xs rounded-full bg-secondary px-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
-            />
-          </form>
-          {/* The reference's close affordance: a green circular button. */}
-          <button
-            type="button"
-            onClick={() => setMobileNavOpen(false)}
-            aria-label="Close menu"
-            className="ml-auto inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm transition-colors hover:bg-emerald-600"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <nav aria-label="Mobile" className="flex flex-col gap-1.5 pb-4">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              aria-current={isActive(link.href) ? "page" : undefined}
-              className={cn(
-                "rounded-xl px-5 py-3.5 text-base font-medium transition-colors",
-                isActive(link.href)
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground/80 hover:bg-secondary",
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
-          <div className="my-1 h-px bg-border" />
-          <Link
-            href={isAuthenticated ? "/account" : "/login"}
-            className="rounded-xl px-5 py-3.5 text-base font-medium text-foreground/80 hover:bg-secondary"
-          >
-            {isAuthenticated ? "My Account" : "Sign In"}
-          </Link>
-          <Link
-            href="/wishlist"
-            className="rounded-xl px-5 py-3.5 text-base font-medium text-foreground/80 hover:bg-secondary"
-          >
-            Wishlist
-          </Link>
-          {isAdmin && (
-            <Link
-              href="/admin"
-              className="rounded-xl px-5 py-3.5 text-base font-medium text-primary hover:bg-secondary"
-            >
-              Admin Dashboard
-            </Link>
-          )}
-        </nav>
+    <div className="flex flex-col gap-4" data-testid="mobile-panel-search">
+      <div className="flex items-center gap-4 border-b border-border pb-4">
+        <Search className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
+        <input
+          ref={inputRef}
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search products..."
+          aria-label="Search products"
+          className="flex-1 bg-transparent text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
+        />
+        <button
+          type="button"
+          onClick={onExit}
+          aria-label="Close search"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
+      {results.length > 0 && (
+        <ul className="flex flex-col gap-1">
+          {results.map((r) => (
+            <li key={r.id}>
+              <Link
+                href={`/product/${r.id}`}
+                className="flex items-center gap-4 p-2 transition-colors hover:bg-secondary"
+              >
+                <span className="relative h-14 w-14 shrink-0 overflow-hidden bg-secondary">
+                  <Image src={r.image} alt="" fill sizes="56px" className="object-cover" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">{r.name}</span>
+                  <span className="block text-xs text-muted-foreground">{r.category}</span>
+                </span>
+                <span className="text-sm font-semibold">{formatMoney(r.price)}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+      {query.trim().length >= 2 && results.length === 0 && (
+        <p className="text-sm text-muted-foreground">No products match “{query.trim()}”.</p>
+      )}
     </div>
   );
 }

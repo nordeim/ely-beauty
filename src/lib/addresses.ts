@@ -139,8 +139,9 @@ export interface CheckoutAddressDraft {
   line1: string;
   line2?: string | null;
   city: string;
-  state: string;
-  postalCode: string;
+  // ElyBeauty (run-72): the BD checkout carries no state and an optional ZIP.
+  state?: string;
+  postalCode?: string;
   country: string;
 }
 
@@ -220,8 +221,8 @@ export async function saveCheckoutAddressInTx(
         line1: address.line1,
         line2: address.line2 ? address.line2 : null,
         city: address.city,
-        state: address.state,
-        postalCode: address.postalCode,
+        state: address.state || address.city,
+        postalCode: address.postalCode || "",
         country: address.country,
         isDefault: true,
       },

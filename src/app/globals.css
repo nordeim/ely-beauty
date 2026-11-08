@@ -10,52 +10,56 @@
 @custom-variant hover (&:hover);
 
 /* ---------------------------------------------------------------------------
- * HomeNest Kitchen — Tailwind v4 CSS-first theme, pinned to the reference
- * app's computed values (recon: nest-culinary-hub.base44.app, sampled from
- * live screenshots on 2026-10-12).
+ * ElyBeauty — Tailwind v4 CSS-first theme, pinned to the reference app's
+ * computed values (recon: ely-beauty.base44.app, sampled live on 2026-11-08;
+ * see docs/reference-investigation.md §1).
  *
  * Tailwind v4 trap-log pins applied here:
  *  1. Theme colors are FULL hsl() values — never bare `H S% L%` triplets,
  *     which silently resolve to transparent under `@theme inline`.
  *  2. `--shadow-sm` is pinned to the v3 geometry: v4 moved v3's `shadow-sm`
  *     up to `shadow` and inserted a heavier `shadow-sm`.
- *  3. Radius scale pinned to the reference's rounded-xl=12px / 2xl=16px /
- *     3xl=24px geometry (v4 shifted the named scale up one notch).
+ *  3. Radius scale pinned to the reference's editorial geometry: the
+ *     reference ships --radius .25rem (4px) — sharp corners everywhere.
  *  4. Display utilities are NEVER JS-toggled at runtime (the v4
  *     display-utility cascade-order bug, tailwindlabs/tailwindcss#15884):
  *     the mobile menu mounts/unmounts via React state instead.
  * ------------------------------------------------------------------------- */
 
 @theme inline {
-  --color-background: hsl(30 20% 98%);
-  --color-foreground: hsl(20 14% 12%);
-  --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(20 14% 12%);
+  /* ElyBeauty palette (verified computed values from the live reference). */
+  --color-background: hsl(30 20% 97%);
+  --color-foreground: hsl(0 0% 10%);
+  --color-card: hsl(30 20% 97%);
+  --color-card-foreground: hsl(0 0% 10%);
   --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(20 14% 12%);
-  --color-primary: hsl(24 70% 50%);
-  --color-primary-foreground: hsl(0 0% 100%);
-  --color-secondary: hsl(36 16% 94%);
-  --color-secondary-foreground: hsl(20 14% 20%);
-  --color-muted: hsl(36 16% 94%);
-  --color-muted-foreground: hsl(25 9% 45%);
-  --color-accent: hsl(24 70% 96%);
-  --color-accent-foreground: hsl(24 70% 35%);
-  --color-destructive: hsl(0 72% 51%);
+  --color-popover-foreground: hsl(0 0% 10%);
+  --color-primary: hsl(30 12% 48%);
+  --color-primary-foreground: hsl(30 20% 97%);
+  --color-secondary: hsl(30 15% 93%);
+  --color-secondary-foreground: hsl(0 0% 10%);
+  --color-muted: hsl(30 10% 94%);
+  --color-muted-foreground: hsl(0 0% 40%);
+  --color-accent: hsl(30 15% 93%);
+  --color-accent-foreground: hsl(0 0% 10%);
+  --color-destructive: hsl(0 84.2% 60.2%);
   --color-destructive-foreground: hsl(0 0% 98%);
-  --color-border: hsl(33 15% 90%);
-  --color-input: hsl(33 15% 88%);
-  --color-ring: hsl(24 70% 50%);
-  --color-badge-sale: hsl(0 72% 61%);
-  --color-badge-featured: hsl(24 70% 60%);
+  --color-border: hsl(30 10% 88%);
+  --color-input: hsl(30 10% 88%);
+  --color-ring: hsl(30 12% 48%);
+  --color-success: hsl(140 20% 33%);
+  --color-success-foreground: hsl(0 0% 98%);
+  /* Badge pills: BESTSELLER (near-black) + SALE (reference red). */
+  --color-badge-sale: hsl(0 84.2% 60.2%);
+  --color-badge-featured: hsl(0 0% 10%);
 
-  /* Radius scale pinned to the reference's measured geometry. */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.625rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 1rem;
-  --radius-3xl: 1.5rem;
+  /* Radius scale pinned to the reference's measured sharp geometry. */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.375rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.75rem;
+  --radius-3xl: 1rem;
 
   /* v3 shadow-scale pin. */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -79,13 +83,27 @@
   .container-page {
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
   }
-  /* Serif display headings — the reference's signature typographic voice. */
+  /* Cormorant Garamond display headings — the reference's signature
+   * typographic voice (light weight, tight tracking). */
   .font-display {
-    font-family: var(--font-playfair), ui-serif, Georgia, serif;
+    font-family: var(--font-cormorant), ui-serif, Georgia, serif;
   }
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/* The reference's micro-label: Inter 12px/500, 1.2px tracking, uppercase.
+ * Declared with @utility (NOT @layer utilities) so `@apply` can reference
+ * it from .link-cta — the v4 rule: custom classes in @layer utilities are
+ * NOT apply-able candidates (trap-log class). */
+@utility eyebrow-label {
+  @apply text-xs font-medium uppercase tracking-[0.12em];
+}
+
+/* The reference's underlined text CTAs (SHOP THE COLLECTION, DISCOVER SETS). */
+@utility link-cta {
+  @apply eyebrow-label inline-flex items-center gap-2 text-current underline underline-offset-4 transition-colors hover:text-primary;
 }
 
 /* Motion hygiene: honor prefers-reduced-motion. */

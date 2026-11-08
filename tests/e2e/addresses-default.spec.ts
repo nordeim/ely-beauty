@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { gotoHydrated } from "./helpers";
+import { gotoHydrated, addToCartViaDetailPage, PILLOWCASE } from "./helpers";
 
 /**
  * Address-book defaulting (session-8 S8-1): the FIRST address saved through
@@ -11,7 +11,7 @@ test.describe("account address defaulting", () => {
   test("first saved address is default and prefills checkout (S8-1)", async ({ page }) => {
     const email = `s8-addr-${Date.now()}-${Math.floor(Math.random() * 1000)}@example.com`;
     await gotoHydrated(page, "/register");
-    await page.getByLabel("Name").fill("S8 Default Check");
+    await page.getByLabel("Full name").fill("S8 Default Check");
     await page.getByLabel("Email").fill(email);
     await page.getByLabel("Password").fill("Default123!");
     await page.getByRole("button", { name: /Create account/i }).click();
@@ -23,10 +23,10 @@ test.describe("account address defaulting", () => {
     await page.getByLabel("Label").fill("Home");
     await page.getByLabel("Full name").fill("S8 Default Check");
     await page.getByLabel("Street address").fill("17 Carousel Way");
-    await page.getByLabel("City").fill("Austin");
-    await page.getByLabel("State").fill("TX");
-    await page.getByLabel("ZIP code").fill("73301");
-    await page.getByLabel("Phone").fill("+1 512 555 0177");
+    await page.getByLabel("City").fill("Dhaka");
+    await page.getByLabel("State").fill("Dhaka");
+    await page.getByLabel("ZIP code").fill("1205");
+    await page.getByLabel("Phone").fill("01712345177");
     await page.getByRole("button", { name: /Save Address/i }).click();
     await expect(page.getByRole("button", { name: /Add Address/i })).toBeVisible({ timeout: 10_000 });
 
@@ -36,21 +36,25 @@ test.describe("account address defaulting", () => {
     await expect(page.getByText("17 Carousel Way")).toBeVisible();
 
     // Checkout redirects to /cart while the cart is empty — drop one item in
-    // so the shipping step renders and the prefill can be asserted.
-    await gotoHydrated(page, "/products");
-    await page.getByRole("button", { name: /Add to cart/i }).first().click();
-    await expect(page.locator('[data-testid="cart-count"]')).not.toHaveText(/^0$/, { timeout: 10_000 });
+    // (run-72: through the product DETAIL page) so the form renders and the
+    // prefill can be asserted.
+    await addToCartViaDetailPage(page, PILLOWCASE.cardText);
 
     // Checkout prefills the shipping form from the default address.
+    // (Role+name locators: the shipping SECTION is labelled "Shipping
+    // Address", which a bare getByLabel("Address") substring-matches.)
     await gotoHydrated(page, "/checkout");
-    await expect(page.getByLabel("Street address")).toHaveValue("17 Carousel Way", { timeout: 10_000 });
-    await expect(page.getByLabel("Full name")).toHaveValue("S8 Default Check");
+    await expect(page.getByRole("textbox", { name: "Address *" })).toHaveValue("17 Carousel Way", { timeout: 10_000 });
+    await expect(page.getByRole("textbox", { name: "Full Name *" })).toHaveValue("S8 Default Check");
+    await expect(page.getByRole("textbox", { name: "City / District *" })).toHaveValue("Dhaka");
+    // The prefilled Dhaka city already picks the ৳70 shipping tier.
+    await expect(page.getByTestId("summary-shipping")).toHaveText("৳70");
   });
 
   test("Set as default promotes another address (badge moves)", async ({ page }) => {
     const email = `s8-addr2-${Date.now()}-${Math.floor(Math.random() * 1000)}@example.com`;
     await gotoHydrated(page, "/register");
-    await page.getByLabel("Name").fill("S8 Promote Check");
+    await page.getByLabel("Full name").fill("S8 Promote Check");
     await page.getByLabel("Email").fill(email);
     await page.getByLabel("Password").fill("Promote123!");
     await page.getByRole("button", { name: /Create account/i }).click();
@@ -62,10 +66,10 @@ test.describe("account address defaulting", () => {
       await page.getByLabel("Label").fill(label);
       await page.getByLabel("Full name").fill("S8 Promote Check");
       await page.getByLabel("Street address").fill(line1);
-      await page.getByLabel("City").fill("Austin");
-      await page.getByLabel("State").fill("TX");
-      await page.getByLabel("ZIP code").fill("73301");
-      await page.getByLabel("Phone").fill("+1 512 555 0188");
+      await page.getByLabel("City").fill("Dhaka");
+      await page.getByLabel("State").fill("Dhaka");
+      await page.getByLabel("ZIP code").fill("1205");
+      await page.getByLabel("Phone").fill("01712345188");
       await page.getByRole("button", { name: /Save Address/i }).click();
       await expect(page.getByText(line1)).toBeVisible({ timeout: 10_000 });
     };
@@ -88,10 +92,8 @@ test.describe("account address defaulting", () => {
     expect(badges).toBe(1);
 
     // And checkout prefill follows the promoted address.
-    await gotoHydrated(page, "/products");
-    await page.getByRole("button", { name: /Add to cart/i }).first().click();
-    await expect(page.locator('[data-testid="cart-count"]')).not.toHaveText(/^0$/, { timeout: 10_000 });
+    await addToCartViaDetailPage(page, PILLOWCASE.cardText);
     await gotoHydrated(page, "/checkout");
-    await expect(page.getByLabel("Street address")).toHaveValue("2 Second Street", { timeout: 10_000 });
+    await expect(page.getByRole("textbox", { name: "Address *" })).toHaveValue("2 Second Street", { timeout: 10_000 });
   });
 });

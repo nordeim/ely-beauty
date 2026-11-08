@@ -2,7 +2,7 @@
  * Order-access capability tokens.
  *
  * `/checkout/success` renders the full buyer receipt (email, shipping address,
- * spend). Order numbers are sequential (`ORD-YYYY-NNN`), so the page must NOT
+ * spend). Order numbers are crypto-random (`ELY-XXXXXXXX`), so the page must NOT
  * trust a bare `?order=` param — a guessable number would leak every buyer's
  * PII (the same bug class the `/track-order` WI-1 fix closed).
  *

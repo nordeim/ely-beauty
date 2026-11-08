@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { gotoHydrated } from "./helpers";
+import { gotoHydrated, DEMO_ADMIN } from "./helpers";
 
 /**
  * Admin coupon management (session-19 S19-5) — the full CRUD loop plus the
@@ -35,9 +35,9 @@ const CODE = "SESSION5";
 
 async function loginAsAdmin(page: import("@playwright/test").Page) {
   await gotoHydrated(page, "/login");
-  await page.getByLabel("Email").fill("admin@homenestkitchen.com");
-  await page.getByLabel("Password").fill("Admin123!");
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByLabel("Email").fill(DEMO_ADMIN.email);
+  await page.getByLabel("Password").fill(DEMO_ADMIN.password);
+  await page.getByRole("button", { name: "Log in" }).click();
   await expect(page).toHaveURL(/\/(account|admin)/, { timeout: 10_000 });
 }
 
@@ -89,8 +89,8 @@ test.describe("admin coupon management", () => {
     // identity-isolated — the explicit session-cookie header (S21-1) is what
     // makes this the admin's own cart rather than a throwaway guest cart.
     // Snapshot the target product's pre-spec quantity so the cleanup can
-    // restore it exactly.
-    const search = await request.get("/api/search?q=knife");
+    // restore it exactly. Run-72: the seeded pick is an in-stock product.
+    const search = await request.get("/api/search?q=pillowcase");
     const { results } = (await search.json()) as { results: Array<{ id: string; name: string }> };
     expect(results.length).toBeGreaterThan(0);
     const product = results[0]!;

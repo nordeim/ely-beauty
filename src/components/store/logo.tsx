@@ -1,14 +1,19 @@
 import Link from "next/link";
-import { Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function Logo({ className, brandName = "HomeNest" }: { className?: string; brandName?: string }) {
+/**
+ * Logo — the ElyBeauty bicolor wordmark ("Ely" in gold, "Beauty" in rose),
+ * matching the reference's serif logo treatment (Cormorant Garamond).
+ */
+export function Logo({ className, brandName = "ElyBeauty" }: { className?: string; brandName?: string }) {
   return (
-    <Link href="/" className={cn("flex items-center gap-2.5", className)} aria-label={`${brandName} home`}>
-      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-        <Home className="h-5 w-5" strokeWidth={2.2} />
-      </span>
-      <span className="font-display text-2xl font-bold tracking-tight text-foreground">{brandName}</span>
+    <Link
+      href="/"
+      className={cn("font-display text-2xl font-medium leading-none tracking-tight", className)}
+      aria-label={`${brandName} home`}
+    >
+      <span className="text-[#b08d57]">Ely</span>
+      <span className="text-[#c4717d]">Beauty</span>
     </Link>
   );
 }

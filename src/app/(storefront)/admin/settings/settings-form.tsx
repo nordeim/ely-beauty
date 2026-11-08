@@ -68,12 +68,12 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
 
     const shippingCents = parseDollarsToCents(form.standardShippingDollars);
     if (shippingCents === null) {
-      setError("Enter a valid dollar amount for standard shipping (e.g. 6.95).");
+      setError("Enter a valid amount for Dhaka shipping (e.g. 70).");
       return;
     }
     const expressCents = parseDollarsToCents(form.expressShippingDollars);
     if (expressCents === null) {
-      setError("Enter a valid dollar amount for express shipping (e.g. 18.95).");
+      setError("Enter a valid amount for outside-Dhaka shipping (e.g. 130).");
       return;
     }
     const thresholdCents = parseDollarsToCents(form.freeShippingThresholdDollars);
@@ -208,7 +208,7 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="settings-standard-shipping">Standard shipping ($)</Label>
+            <Label htmlFor="settings-standard-shipping">Shipping — Dhaka (৳)</Label>
             <Input
               id="settings-standard-shipping"
               type="text"
@@ -221,7 +221,7 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
             <p className="text-xs text-muted-foreground">Enter dollars.</p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="settings-express-shipping">Express shipping ($)</Label>
+            <Label htmlFor="settings-express-shipping">Shipping — outside Dhaka (৳)</Label>
             <Input
               id="settings-express-shipping"
               type="text"
@@ -234,7 +234,7 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
             <p className="text-xs text-muted-foreground">Enter dollars.</p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="settings-free-threshold">Free shipping threshold ($)</Label>
+            <Label htmlFor="settings-free-threshold">Free shipping threshold (৳)</Label>
             <Input
               id="settings-free-threshold"
               type="text"
@@ -262,7 +262,7 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
               type="url"
               value={form.socialInstagram}
               onChange={(e) => setField("socialInstagram", e.target.value)}
-              placeholder="https://instagram.com/homenest"
+              placeholder="https://instagram.com/elybeauty"
             />
           </div>
           <div className="space-y-2">
@@ -272,7 +272,7 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
               type="url"
               value={form.socialPinterest}
               onChange={(e) => setField("socialPinterest", e.target.value)}
-              placeholder="https://pinterest.com/homenest"
+              placeholder="https://pinterest.com/elybeauty"
             />
           </div>
           <div className="space-y-2">
@@ -282,7 +282,7 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
               type="url"
               value={form.socialFacebook}
               onChange={(e) => setField("socialFacebook", e.target.value)}
-              placeholder="https://facebook.com/homenest"
+              placeholder="https://facebook.com/elybeauty"
             />
           </div>
           <div className="space-y-2">
@@ -292,7 +292,7 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
               type="url"
               value={form.socialTikTok}
               onChange={(e) => setField("socialTikTok", e.target.value)}
-              placeholder="https://tiktok.com/@homenest"
+              placeholder="https://tiktok.com/@elybeauty"
             />
           </div>
         </div>

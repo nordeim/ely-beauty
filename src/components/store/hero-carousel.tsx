@@ -1,19 +1,21 @@
 "use client";
 
 /**
- * HeroCarousel — auto-rotating hero matching the reference: rounded-3xl
- * media with a bottom-left dark gradient scrim, large serif title, subtitle,
- * solid-orange CTA, bottom-left dot indicators and bottom-right circular
- * prev/next buttons.
+ * HeroCarousel — the ElyBeauty hero: a full-bleed editorial image with
+ * CENTERED white Cormorant headline, subtitle, and an underlined uppercase
+ * text CTA (the reference's treatment). The carousel ENGINE is retained as
+ * the superset: with 2+ slides the dot indicators + prev/next arrows +
+ * auto-rotation activate; the seeded single slide renders as a static hero
+ * (exactly the reference's single-image look).
  *
  * v4 trap-log: the slide transition animates opacity only (compositor-safe);
- * slides are absolutely stacked so height is driven by the tallest image —
+ * slides are absolutely stacked so height is driven by the media box —
  * no `hidden` toggling anywhere.
  */
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -38,6 +40,7 @@ function reducedMotionQuery(): MediaQueryList {
 export function HeroCarousel({ slides, autoRotateMs = 6000 }: { slides: Slide[]; autoRotateMs?: number }) {
   const [active, setActive] = React.useState(0);
   const count = slides.length;
+  const isSingle = count === 1;
   // WCAG 2.2.2: auto-motion pauses on hover/focus and for users who ask the
   // OS for reduced motion. Purely behavioral — no visual change in captures.
   // `useSyncExternalStore` subscribes to the media query the React-idiomatic
@@ -81,15 +84,15 @@ export function HeroCarousel({ slides, autoRotateMs = 6000 }: { slides: Slide[];
 
   return (
     <section
-      aria-roledescription="carousel"
+      aria-roledescription={isSingle ? undefined : "carousel"}
       aria-label="Featured collections"
-      className="relative overflow-hidden rounded-3xl bg-secondary shadow-sm"
+      className="relative w-full overflow-hidden bg-foreground"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
-      <div className="relative aspect-[21/9] min-h-[320px] w-full sm:aspect-[16/7]">
+      <div className="relative h-[78svh] min-h-[520px] w-full">
         {slides.map((slide, i) => (
           <div
             key={slide.id}
@@ -109,61 +112,64 @@ export function HeroCarousel({ slides, autoRotateMs = 6000 }: { slides: Slide[];
             />
             {/* sRGB-interpolated scrim (arbitrary gradient form — the v4
                 oklab interpolation trap produces a different ramp). */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent [background-image:linear-gradient(to_top,rgb(0_0_0/0.55),rgb(0_0_0/0.15)_45%,transparent_75%)]" />
+            <div className="absolute inset-0 [background-image:linear-gradient(to_top,rgb(0_0_0/0.45),rgb(0_0_0/0.12)_45%,rgb(0_0_0/0.25))]" />
           </div>
         ))}
 
-        {/* Slide text */}
-        <div className="absolute inset-x-0 bottom-0 p-6 sm:p-10">
-          <h1 className="font-display text-3xl font-bold text-white drop-shadow-md sm:text-5xl">
+        {/* Centered slide text (the reference's editorial treatment). */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 px-6 text-center">
+          <h1 className="font-display text-5xl font-light leading-[1.05] tracking-tight text-white drop-shadow-md sm:text-7xl lg:text-8xl">
             {activeSlide.title}
           </h1>
-          <p className="mt-2 max-w-xl text-sm text-white/90 drop-shadow sm:text-lg">{activeSlide.subtitle}</p>
-          <Link
-            href={activeSlide.ctaLink}
-            className="mt-5 inline-flex h-11 items-center rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-md transition-colors hover:bg-primary/90"
-          >
+          <p className="max-w-xl text-sm text-white/85 drop-shadow sm:text-base">{activeSlide.subtitle}</p>
+          <Link href={activeSlide.ctaLink} className="link-cta mt-2 text-white">
             {activeSlide.ctaText}
+            <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </div>
 
         {/* Dots — plain buttons with aria-current (session-6 S6-13): the
-            tab/tablist roles implied tabpanels that don't exist here. */}
-        <div className="absolute bottom-5 left-6 flex items-center gap-2 sm:left-10">
-          {slides.map((slide, i) => (
-            <button
-              key={slide.id}
-              type="button"
-              aria-current={i === activeIndex}
-              aria-label={`Slide ${i + 1}: ${slide.title}`}
-              onClick={() => setActive(i)}
-              className={cn(
-                "h-2 rounded-full transition-all",
-                i === activeIndex ? "w-8 bg-white" : "w-2 bg-white/50 hover:bg-white/80",
-              )}
-            />
-          ))}
-        </div>
+            tab/tablist roles implied tabpanels that don't exist here.
+            Hidden for the seeded single slide (reference parity). */}
+        {!isSingle && (
+          <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-2">
+            {slides.map((slide, i) => (
+              <button
+                key={slide.id}
+                type="button"
+                aria-current={i === activeIndex}
+                aria-label={`Slide ${i + 1}: ${slide.title}`}
+                onClick={() => setActive(i)}
+                className={cn(
+                  "h-2 rounded-full transition-all",
+                  i === activeIndex ? "w-8 bg-white" : "w-2 bg-white/50 hover:bg-white/80",
+                )}
+              />
+            ))}
+          </div>
+        )}
 
-        {/* Arrows */}
-        <div className="absolute bottom-4 right-4 flex items-center gap-2 sm:bottom-6 sm:right-6">
-          <button
-            type="button"
-            onClick={prev}
-            aria-label="Previous slide"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur transition-colors hover:bg-white/35"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            onClick={next}
-            aria-label="Next slide"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur transition-colors hover:bg-white/35"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </div>
+        {/* Arrows (multi-slide superset only). */}
+        {!isSingle && (
+          <div className="absolute bottom-5 right-5 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={prev}
+              aria-label="Previous slide"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur transition-colors hover:bg-white/35"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={next}
+              aria-label="Next slide"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur transition-colors hover:bg-white/35"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

@@ -8,6 +8,10 @@ import * as React from "react";
 type StoreState = {
   mobileNavOpen: boolean;
   setMobileNavOpen: (open: boolean) => void;
+  /** The mobile panel's in-panel search mode (the reference's SEARCH row
+   *  swaps the panel links for a search input + live results). */
+  mobileNavSearch: boolean;
+  setMobileNavSearch: (on: boolean) => void;
   cartDrawerOpen: boolean;
   setCartDrawerOpen: (open: boolean) => void;
   /**
@@ -24,6 +28,7 @@ const StoreContext = React.createContext<StoreState | null>(null);
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
+  const [mobileNavSearch, setMobileNavSearch] = React.useState(false);
   const [cartDrawerOpen, setCartDrawerOpen] = React.useState(false);
   const [cartCount, setCartCount] = React.useState<number | null>(null);
 
@@ -46,12 +51,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     () => ({
       mobileNavOpen,
       setMobileNavOpen,
+      mobileNavSearch,
+      setMobileNavSearch,
       cartDrawerOpen,
       setCartDrawerOpen,
       cartCount,
       setCartCount,
     }),
-    [mobileNavOpen, cartDrawerOpen, cartCount],
+    [mobileNavOpen, mobileNavSearch, cartDrawerOpen, cartCount],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

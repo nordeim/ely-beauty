@@ -20,6 +20,7 @@ export function AddToCartButton({
   className,
   children,
   buyNow = false,
+  variant = "",
 }: {
   productId: string;
   quantity?: number;
@@ -27,6 +28,8 @@ export function AddToCartButton({
   className?: string;
   children?: React.ReactNode;
   buyNow?: boolean;
+  /** ElyBeauty variant selection ("Pink", "0.5mm", …); "" = none (run-72). */
+  variant?: string;
 }) {
   const [pending, setPending] = React.useState(false);
   const { setCartCount } = useStore();
@@ -39,7 +42,7 @@ export function AddToCartButton({
       const res = await fetch("/api/cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId, quantity }),
+        body: JSON.stringify({ productId, quantity, variant }),
       });
       const data = (await res.json()) as { itemCount?: number; error?: string };
       if (!res.ok) {

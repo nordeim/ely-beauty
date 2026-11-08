@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "My Wishlist",
-  description: "The HomeNest Kitchen products you saved for later.",
+  description: "The ElyBeauty products you saved for later.",
   // Per-visitor private content — nothing here for a search engine.
   robots: { index: false, follow: false },
 };
@@ -44,7 +44,7 @@ export default async function WishlistPage() {
             Save your favorite items for later and they will show up here.
           </p>
           <Link
-            href="/products"
+            href="/shop"
             className="mt-6 inline-flex h-11 items-center rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
           >
             Browse Products

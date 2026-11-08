@@ -37,7 +37,7 @@ export function getStripe(): Stripe | null {
   if (!isStripeServerConfigured()) return null;
   if (cached) return cached;
   cached = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    appInfo: { name: "HomeNest Kitchen", version: "1.0.0" },
+    appInfo: { name: "ElyBeauty", version: "1.0.0" },
   });
   return cached;
 }

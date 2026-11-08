@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { gotoHydrated } from "./helpers";
+import { gotoHydrated, addToCartViaDetailPage, PILLOWCASE } from "./helpers";
 
 /**
  * Cart badge freshness (session-9 S9-1): the header badge must show the
@@ -7,14 +7,12 @@ import { gotoHydrated } from "./helpers";
  * initialize `cartCount` at 0 (never null), so the `liveCount ?? serverProp`
  * fallback in StoreChrome never fired and every hard load rendered badge-less
  * until the next in-page mutation — the server-computed count was dead code.
+ *
+ * Run-72: the add goes through the product DETAIL page (cards are link-only).
  */
 test.describe("cart badge", () => {
   test("survives a full page reload with the server-rendered count", async ({ page }) => {
-    await gotoHydrated(page, "/products");
-
-    // Add one product as a guest (context cart persists across reloads).
-    await page.locator("article").first().getByRole("button", { name: "Add to Cart" }).click();
-    await expect(page.getByTestId("cart-count")).toHaveText("1");
+    await addToCartViaDetailPage(page, PILLOWCASE.cardText);
 
     // FULL reload — the badge must come back from the server-rendered count.
     await page.reload();
@@ -23,9 +21,7 @@ test.describe("cart badge", () => {
   });
 
   test("keeps the count across a client-side navigation into the cart", async ({ page }) => {
-    await gotoHydrated(page, "/products");
-    await page.locator("article").first().getByRole("button", { name: "Add to Cart" }).click();
-    await expect(page.getByTestId("cart-count")).toHaveText("1");
+    await addToCartViaDetailPage(page, PILLOWCASE.cardText);
 
     // Open the drawer and use its View Cart link (client-side navigation) —
     // the badge must not blank out mid-journey.

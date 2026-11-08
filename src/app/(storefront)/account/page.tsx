@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "My Account",
-  description: "Manage your HomeNest Kitchen profile, orders, and saved addresses.",
+  description: "Manage your ElyBeauty profile, orders, and saved addresses.",
   // Session-8 S8-9: per-visitor private content — noindex like the wishlist.
   robots: { index: false, follow: false },
 };
@@ -28,8 +28,8 @@ export const metadata: Metadata = {
 // ---------------------------------------------------------------------------
 
 const TABS = [
+  { id: "orders", label: "Order History", icon: Package },
   { id: "profile", label: "Profile", icon: UserRound },
-  { id: "orders", label: "Orders", icon: Package },
   { id: "addresses", label: "Addresses", icon: MapPin },
 ] as const;
 
@@ -74,7 +74,7 @@ function initials(name: string): string {
 }
 
 function tabHref(tab: TabId, page = 1): string {
-  if (tab === "profile") return "/account";
+  if (tab === "orders") return "/account";
   return page > 1 ? `/account?tab=${tab}&page=${page}` : `/account?tab=${tab}`;
 }
 
@@ -87,7 +87,7 @@ export default async function AccountPage({
   if (!user) redirect("/login");
 
   const { tab: tabParam, page: pageParam } = await searchParams;
-  const tab: TabId = isTabId(tabParam) ? tabParam : "profile";
+  const tab: TabId = isTabId(tabParam) ? tabParam : "orders";
   // Honest pagination for order history (session-6 S6-9) — server-rendered
   // prev/next, real totals, no silent caps.
   const ORDER_PAGE_SIZE = 5;
@@ -127,7 +127,7 @@ export default async function AccountPage({
           {initials(user.name)}
         </span>
         <div>
-          <h1 className="font-display text-2xl font-bold sm:text-3xl">My Account</h1>
+          <h1 className="font-display text-3xl font-light tracking-tight sm:text-4xl">My Account</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             Welcome back, {firstName} — manage your profile, orders, and saved addresses.
           </p>
@@ -269,8 +269,8 @@ function OrdersSection({
   if (orders.length === 0) {
     return (
       <section aria-labelledby="account-orders-heading">
-        <h2 id="account-orders-heading" className="sr-only">
-          Order history
+        <h2 id="account-orders-heading" className="eyebrow-label mb-4 text-foreground">
+          Order History
         </h2>
         <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
           <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-primary">
@@ -281,7 +281,7 @@ function OrdersSection({
             When you place an order, it will appear here with live status updates and receipts.
           </p>
           <Link
-            href="/products"
+            href="/shop"
             className="mt-5 inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground shadow transition-colors hover:bg-primary/90"
           >
             <ShoppingBag className="h-4 w-4" aria-hidden /> Start Shopping
@@ -293,8 +293,8 @@ function OrdersSection({
 
   return (
     <section aria-labelledby="account-orders-heading" className="flex flex-col gap-4">
-      <h2 id="account-orders-heading" className="sr-only">
-        Order history
+      <h2 id="account-orders-heading" className="eyebrow-label text-foreground">
+        Order History
       </h2>
       {orders.map((order) => {
         const snapshot = parseAddressSnapshot(order.shippingAddress);

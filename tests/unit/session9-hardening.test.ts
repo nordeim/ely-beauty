@@ -180,15 +180,15 @@ describe("buildRevenueChart (S9-4)", () => {
 // S9-8 — bulk cart plan (dedupe + clamp), extracted pure
 // ---------------------------------------------------------------------------
 
-describe("dedupeBulkWanted (S9-8)", () => {
+describe("dedupeBulkWanted (S9-8, run-72 variant keys)", () => {
   it("sums repeated product ids into one wanted quantity", () => {
     const wanted = dedupeBulkWanted([
       { productId: "a", quantity: 2 },
       { productId: "a", quantity: 1 },
       { productId: "b", quantity: 1 },
     ]);
-    expect(wanted.get("a")).toBe(3);
-    expect(wanted.get("b")).toBe(1);
+    expect(wanted.get("a|")).toBe(3);
+    expect(wanted.get("b|")).toBe(1);
   });
 
   it("caps a duplicated product's summed quantity at 99", () => {
@@ -196,7 +196,7 @@ describe("dedupeBulkWanted (S9-8)", () => {
       { productId: "a", quantity: 60 },
       { productId: "a", quantity: 60 },
     ]);
-    expect(wanted.get("a")).toBe(99);
+    expect(wanted.get("a|")).toBe(99);
   });
 
   it("preserves first-seen insertion order", () => {
@@ -204,7 +204,17 @@ describe("dedupeBulkWanted (S9-8)", () => {
       { productId: "b", quantity: 1 },
       { productId: "a", quantity: 1 },
     ]);
-    expect(Array.from(wanted.keys())).toEqual(["b", "a"]);
+    expect(Array.from(wanted.keys())).toEqual(["b|", "a|"]);
+  });
+
+  it("keys the same product's different variants as separate lines (run-72)", () => {
+    const wanted = dedupeBulkWanted([
+      { productId: "a", quantity: 1, variant: "Pink" },
+      { productId: "a", quantity: 2, variant: "Black" },
+      { productId: "a", quantity: 3, variant: "Pink" },
+    ]);
+    expect(wanted.get("a|Pink")).toBe(4);
+    expect(wanted.get("a|Black")).toBe(2);
   });
 });
 

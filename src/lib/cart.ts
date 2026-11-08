@@ -24,6 +24,8 @@ export type CartLine = {
   quantity: number;
   stock: number;
   lineTotal: number; // cents
+  /** ElyBeauty variant ("Pink", "0.5mm", …); "" = no variant (run-72). */
+  variant: string;
 };
 
 export type CartSummary = {
@@ -84,10 +86,13 @@ export async function getOrCreateCart(userId: string | null): Promise<string> {
         if (guest) {
           const ownItems = await db.cartItem.findMany({
             where: { cartId: own.id },
-            select: { productId: true, quantity: true },
+            select: { productId: true, quantity: true, variant: true },
           });
           // Current stock pins the plan's third clamp dimension (session-6
           // S6-6): a merged line can never exceed what checkout would accept.
+          // Run-72: the merge plan keys on (productId, variant) — the same
+          // product in two colors merges per variant, and each variant line
+          // clamps to the product's stock independently.
           const planIds = [...new Set([...ownItems, ...guest.items].map((i) => i.productId))];
           const stockRows = await db.product.findMany({
             where: { id: { in: planIds } },
@@ -95,17 +100,21 @@ export async function getOrCreateCart(userId: string | null): Promise<string> {
           });
           const stockById = new Map(stockRows.map((p) => [p.id, p.stock]));
           const plan = computeMergedQuantities(
-            ownItems.map((i) => ({ productId: i.productId, quantity: i.quantity })),
-            guest.items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+            ownItems.map((i) => ({ productId: `${i.productId}|${i.variant ?? ""}`, quantity: i.quantity })),
+            guest.items.map((i) => ({ productId: `${i.productId}|${i.variant ?? ""}`, quantity: i.quantity })),
             stockById,
           );
 
           const newToken = randomBytes(24).toString("base64url");
           const mergedId = await db.$transaction(async (tx) => {
-            for (const [productId, quantity] of plan) {
+            for (const [planKey, quantity] of plan) {
+              const parts = planKey.split("|");
+              const productId = parts[0] ?? "";
+              const variant = parts[1] ?? "";
+              if (!productId) continue;
               await tx.cartItem.upsert({
-                where: { cartId_productId: { cartId: own.id, productId } },
-                create: { cartId: own.id, productId, quantity },
+                where: { cartId_productId_variant: { cartId: own.id, productId, variant } },
+                create: { cartId: own.id, productId, variant, quantity },
                 update: { quantity },
               });
             }
@@ -226,6 +235,7 @@ export async function getCartSummary(cartId: string | null): Promise<CartSummary
     quantity: item.quantity,
     stock: item.product.stock,
     lineTotal: item.product.price * item.quantity,
+    variant: item.variant ?? "",
   }));
   return {
     lines,

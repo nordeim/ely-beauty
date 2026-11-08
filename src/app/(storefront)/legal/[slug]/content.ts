@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // Legal content — typed, static policy copy for /legal/[slug].
-// Each document is real, substantive policy text written for HomeNest Kitchen
+// Each document is real, substantive policy text written for ElyBeauty
 // (an e-commerce storefront). ~400–600 words per document.
 // Body copy references the contact address through the {{contactEmail}} token
 // (session-7 S7-5): the admin-editable settings.contactEmail is substituted at
@@ -50,7 +50,7 @@ export const legalContent: Record<LegalSlug, LegalDoc> = {
     title: "Privacy Policy",
     updated: "January 2026",
     intro:
-      "This Privacy Policy explains what information HomeNest Kitchen collects when you browse our store or place an order, how we use and protect that information, and the choices you have. We collect the minimum data needed to run a great shop — nothing more.",
+      "This Privacy Policy explains what information ElyBeauty collects when you browse our store or place an order, how we use and protect that information, and the choices you have. We collect the minimum data needed to run a great shop — nothing more.",
     sections: [
       {
         heading: "Information We Collect",
@@ -71,7 +71,7 @@ export const legalContent: Record<LegalSlug, LegalDoc> = {
         heading: "How We Share Information",
         body: [
           "We share data only with the service providers that help us operate the store: payment processors, shipping carriers, and email delivery services. Each receives only the information required for its job — a carrier gets your shipping label details, not your order notes; an email provider gets your email address, not your full order history.",
-          "We may disclose information if required by law, regulation, or valid legal process, or if necessary to protect the rights, property, or safety of HomeNest Kitchen, our customers, or others.",
+          "We may disclose information if required by law, regulation, or valid legal process, or if necessary to protect the rights, property, or safety of ElyBeauty, our customers, or others.",
         ],
       },
       {
@@ -95,12 +95,12 @@ export const legalContent: Record<LegalSlug, LegalDoc> = {
     title: "Terms of Service",
     updated: "January 2026",
     intro:
-      "Welcome to HomeNest Kitchen. These Terms of Service govern your use of our website and your purchases from it. By browsing the store, creating an account, or placing an order, you agree to these terms.",
+      "Welcome to ElyBeauty. These Terms of Service govern your use of our website and your purchases from it. By browsing the store, creating an account, or placing an order, you agree to these terms.",
     sections: [
       {
         heading: "Using the Store",
         body: [
-          "You may use HomeNest Kitchen for lawful, personal, non-commercial purposes. You agree not to misuse the site: no scraping at volumes that degrade service, no attempts to breach authentication or access other customers' data, no fraudulent orders, and no interference with the store's normal operation.",
+          "You may use ElyBeauty for lawful, personal, non-commercial purposes. You agree not to misuse the site: no scraping at volumes that degrade service, no attempts to breach authentication or access other customers' data, no fraudulent orders, and no interference with the store's normal operation.",
           "You are responsible for keeping your account credentials confidential and for activity that occurs under your account. Notify us immediately at {{contactEmail}} if you suspect unauthorized use.",
         ],
       },
@@ -127,7 +127,7 @@ export const legalContent: Record<LegalSlug, LegalDoc> = {
       {
         heading: "Limitation of Liability & Changes",
         body: [
-          "To the maximum extent permitted by law, HomeNest Kitchen is not liable for indirect, incidental, special, or consequential damages arising from your use of the site or products, and our total liability for any claim is limited to the amount you paid for the order giving rise to the claim.",
+          "To the maximum extent permitted by law, ElyBeauty is not liable for indirect, incidental, special, or consequential damages arising from your use of the site or products, and our total liability for any claim is limited to the amount you paid for the order giving rise to the claim.",
           "We may update these terms as the store evolves. The version posted here at the time of your order applies to that order. Material changes will be announced on the site. Questions? Email {{contactEmail}} — a human will answer.",
         ],
       },
@@ -138,7 +138,7 @@ export const legalContent: Record<LegalSlug, LegalDoc> = {
     title: "Disclaimer",
     updated: "January 2026",
     intro:
-      "The information provided by HomeNest Kitchen is for general consumer purposes. This disclaimer explains the limits of that information and how to use it sensibly.",
+      "The information provided by ElyBeauty is for general consumer purposes. This disclaimer explains the limits of that information and how to use it sensibly.",
     sections: [
       {
         heading: "General Information Only",
@@ -173,7 +173,7 @@ export const legalContent: Record<LegalSlug, LegalDoc> = {
     title: "Cookie Policy",
     updated: "January 2026",
     intro:
-      "This Cookie Policy explains how HomeNest Kitchen uses cookies and similar technologies to keep the store working, remember your preferences, and understand how the site is used.",
+      "This Cookie Policy explains how ElyBeauty uses cookies and similar technologies to keep the store working, remember your preferences, and understand how the site is used.",
     sections: [
       {
         heading: "What Are Cookies?",
@@ -208,7 +208,7 @@ export const legalContent: Record<LegalSlug, LegalDoc> = {
     title: "Refund Policy",
     updated: "January 2026",
     intro:
-      "We want you to love what lands on your doorstep. This Refund Policy explains how returns, exchanges, and refunds work at HomeNest Kitchen, in plain language.",
+      "We want you to love what lands on your doorstep. This Refund Policy explains how returns, exchanges, and refunds work at ElyBeauty, in plain language.",
     sections: [
       {
         heading: "30-Day Returns",

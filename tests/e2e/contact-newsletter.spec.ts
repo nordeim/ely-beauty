@@ -2,10 +2,14 @@ import { expect, test } from "@playwright/test";
 import { gotoHydrated } from "./helpers";
 
 /**
- * Contact + newsletter — the two support/marketing capture surfaces
- * (session-12 C5: these routes previously had zero route-level coverage; only
- * their Zod schemas were pinned via validation.test.ts). The UI cases exercise
- * the hydrated forms; the API cases pin the 400/429 boundary responses.
+ * Contact + newsletter — the support capture surface (session-12 C5: these
+ * routes previously had zero route-level coverage; only their Zod schemas
+ * were pinned via validation.test.ts). The UI case exercises the hydrated
+ * form; the API cases pin the 400 boundary responses.
+ *
+ * Run-72: the ElyBeauty skin dropped the storefront newsletter capture (no
+ * form renders anywhere) — the API contract below stays pinned, and the
+ * home page's lack of a capture surface is pinned explicitly.
  */
 test.describe("contact and newsletter", () => {
   test("contact form sends a message (success toast)", async ({ page }) => {
@@ -14,7 +18,7 @@ test.describe("contact and newsletter", () => {
     await page.getByLabel("Name").fill("E2E Contact Check");
     await page.getByLabel("Email").fill("e2e-contact@example.com");
     await page.getByLabel("Subject").fill("Automated check");
-    // getByRole textbox: the section's aria-label ("Send us a message") also
+    // getByRole textbox: the form's aria-label ("Contact form") also
     // matches getByLabel("Message") — a strict-mode trap.
     await page.getByRole("textbox", { name: "Message" }).fill("This is an automated end-to-end contact message.");
     await page.getByRole("button", { name: /send/i }).click();
@@ -45,16 +49,10 @@ test.describe("contact and newsletter", () => {
     expect(res.status()).toBe(400);
   });
 
-  test("newsletter form subscribes from the home page (inline success)", async ({ page }) => {
+  test("the run-72 home page ships no newsletter capture surface", async ({ page }) => {
     await gotoHydrated(page, "/");
-    const email = `e2e-news-${Date.now()}@example.com`;
-    await page.getByLabel("Email address").fill(email);
-    await page.getByRole("button", { name: "Subscribe" }).click();
-    // .first()/hasText filter: the success <p role=status> shares the page
-    // with an empty aria-live status span (the suite's strict-mode convention).
-    await expect(
-      page.getByRole("status").filter({ hasText: "Thanks for subscribing" }),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("button", { name: "Subscribe" })).toHaveCount(0);
+    await expect(page.getByLabel("Email address")).toHaveCount(0);
   });
 
   test("POST /api/newsletter with an invalid email is a 400", async ({ request }) => {

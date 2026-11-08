@@ -7,7 +7,7 @@ describe("sitemap STATIC_ROUTES", () => {
   const paths = STATIC_ROUTES.map((r) => r.path);
 
   it("keeps the public catalog + content routes", () => {
-    for (const p of ["/", "/products", "/about", "/contact", "/legal/privacy-policy"]) {
+    for (const p of ["/", "/shop", "/about", "/contact", "/legal/privacy-policy"]) {
       expect(paths).toContain(p);
     }
   });

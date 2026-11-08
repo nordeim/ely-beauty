@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic"; // per-request CSP nonce — see (auth)/
 export const metadata: Metadata = {
   title: "Sign In",
   description:
-    "Sign in to your HomeNest Kitchen account to track orders, manage addresses, and keep your wishlist in sync.",
+    "Log in to your ElyBeauty account to track orders, manage addresses, and keep your wishlist in sync.",
   // Session-8 S8-9: utility pages — keep them out of the index.
   robots: { index: false, follow: true },
 };
@@ -27,12 +27,12 @@ export const metadata: Metadata = {
 const DEMO_ACCOUNTS: readonly DemoAccount[] = [
   {
     label: "Customer demo",
-    email: "demo@homenestkitchen.com",
+    email: "demo@elybeauty.com",
     password: "Demo1234!",
   },
   {
     label: "Admin demo",
-    email: "admin@homenestkitchen.com",
+    email: "admin@elybeauty.com",
     password: "Admin123!",
   },
 ];
@@ -47,7 +47,7 @@ export default async function LoginPage() {
   });
   return (
     <LoginForm
-      contactEmail={settings?.contactEmail ?? "hello@homenest.com"}
+      contactEmail={settings?.contactEmail ?? "helloelybeauty@gmail.com"}
       demoAccounts={showDemoBox ? DEMO_ACCOUNTS : undefined}
     />
   );

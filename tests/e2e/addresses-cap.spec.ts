@@ -10,7 +10,7 @@ test.describe("account addresses", () => {
   test("POST /api/addresses enforces the per-user cap with a friendly 409 (S7-8)", async ({ page }) => {
     const email = `s7-cap-${Date.now()}-${Math.floor(Math.random() * 1000)}@example.com`;
     await gotoHydrated(page, "/register");
-    await page.getByLabel("Name").fill("S7 Cap Check");
+    await page.getByLabel("Full name").fill("S7 Cap Check");
     await page.getByLabel("Email").fill(email);
     await page.getByLabel("Password").fill("CapCheck123!");
     await page.getByRole("button", { name: /Create account/i }).click();
@@ -21,11 +21,11 @@ test.describe("account addresses", () => {
     const payload = {
       label: "Home",
       fullName: "S7 Cap Check",
-      phone: "+1 512 555 0133",
+      phone: "01712345133",
       line1: "482 Maple Avenue",
-      city: "Austin",
-      state: "TX",
-      postalCode: "73301",
+      city: "Dhaka",
+      state: "Dhaka",
+      postalCode: "1205",
     };
 
     let lastOk: number | null = null;

@@ -45,7 +45,7 @@ export default function StorefrontError({ error, reset }: { error: Error & { dig
         <div className="mt-6 flex flex-col gap-2 sm:flex-row">
           <Button onClick={reset}>Try Again</Button>
           <Button variant="outline" asChild>
-            <a href="/products">Back to Products</a>
+            <a href="/shop">Back to Products</a>
           </Button>
         </div>
       </div>

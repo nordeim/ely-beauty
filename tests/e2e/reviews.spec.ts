@@ -1,23 +1,24 @@
 import { expect, test } from "@playwright/test";
-import { gotoHydrated } from "./helpers";
+import { openDetailFromShop } from "./helpers";
 
 /**
  * Review submission flow (session-8 S8-12): the write path — validation,
  * row create, transactional aggregate growth (S8-2), revalidate — had no
  * flow coverage at all; this spec pins the happy path end-to-end.
+ *
+ * Run-72: the review form lives on the product DETAIL page ("Customer
+ * Reviews" section) — reached through the /shop card link.
  */
 test.describe("product reviews", () => {
   test("a visitor can submit a review and see it published below", async ({ page }) => {
-    await gotoHydrated(page, "/products?q=damascus");
-    const damascusCard = page.locator("article").filter({ hasText: "Damascus Steel Chef Knife Set" });
-    await damascusCard.getByRole("heading").first().click();
+    await openDetailFromShop(page, "Pure Satin Silk Pillowcase", "/shop?q=pillowcase");
     await expect(page).toHaveURL(/\/product\//, { timeout: 10_000 });
 
     const title = `E2E review ${Date.now()}`;
     await page.getByLabel("Your name").fill("E2E Reviewer");
     await page.getByRole("radio", { name: "4 stars" }).click();
     await page.getByLabel("Title").fill(title);
-    await page.getByLabel("Your review").fill("Solid heft, beautiful handle, and the edge is impressively even out of the box.");
+    await page.getByLabel("Your review").fill("Silky, cool to the touch, and my hair is visibly less frizzy in the morning.");
     await page.getByRole("button", { name: /Submit Review/i }).click();
 
     // The success toast fires, then the server-rendered list refreshes with
@@ -27,9 +28,7 @@ test.describe("product reviews", () => {
   });
 
   test("rejects a too-short comment with an inline error", async ({ page }) => {
-    await gotoHydrated(page, "/products?q=copper");
-    const copperCard = page.locator("article").filter({ hasText: "Artisan Copper Frying Pan" });
-    await copperCard.getByRole("heading").first().click();
+    await openDetailFromShop(page, "Stainless Steel Gua Sha", "/shop?q=gua");
     await expect(page).toHaveURL(/\/product\//, { timeout: 10_000 });
 
     await page.getByLabel("Your name").fill("E2E Reviewer");

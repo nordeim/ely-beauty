@@ -39,8 +39,22 @@ async function login(page, email, password) {
   await page.waitForSelector('html[data-hydrated="true"]');
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByRole("button", { name: "Log in" }).click();
   await page.waitForURL(/\/(admin|account)/, { timeout: 15_000 });
+}
+
+/** Open a product detail page from the shop grid (cards are link-only) and
+ *  add it with the given quantity via the detail-page ADD TO CART. */
+async function addViaDetailPage(page, cardText, quantity = 1) {
+  await page.goto("/shop");
+  await page.waitForSelector('html[data-hydrated="true"]');
+  await page.locator("article").filter({ hasText: cardText }).first().getByRole("link").first().click();
+  await page.waitForURL(/\/product\//);
+  await page.waitForSelector('html[data-hydrated="true"]');
+  for (let i = 1; i < quantity; i += 1) {
+    await page.getByRole("button", { name: "Increase quantity" }).click();
+  }
+  await page.getByRole("button", { name: "ADD TO CART" }).click();
 }
 
 /** Deterministic add-to-cart: the header badge must read the given count. */
@@ -83,19 +97,20 @@ await shoot(browser, desktop, "01-home", "full", async (page) => {
   await page.waitForSelector('html[data-hydrated="true"]');
 });
 await shoot(browser, desktop, "02-products", "full", async (page) => {
-  await page.goto("/products");
+  await page.goto("/shop");
   await page.waitForSelector('html[data-hydrated="true"]');
 });
 await shoot(browser, desktop, "03-product-detail", "full", async (page) => {
-  await page.goto("/products");
+  await page.goto("/shop");
   await page.waitForSelector('html[data-hydrated="true"]');
-  await page.locator("article a").first().click();
+  await page.locator("article").filter({ hasText: "Pure Satin Silk Pillowcase" }).first().getByRole("link").first().click();
   await page.waitForLoadState("networkidle");
+  // Select a color so the variant selector renders in the shot.
+  await page.getByRole("button", { name: "Color Sky Blue" }).click();
+  await page.waitForTimeout(200);
 });
 await shoot(browser, desktop, "04-cart", "full", async (page) => {
-  await page.goto("/products");
-  await page.waitForSelector('html[data-hydrated="true"]');
-  await page.locator("article").first().getByRole("button", { name: "Add to Cart" }).click();
+  await addViaDetailPage(page, "Pure Satin Silk Pillowcase");
   // The add is a fire-and-forget fetch — wait for the badge before the
   // navigation or the goto aborts it and the shot captures the empty cart
   // (session-23: the run-24 capture hit exactly this race).
@@ -107,29 +122,22 @@ await shoot(browser, desktop, "04-cart", "full", async (page) => {
 // below-threshold cart shows the progress nag; an applied FREESHIP swaps it
 // for the coupon-attributed block (the S21-7 contradiction, resolved).
 await shoot(browser, desktop, "04b-cart-coupon-hint", "full", async (page) => {
-  await page.goto("/products");
-  await page.waitForSelector('html[data-hydrated="true"]');
-  await page
-    .locator("article")
-    .filter({ hasText: "French Rolling Pin & Baking Set" })
-    .first()
-    .getByRole("button", { name: "Add to Cart" })
-    .click();
+  // Run-72: the ৳288 pillowcase cart sits below BOTH the ৳3,000 threshold
+  // (the progress nag renders) and FREESHIP's own ৳3,000 minimum (the apply
+  // rejects with the server's minimum error) — the honest below-threshold
+  // state, both surfaces visible in one shot.
+  await addViaDetailPage(page, "Pure Satin Silk Pillowcase");
   await expectBadgeCount(page, 1);
   await page.goto("/cart");
   await page.waitForLoadState("networkidle");
-  await page.getByText("Add $15.01 more for free shipping").waitFor();
+  await page.getByText("more for free shipping", { exact: false }).waitFor();
   await page.getByLabel("Coupon code").fill("FREESHIP");
   await page.getByRole("button", { name: "Apply", exact: true }).click();
-  await page.getByText("Free shipping active — FREESHIP applied at checkout").waitFor();
-  // S37-2: gate on the coupon toast's 4s auto-dismiss so the shot is
-  // byte-stable — the toast's enter/exit animation frame at capture time was
-  // run-to-run noise (pixel-diff isolated the ONLY differing region to the
-  // "Coupon FREESHIP applied" toast itself; the content was always correct).
-  // Same determinism discipline as the S35-2 badge gates.
+  // S37-2 determinism: gate on the toast's auto-dismiss so the shot is
+  // byte-stable (the animation frame at capture time was run-to-run noise).
   await page
     .locator("li")
-    .filter({ hasText: "Coupon FREESHIP applied" })
+    .filter({ hasText: "minimum subtotal" })
     .waitFor({ state: "detached", timeout: 10000 });
 });
 await shoot(browser, desktop, "05-login", "viewport", async (page) => {
@@ -138,7 +146,7 @@ await shoot(browser, desktop, "05-login", "viewport", async (page) => {
 });
 await shoot(browser, desktop, "06-track-order", "full", async (page) => {
   // The protected tracking page (number + email contract).
-  await page.goto("/track-order?number=ORD-2026-001&email=demo%40homenestkitchen.com");
+  await page.goto("/track-order?number=ELY-AAAAAAAA&email=demo%40elybeauty.com");
   await page.waitForLoadState("networkidle");
 });
 await shoot(browser, desktop, "07-about", "full", async (page) => {
@@ -158,9 +166,7 @@ await shoot(browser, desktop, "10-register", "viewport", async (page) => {
   await page.waitForSelector('html[data-hydrated="true"]');
 });
 await shoot(browser, desktop, "11-checkout", "full", async (page) => {
-  await page.goto("/products");
-  await page.waitForSelector('html[data-hydrated="true"]');
-  await page.locator("article").first().getByRole("button", { name: "Add to Cart" }).click();
+  await addViaDetailPage(page, "Pure Satin Silk Pillowcase");
   // The add is a fire-and-forget fetch — wait for the badge before the
   // navigation or the goto aborts it and the shot captures the empty-cart
   // shell at /checkout (session-35: the run-35 capture lost exactly this
@@ -168,16 +174,24 @@ await shoot(browser, desktop, "11-checkout", "full", async (page) => {
   // same fix the 04-cart shot got in session-24).
   await expectBadgeCount(page, 1);
   await page.goto("/checkout");
-  await page.waitForLoadState("networkidle");
+  await page.waitForSelector('html[data-hydrated="true"]');
+  // Fill the contact + address so the shot shows the live shipping tier
+  // (Dhaka ৳70) instead of "Enter city to calculate".
+  await page.getByLabel("Full Name *").fill("Ayesha Rahman");
+  await page.getByLabel("Email *").fill("demo@elybeauty.com");
+  await page.getByLabel("Phone Number *").fill("01787385459");
+  await page.getByLabel("Address *").fill("House 12, Road 5, Dhanmondi");
+  await page.getByLabel("City / District *").fill("Dhaka");
+  await page.getByTestId("summary-shipping").getByText("৳70").waitFor();
 });
 
 // ---------- Authenticated desktop pages ----------
 await shoot(browser, desktop, "19-account", "full", async (page) => {
-  await login(page, "demo@homenestkitchen.com", "Demo1234!");
+  await login(page, "demo@elybeauty.com", "Demo1234!");
   await page.waitForLoadState("networkidle");
 });
 await shoot(browser, desktop, "12-admin-dashboard", "full", async (page) => {
-  await login(page, "admin@homenestkitchen.com", "Admin123!");
+  await login(page, "admin@elybeauty.com", "Admin123!");
   await page.waitForLoadState("networkidle");
   // S50-1: the dashboard's recharts RevenueChart animates its area draw on a
   // local ~1500ms timer after mount — `networkidle` fires while the animation
@@ -197,7 +211,7 @@ for (const [name, path] of [
   ["18-admin-settings", "/admin/settings"],
 ]) {
   await shoot(browser, desktop, name, "full", async (page) => {
-    await login(page, "admin@homenestkitchen.com", "Admin123!");
+    await login(page, "admin@elybeauty.com", "Admin123!");
     await page.goto(path);
     await page.waitForLoadState("networkidle");
     // S50-1: the analytics page renders recharts Bar/Pie charts with the
@@ -228,13 +242,13 @@ await shoot(browser, mobile, "21-mobile-menu-open", "viewport", async (page) => 
 });
 await shoot(browser, mobile, "22-tracking-locked", "viewport", async (page) => {
   // The anti-enumeration contract, visually: a number without its email.
-  await page.goto("/track-order?number=ORD-2026-001");
+  await page.goto("/track-order?number=ELY-AAAAAAAA");
   await page.waitForLoadState("networkidle");
 });
 await shoot(browser, desktop, "23-checkout-success-locked", "viewport", async (page) => {
   // S3-1 access contract, visually: a guessed sequential order number without
   // its token renders the same not-found shell — no receipt, no PII.
-  await page.goto("/checkout/success?order=ORD-2026-001");
+  await page.goto("/checkout/success?order=ELY-AAAAAAAA");
   await page.waitForLoadState("networkidle");
 });
 

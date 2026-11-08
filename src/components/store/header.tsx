@@ -1,28 +1,33 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Heart, Menu, Search, ShoppingBag, User } from "lucide-react";
+import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { MAX_CART_QUANTITY } from "@/lib/cart-quantity";
+import { formatMoney } from "@/lib/money";
 import { Logo } from "./logo";
 import { MobileNav } from "./mobile-nav";
 import { useStore } from "./store-provider";
 
+// The reference's nav map (verified live): four uppercase micro-labels.
 const NAV_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/products", label: "Products" },
-  { href: "/track-order", label: "Track Order" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+  { href: "/shop", label: "Shop", match: "/shop" },
+  { href: "/shop?category=beauty-tools", label: "Beauty Tools", match: "/shop?category=beauty-tools" },
+  { href: "/shop?category=brush-combs", label: "Brush & Combs", match: "/shop?category=brush-combs" },
+  { href: "/about", label: "About", match: "/about" },
 ];
 
+type SearchResult = { id: string; name: string; image: string; price: number; category: string };
+
 /**
- * Header — nav row (h-16) matching the reference DOM: [hamburger | logo |
- * centered nav | search | icon cluster]. The sticky wrapper + mobile panel
- * are composed by the storefront layout.
+ * Header — the reference anatomy: [nav links | centered logo | icon cluster]
+ * in a fixed 80px bar. Over the home hero the bar is TRANSPARENT with white
+ * text (verified live); on every other route it is solid ivory with a hairline
+ * bottom border and dark text.
  */
 export function Header({
   user,
@@ -31,104 +36,226 @@ export function Header({
   user: { name: string; role: string } | null;
   cartCount: number;
 }) {
-  const { setMobileNavOpen, mobileNavOpen, cartDrawerOpen, setCartDrawerOpen } = useStore();
+  const { setMobileNavOpen, mobileNavOpen, cartDrawerOpen, setCartDrawerOpen, setMobileNavSearch } = useStore();
   const pathname = usePathname();
+  const [searchOpen, setSearchOpen] = React.useState(false);
 
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
+  // Over-hero styling applies on the home route only (the hero image sits
+  // directly under the fixed bar there) — and only while the mobile panel is
+  // CLOSED (run-72 fix: an open push-down panel needs the solid bar, or its
+  // white-on-transparent labels sit on the ivory panel below the fold line).
+  const overHero = pathname === "/" && !mobileNavOpen;
+
+  const isActive = (match: string) => {
+    if (match.startsWith("/shop?")) return pathname === "/shop" && typeof window !== "undefined" && window.location.search === `?${match.split("?")[1]}`;
+    if (match === "/shop") return pathname === "/shop" && (typeof window === "undefined" || !window.location.search);
+    return pathname.startsWith(match);
+  };
 
   return (
-    <div className="container-page flex h-16 items-center justify-between gap-4">
-      <div className="flex items-center gap-3">
-        {/* Direct row child (reference structure): hamburger sits left of the logo. */}
-        <button
-          type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-secondary lg:hidden"
-          aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
-          aria-expanded={mobileNavOpen}
-          aria-haspopup="dialog"
-          data-testid="mobile-menu-button"
-          onClick={() => setMobileNavOpen(!mobileNavOpen)}
-        >
-          <Menu className="h-5.5 w-5.5" />
-        </button>
-        <Logo />
-      </div>
-
-      <nav className="hidden items-center gap-2 lg:flex" aria-label="Main">
-        {NAV_LINKS.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            aria-current={isActive(link.href) ? "page" : undefined}
+    <>
+      <div
+        className={cn(
+          "container-page grid h-20 grid-cols-[auto_1fr_auto] items-center gap-4 lg:grid-cols-[1fr_auto_1fr]",
+          overHero ? "text-white" : "text-foreground",
+        )}
+      >
+        {/* Left: hamburger (mobile) / nav links (desktop) */}
+        <div className="flex items-center justify-start gap-3">
+          <button
+            type="button"
             className={cn(
-              "rounded-full px-4 py-2 text-sm font-medium transition-colors",
-              isActive(link.href)
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-foreground/70 hover:text-foreground",
+              "inline-flex h-11 w-11 items-center justify-center transition-colors lg:hidden",
+              overHero ? "hover:bg-white/10" : "hover:bg-secondary",
+            )}
+            aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileNavOpen}
+            aria-haspopup="dialog"
+            data-testid="mobile-menu-button"
+            onClick={() => {
+              setMobileNavSearch(false);
+              setMobileNavOpen(!mobileNavOpen);
+            }}
+          >
+            {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+          <nav className="hidden items-center gap-7 lg:flex" aria-label="Main">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={isActive(link.match) ? "page" : undefined}
+                className={cn(
+                  "eyebrow-label transition-colors",
+                  isActive(link.match) ? "text-primary" : "hover:text-primary",
+                  overHero && isActive(link.match) && "text-white underline underline-offset-8",
+                  overHero && !isActive(link.match) && "hover:text-white/70",
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        {/* Center: logo */}
+        <div className="flex justify-center">
+          <Logo className={overHero ? "text-white" : undefined} />
+        </div>
+
+        {/* Right: icon cluster */}
+        <div className="flex items-center justify-end gap-0.5">
+          <button
+            type="button"
+            className={cn(
+              "inline-flex h-11 w-11 items-center justify-center transition-colors",
+              overHero ? "hover:bg-white/10" : "hover:bg-secondary",
+            )}
+            aria-label="Search products"
+            onClick={() => setSearchOpen((v) => !v)}
+          >
+            <Search className="h-5 w-5" />
+          </button>
+          <Link
+            href={user ? "/account" : "/login"}
+            aria-label={user ? `Account: ${user.name}` : "Account"}
+            className={cn(
+              "inline-flex h-11 w-11 items-center justify-center transition-colors",
+              overHero ? "hover:bg-white/10" : "hover:bg-secondary",
             )}
           >
-            {link.label}
+            <User className="h-5 w-5" />
           </Link>
-        ))}
-      </nav>
+          <button
+            type="button"
+            aria-label={cartCount > 0 ? `Cart with ${cartCount} items` : "Cart with 0 items"}
+            aria-haspopup="dialog"
+            aria-expanded={cartDrawerOpen}
+            onClick={() => setCartDrawerOpen(!cartDrawerOpen)}
+            className={cn(
+              "relative inline-flex h-11 w-11 items-center justify-center transition-colors",
+              overHero ? "hover:bg-white/10" : "hover:bg-secondary",
+            )}
+          >
+            <ShoppingBag className="h-5 w-5" />
+            {cartCount > 0 && (
+              <span
+                className="absolute right-1 top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground"
+                data-testid="cart-count"
+              >
+                {cartCount > MAX_CART_QUANTITY ? "99+" : cartCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+      <DesktopSearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+    </>
+  );
+}
 
-      <div className="flex items-center gap-1.5">
-        {/* Desktop inline search — the reference's rounded muted input. */}
-        <form action="/products" role="search" className="hidden md:block">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="search"
-              name="q"
-              placeholder="Search products..."
-              aria-label="Search products"
-              className="h-10 w-48 rounded-full bg-secondary pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:w-64 focus:outline-none focus:ring-2 focus:ring-ring/40 transition-[width]"
-            />
-          </div>
-        </form>
-        {/* Mobile search icon toggles the panel below (which carries the input). */}
-        <button
-          type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-secondary md:hidden"
-          aria-label="Search"
-          onClick={() => setMobileNavOpen(true)}
-        >
-          <Search className="h-5 w-5" />
-        </button>
+/**
+ * DesktopSearchOverlay — the reference's full-width search sheet: a hairline
+ * input row + live results, sliding under the fixed header. Escape closes;
+ * navigating a result closes (the overlay unmounts on route change).
+ */
+function DesktopSearchOverlay({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [query, setQuery] = React.useState("");
+  const [results, setResults] = React.useState<SearchResult[]>([]);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const pathname = usePathname();
 
-        <Link
-          href="/wishlist"
-          aria-label="Wishlist"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-secondary"
-        >
-          <Heart className="h-5 w-5" />
-        </Link>
-        <Link
-          href={user ? "/account" : "/login"}
-          aria-label={user ? `Account: ${user.name}` : "Sign in"}
-          className="hidden h-10 w-10 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-secondary sm:inline-flex"
-        >
-          <User className="h-5 w-5" />
-        </Link>
-        <button
-          type="button"
-          aria-label={cartCount > 0 ? `Cart, ${cartCount} items` : "Cart"}
-          aria-haspopup="dialog"
-          aria-expanded={cartDrawerOpen}
-          onClick={() => setCartDrawerOpen(!cartDrawerOpen)}
-          className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-secondary"
-        >
-          <ShoppingBag className="h-5 w-5" />
-          {cartCount > 0 && (
-            <span
-              className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground"
-              data-testid="cart-count"
-            >
-              {cartCount > MAX_CART_QUANTITY ? "99+" : cartCount}
-            </span>
-          )}
-        </button>
+  // Route change closes the overlay (the reference's overlay dismisses on
+  // navigation). No local resets here — the content component is keyed by
+  // route and re-mounts fresh.
+  React.useEffect(() => {
+    onClose();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  React.useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  React.useEffect(() => {
+    if (open) inputRef.current?.focus();
+  }, [open]);
+
+  // Debounced typeahead against /api/search (the same endpoint the mobile
+  // panel uses); <2 chars renders nothing (the endpoint's own floor, checked
+  // inside the timer so the effect never calls setState synchronously).
+  React.useEffect(() => {
+    let cancelled = false;
+    const t = setTimeout(() => {
+      const term = query.trim();
+      if (term.length < 2) {
+        setResults([]);
+        return;
+      }
+      fetch(`/api/search?q=${encodeURIComponent(term)}`)
+        .then((r) => r.json())
+        .then((data: { results?: SearchResult[] }) => !cancelled && setResults(data.results ?? []))
+        .catch(() => !cancelled && setResults([]));
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [query]);
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-x-0 top-20 z-50 border-b border-border bg-background shadow-sm" data-testid="search-overlay">
+      <div className="container-page py-6">
+        <div className="flex items-center gap-4 border-b border-border pb-4">
+          <Search className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
+          <input
+            ref={inputRef}
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search products..."
+            aria-label="Search products"
+            className="flex-1 bg-transparent text-lg text-foreground placeholder:text-muted-foreground focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close search"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        {results.length > 0 && (
+          <ul className="grid gap-2 pt-4 sm:grid-cols-2">
+            {results.map((r) => (
+              <li key={r.id}>
+                <Link
+                  href={`/product/${r.id}`}
+                  onClick={onClose}
+                  className="flex items-center gap-4 p-2 transition-colors hover:bg-secondary"
+                >
+                  <span className="relative h-14 w-14 shrink-0 overflow-hidden bg-secondary">
+                    <Image src={r.image} alt="" fill sizes="56px" className="object-cover" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">{r.name}</span>
+                    <span className="block text-xs text-muted-foreground">{r.category}</span>
+                  </span>
+                  <span className="text-sm font-semibold">{formatMoney(r.price)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+        {query.trim().length >= 2 && results.length === 0 && (
+          <p className="pt-4 text-sm text-muted-foreground">No products match “{query.trim()}”.</p>
+        )}
       </div>
     </div>
   );

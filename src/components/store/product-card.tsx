@@ -3,42 +3,39 @@ import Link from "next/link";
 
 import { discountPercent, formatMoney } from "@/lib/money";
 import type { ProductCardData } from "@/lib/products";
-import { StarRating } from "./star-rating";
-import { AddToCartButton, AddToWishlistButton } from "./add-to-cart-button";
 
 /**
- * ProductCard — matches the reference card anatomy: media with stacked
- * [-N%] red pill + [Featured] orange pill, orange uppercase category label,
- * serif product name, amber stars + review count, bold price + struck
- * compare-at price.
+ * ProductCard — the ElyBeauty reference anatomy: a borderless editorial
+ * card (no border, no radius, no shadow) — portrait media with stacked
+ * BESTSELLER / SALE rect badges, color swatch dots, sans product name,
+ * one-line muted description, price + struck compare-at. The whole card
+ * is the detail link (the reference has no per-card add-to-cart; the
+ * wishlist heart lives on the detail page — superset surface).
  */
 export function ProductCard({
   product,
   priority = false,
-  inWishlist = false,
+  inWishlist: _inWishlist = false,
 }: {
   product: ProductCardData;
   priority?: boolean;
-  /** Session-11 S11-2: server-rendered wishlist membership for the heart. */
+  /** Retained for call-site compatibility; the editorial card renders the
+   *  heart on the product detail page instead (reference parity). */
   inWishlist?: boolean;
 }) {
   const discount = discountPercent(product.price, product.compareAtPrice);
+  const onSale = discount !== null;
   // Session-47 S47-3 (WCAG 2.5.3 Label in Name): the media link's accessible
-  // name must CONTAIN its visible text — the stacked "-N%" and badge pills.
-  // Voice-control users speak the visible badge text ("click minus twenty-
-  // nine percent"), which cannot match a link named only by the product
-  // name. The visible strings are folded in verbatim (the discount pill
-  // renders `discount + "%"` = "-29%"); the name stays non-rendered so the
-  // card's visual anatomy is untouched.
-  const visibleBadges = [discount !== null ? `${discount}%` : null, product.badge]
+  // name must CONTAIN its visible text — the stacked "SALE" / badge pills.
+  const visibleBadges = [product.badge, onSale ? "Sale" : null]
     .filter((part): part is string => part !== null)
     .join(", ");
   const mediaLabel = visibleBadges ? `${product.name}, ${visibleBadges}` : product.name;
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-shadow hover:shadow-lg">
+    <article className="group flex h-full flex-col">
       <Link
         href={`/product/${product.id}`}
-        className="relative block aspect-square overflow-hidden bg-secondary"
+        className="relative block aspect-[4/5] overflow-hidden bg-secondary"
         aria-label={mediaLabel}
       >
         <Image
@@ -47,52 +44,48 @@ export function ProductCard({
           fill
           priority={priority}
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
-          {discount !== null && (
-            <span className="rounded-full bg-badge-sale px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">
-              {discount}%
-            </span>
-          )}
+        <div className="absolute left-0 top-4 flex flex-col items-start gap-1.5">
           {product.badge && (
-            <span className="rounded-full bg-badge-featured px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">
+            <span className="bg-badge-featured px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white">
               {product.badge}
             </span>
           )}
-        </div>
-      </Link>
-      <div className="absolute right-3 top-3 z-10">
-        <AddToWishlistButton
-          productId={product.id}
-          productName={product.name}
-          initialInWishlist={inWishlist}
-        />
-      </div>
-
-      <div className="flex flex-1 flex-col gap-1.5 p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">{product.categoryName}</p>
-        <h3 className="font-display text-base font-semibold leading-snug text-foreground">
-          <Link href={`/product/${product.id}`} className="hover:text-primary transition-colors">
-            {product.name}
-          </Link>
-        </h3>
-        <div className="flex items-center gap-1.5">
-          <StarRating rating={product.rating} />
-          <span className="text-xs text-muted-foreground">({product.reviewCount})</span>
-        </div>
-        <div className="mt-auto flex items-baseline gap-2 pt-1">
-          <span className="text-lg font-bold text-foreground">{formatMoney(product.price)}</span>
-          {product.compareAtPrice && (
-            <span className="text-sm text-muted-foreground line-through">
-              {formatMoney(product.compareAtPrice)}
+          {onSale && (
+            <span className="bg-badge-sale px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white">
+              Sale
             </span>
           )}
         </div>
-        <div className="pt-2">
-          <AddToCartButton productId={product.id} size="sm" className="w-full">
-            Add to Cart
-          </AddToCartButton>
+        {product.colors.length > 0 && (
+          <span className="absolute bottom-3 left-4 flex items-center gap-1.5" aria-hidden>
+            {product.colors.slice(0, 4).map((c) => (
+              <span
+                key={c.name}
+                className="h-3 w-3 rounded-full border border-white/70 shadow-sm"
+                style={{ backgroundColor: c.hex }}
+              />
+            ))}
+          </span>
+        )}
+      </Link>
+      <div className="flex flex-1 flex-col gap-1 pt-3">
+        <h3 className="text-sm font-medium leading-snug text-foreground">
+          <Link href={`/product/${product.id}`} className="transition-colors hover:text-primary">
+            {product.name}
+          </Link>
+        </h3>
+        {product.shortDescription && (
+          <p className="line-clamp-1 text-xs text-muted-foreground">{product.shortDescription}</p>
+        )}
+        <div className="mt-auto flex items-baseline gap-2 pt-1">
+          <span className="text-sm font-medium text-foreground">{formatMoney(product.price)}</span>
+          {product.compareAtPrice && product.compareAtPrice > product.price && (
+            <span className="text-xs text-muted-foreground line-through">
+              {formatMoney(product.compareAtPrice)}
+            </span>
+          )}
         </div>
       </div>
     </article>

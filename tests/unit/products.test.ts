@@ -25,6 +25,10 @@ function makeProduct(overrides: Partial<Product> = {}): Product {
       { label: "Blade Material", value: "67-layer Damascus steel" },
       { label: "Pieces", value: "5 knives" },
     ]),
+    colors: JSON.stringify([{ name: "Pink", hex: "#cb9d9d" }]),
+    sizes: JSON.stringify(["0.5mm"]),
+    howToUse: "Roll gently.",
+    ingredients: "",
     badge: "Featured",
     isFeatured: true,
     isNewArrival: true,
@@ -80,6 +84,8 @@ describe("toCardData", () => {
       categoryName: "Kitchen Tools",
       categorySlug: "kitchen-tools",
       badge: "Featured",
+      colors: [{ name: "Pink", hex: "#cb9d9d" }],
+      shortDescription: "Professional 5-piece knife set.",
     });
   });
 

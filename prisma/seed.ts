@@ -1,12 +1,16 @@
 /**
  * Seed — idempotent (upserts by natural keys). Seeds:
- *  - 8 categories matching the reference storefront
- *  - the reference catalog (8 products) + HomeNest superset extras
- *  - hero carousel slides matching the reference
+ *  - 4 categories matching the ElyBeauty reference storefront
+ *  - the reference catalog (19 products, BDT cents, variants, full copy)
+ *  - 1 hero slide (the reference's single-image hero)
  *  - coupons, store settings, demo accounts (admin + customer)
- *  - a starter review per product matching the reference rating/count
+ *  - a starter review per product (superset review surface)
  *
  * Run: npm run db:seed   (tsx prisma/seed.ts)
+ *
+ * Catalog source: the live reference's public entity API (fetched 2026-11-08,
+ * research/live/products.json). Product imagery is independently generated
+ * (see docs/implementation-plan.md deviations ledger).
  */
 import { pathToFileURL } from "node:url";
 import { PrismaClient } from "@prisma/client";
@@ -16,12 +20,13 @@ import { couponSeedCreatedAt, productSeedCreatedAt, productSeedUpdate } from "..
 const prisma = new PrismaClient();
 
 type Spec = { label: string; value: string };
+type ColorOption = { name: string; hex: string };
 
 type SeedProduct = {
   slug: string;
   name: string;
   category: string;
-  price: number; // cents
+  price: number; // cents (৳1 = 100)
   compareAtPrice?: number;
   sku: string;
   stock: number;
@@ -30,506 +35,499 @@ type SeedProduct = {
   images: string[];
   tags: string[];
   specs: Spec[];
+  colors?: ColorOption[];
+  sizes?: string[];
   shortDescription: string;
   description: string;
+  howToUse?: string;
+  ingredients?: string;
   badge?: string;
   isFeatured?: boolean;
   isNewArrival?: boolean;
 };
 
+// The reference's four categories (display names + tile captions + imagery
+// as observed live). Slugs use clean kebab-case; the reference's nav carried
+// template-remnant ?category=skincare/body_care links that match none of its
+// real category slugs — the clone links the real slugs (working filters).
 const CATEGORIES = [
   {
-    slug: "cookware",
-    name: "Cookware",
-    description: "Professional-grade pots and pans built for even heat and a lifetime of family meals.",
-    icon: "cooking-pot",
-    iconGradient: "from-orange-400 to-orange-600",
+    slug: "beauty-tools",
+    name: "Beauty Tools",
+    description: "Serums, creams & treatments",
+    imageUrl: "/images/category-beauty-tools.png",
+    icon: "sparkles",
+    iconGradient: "from-stone-400 to-stone-600",
     sortOrder: 1,
   },
   {
-    slug: "bakeware",
-    name: "Bakeware",
-    description: "Trusted trays, tins and racks that deliver consistent, golden results every bake.",
-    icon: "cake",
-    iconGradient: "from-pink-400 to-pink-600",
+    slug: "brush-combs",
+    name: "Brush & Combs",
+    description: "Oils, lotions & rituals",
+    imageUrl: "/images/category-brush-combs.png",
+    icon: "brush",
+    iconGradient: "from-amber-400 to-stone-500",
     sortOrder: 2,
   },
   {
-    slug: "kitchen-tools",
-    name: "Kitchen Tools",
-    description: "Precision-forged blades and everyday prep tools designed for effortless cooking.",
-    icon: "utensils-crossed",
-    iconGradient: "from-amber-400 to-orange-500",
+    slug: "bestsellers",
+    name: "Bestsellers",
+    description: "The most-loved pieces of the collection",
+    imageUrl: "/images/category-bestsellers.png",
+    icon: "heart",
+    iconGradient: "from-rose-400 to-rose-600",
     sortOrder: 3,
   },
   {
-    slug: "storage",
-    name: "Storage",
-    description: "Airtight, stackable storage that keeps your pantry organized and ingredients fresher.",
-    icon: "package",
-    iconGradient: "from-teal-400 to-emerald-500",
+    slug: "gift-sets",
+    name: "Gift Sets",
+    description: "Curated gift collections",
+    imageUrl: "/images/category-gift-sets.png",
+    icon: "gift",
+    iconGradient: "from-stone-400 to-amber-600",
     sortOrder: 4,
-  },
-  {
-    slug: "appliances",
-    name: "Appliances",
-    description: "Countertop machines that bring café-quality coffee and bakery-quality bread home.",
-    icon: "zap",
-    iconGradient: "from-blue-400 to-blue-600",
-    sortOrder: 5,
-  },
-  {
-    slug: "dining",
-    name: "Dining",
-    description: "Minimalist, chip-resistant plates, bowls and mugs that set a beautiful table every day.",
-    icon: "wine",
-    iconGradient: "from-purple-400 to-purple-600",
-    sortOrder: 6,
-  },
-  {
-    slug: "cleaning",
-    name: "Cleaning",
-    description: "Effective, gentle cleaning tools that keep your kitchen sparkling and hygienic.",
-    icon: "sparkles",
-    iconGradient: "from-cyan-400 to-sky-500",
-    sortOrder: 7,
-  },
-  {
-    slug: "decor",
-    name: "Decor",
-    description: "Warm, natural accents that make your kitchen the heart of your home.",
-    icon: "sprout",
-    iconGradient: "from-green-400 to-emerald-600",
-    sortOrder: 8,
   },
 ];
 
 export const PRODUCTS: SeedProduct[] = [
-  // ---- The reference catalog (visual-parity core) ----
+  // ---- The reference catalog, in the reference's "Newest" order ----
   {
-    slug: "damascus-steel-chef-knife-set",
-    name: "Damascus Steel Chef Knife Set",
-    category: "kitchen-tools",
-    price: 19999,
-    compareAtPrice: 27999,
-    sku: "HN-KNIFE-001",
-    stock: 24,
+    slug: "premium-double-sided-ruffles-silk-hair-bonnet",
+    name: "Premium Double Sided Ruffles Silk Hair Bonnet",
+    category: "bestsellers",
+    price: 37000,
+    sku: "ELY-001",
+    stock: 0,
+    rating: 4.8,
+    reviewCount: 24,
+    images: ["/images/product-silk-bonnet.png"],
+    tags: ["bestseller"],
+    specs: [
+      { label: "Material", value: "100% mulberry silk" },
+      { label: "Sides", value: "Double-sided" },
+    ],
+    sizes: ["Pink & Lavender", "Maroon & Navy Blue", "Black & White"],
+    shortDescription: "Double-sided ruffled silk bonnet that protects hair overnight.",
+    description:
+      "Sleep in luxury with our Premium Double Sided Ruffles Silk Hair Bonnet. Crafted from 100% mulberry silk, it reduces friction, prevents breakage, and keeps your hairstyle fresh while you sleep. The double-sided design offers two looks in one, with delicate ruffles adding a touch of elegance.",
+    badge: "Bestseller",
+    isFeatured: true,
+    isNewArrival: true,
+  },
+  {
+    slug: "pure-satin-silk-pillowcase",
+    name: "Pure Satin Silk Pillowcase – For Hair & Skin",
+    category: "bestsellers",
+    price: 28800,
+    compareAtPrice: 35000,
+    sku: "ELY-002",
+    stock: 19,
     rating: 4.9,
-    reviewCount: 412,
-    images: ["/images/product-damascus-knife-set.png", "/images/product-damascus-knife-set-2.png"],
-    tags: ["Damascus steel", "professional", "gift set"],
-    specs: [
-      { label: "Blade Material", value: "67-layer Damascus steel" },
-      { label: "Pieces", value: "5 knives + magnetic holder" },
-      { label: "Handle", value: "Ergonomic walnut" },
-      { label: "Hardness", value: "62 HRC" },
-    ],
-    shortDescription:
-      "Professional 5-piece knife set with Damascus steel blades and ergonomic walnut handles.",
-    description:
-      "Professional 5-piece knife set with Damascus steel blades and ergonomic walnut handles. Includes magnetic wooden holder. Razor-sharp precision for every cut.",
-    badge: "Featured",
-    isFeatured: true,
-    isNewArrival: true,
-  },
-  {
-    slug: "artisan-copper-frying-pan",
-    name: "Artisan Copper Frying Pan",
-    category: "cookware",
-    price: 8999,
-    compareAtPrice: 12999,
-    sku: "HN-COPPER-002",
-    stock: 32,
-    rating: 4.8,
-    reviewCount: 234,
-    images: ["/images/product-copper-pan.png", "/images/product-copper-pan-2.png"],
-    tags: ["copper", "non-stick", "premium"],
-    specs: [
-      { label: "Material", value: "Hand-hammered copper" },
-      { label: "Base", value: "Tri-ply, even heat" },
-      { label: "Coating", value: "Non-stick ceramic" },
-      { label: "Diameter", value: '10 in (26 cm)' },
-    ],
-    shortDescription:
-      "Hand-hammered copper frying pan with a tri-ply base for even heat distribution.",
-    description:
-      "Hand-hammered copper frying pan with a tri-ply base for even heat distribution. Non-stick ceramic coating makes cooking and cleanup a breeze. Perfect for everything from delicate eggs to seared steaks.",
-    badge: "Featured",
-    isFeatured: true,
-    isNewArrival: true,
-  },
-  {
-    slug: "artisan-ceramic-dinner-set",
-    name: "Artisan Ceramic Dinner Set",
-    category: "dining",
-    price: 11999,
-    compareAtPrice: 15999,
-    sku: "HN-DINING-003",
-    stock: 18,
-    rating: 4.8,
-    reviewCount: 203,
-    images: ["/images/product-ceramic-dinner-set.png"],
-    tags: ["handcrafted", "ceramic", "dinner set"],
-    specs: [
-      { label: "Pieces", value: "16-piece set" },
-      { label: "Includes", value: "4 plates, 4 salad plates, 4 bowls, 4 mugs" },
-      { label: "Material", value: "Glazed stoneware" },
-      { label: "Care", value: "Dishwasher & microwave safe" },
-    ],
-    shortDescription: "16-piece handcrafted dinner set in warm terracotta and cream.",
-    description:
-      "16-piece handcrafted dinner set in warm terracotta and cream. Includes 4 each of dinner plates, salad plates, bowls, and mugs. Each piece is uniquely glazed.",
-    badge: "Featured",
-    isFeatured: true,
-    isNewArrival: true,
-  },
-  {
-    slug: "enameled-cast-iron-dutch-oven",
-    name: "Enameled Cast Iron Dutch Oven",
-    category: "cookware",
-    price: 14999,
-    compareAtPrice: 19999,
-    sku: "HN-DUTCH-004",
-    stock: 21,
-    rating: 4.9,
-    reviewCount: 367,
-    images: ["/images/product-dutch-oven.png", "/images/product-copper-pan-2.png"],
-    tags: ["cast iron", "enamel", "Dutch oven"],
-    specs: [
-      { label: "Capacity", value: "6 quarts" },
-      { label: "Material", value: "Enameled cast iron" },
-      { label: "Color", value: "Deep burgundy" },
-      { label: "Lid", value: "Self-basting" },
-    ],
-    shortDescription: "6-quart cast iron Dutch oven with premium enamel coating in deep burgundy.",
-    description:
-      "6-quart cast iron Dutch oven with premium enamel coating in deep burgundy. Self-basting lid locks in moisture. Perfect for braising, roasting, and slow-cooking.",
-    badge: "Featured",
-    isFeatured: true,
-    isNewArrival: true,
-  },
-  {
-    slug: "walnut-cutting-board-collection",
-    name: "Walnut Cutting Board Collection",
-    category: "kitchen-tools",
-    price: 7999,
-    sku: "HN-BOARD-005",
-    stock: 40,
-    rating: 4.7,
-    reviewCount: 142,
-    images: ["/images/product-walnut-boards.png", "/images/product-damascus-knife-set-2.png"],
-    tags: ["walnut", "handcrafted", "natural"],
-    specs: [
-      { label: "Pieces", value: "3 boards (large, medium, small)" },
-      { label: "Material", value: "Premium walnut" },
-      { label: "Feature", value: "Juice grooves" },
-      { label: "Finish", value: "Food-safe mineral oil" },
-    ],
-    shortDescription: "Set of 3 premium walnut cutting boards with juice grooves.",
-    description:
-      "Set of 3 premium walnut cutting boards with juice grooves. Hand-finished with food-safe mineral oil. Includes large, medium, and small sizes.",
-    isNewArrival: true,
-  },
-  {
-    slug: "ceramic-mixing-bowl-set",
-    name: "Ceramic Mixing Bowl Set",
-    category: "bakeware",
-    price: 5499,
-    compareAtPrice: 6999,
-    sku: "HN-BOWL-006",
-    stock: 35,
-    rating: 4.6,
-    reviewCount: 187,
-    images: ["/images/product-mixing-bowls.png"],
-    tags: ["ceramic", "set", "nesting"],
-    specs: [
-      { label: "Pieces", value: "4 nesting bowls" },
-      { label: "Material", value: "Durable stoneware" },
-      { label: "Base", value: "Non-slip" },
-      { label: "Care", value: "Microwave & dishwasher safe" },
-    ],
-    shortDescription: "Set of 4 nesting mixing bowls in beautiful matte earth tones.",
-    description:
-      "Set of 4 nesting mixing bowls in beautiful matte earth tones. Made from durable stoneware with non-slip bases. Microwave and dishwasher safe.",
-    badge: "Featured",
-    isFeatured: true,
-    isNewArrival: true,
-  },
-  {
-    slug: "glass-storage-container-set",
-    name: "Glass Storage Container Set",
-    category: "storage",
-    price: 4299,
-    sku: "HN-STORE-007",
-    stock: 50,
-    rating: 4.5,
-    reviewCount: 156,
-    images: ["/images/product-glass-storage.png"],
-    tags: ["glass", "eco-friendly", "airtight"],
-    specs: [
-      { label: "Pieces", value: "12-piece set" },
-      { label: "Material", value: "Borosilicate glass" },
-      { label: "Lids", value: "Airtight bamboo" },
-      { label: "Safe", value: "Oven, microwave & freezer" },
-    ],
-    shortDescription: "12-piece borosilicate glass food storage set with airtight bamboo lids.",
-    description:
-      "12-piece borosilicate glass food storage set with airtight bamboo lids. Eco-friendly alternative to plastic. Oven, microwave, and freezer safe.",
-    isNewArrival: true,
-  },
-  {
-    slug: "professional-stand-mixer",
-    name: "Professional Stand Mixer",
-    category: "appliances",
-    price: 34999,
-    compareAtPrice: 42999,
-    sku: "HN-MIXER-008",
-    stock: 14,
-    rating: 4.7,
-    reviewCount: 298,
-    images: ["/images/product-stand-mixer.png"],
-    tags: ["mixer", "professional", "powerful"],
-    specs: [
-      { label: "Motor", value: "800W, 10 speeds" },
-      { label: "Bowl", value: "5-quart stainless steel" },
-      { label: "Includes", value: "Dough hook, flat beater, whisk" },
-      { label: "Warranty", value: "5-year motor" },
-    ],
-    shortDescription: "Powerful 800W stand mixer with 10-speed settings and 5-quart stainless bowl.",
-    description:
-      "Powerful 800W stand mixer with 10-speed settings and 5-quart stainless steel bowl. Includes dough hook, flat beater, and wire whisk attachments.",
-    badge: "Featured",
-    isFeatured: true,
-    isNewArrival: true,
-  },
-  // ---- HomeNest superset extras (beyond the reference catalog) ----
-  {
-    slug: "stainless-steel-cookware-set",
-    name: "Stainless Steel Cookware Set",
-    category: "cookware",
-    price: 24999,
-    compareAtPrice: 32999,
-    sku: "HN-COOK-009",
-    stock: 22,
-    rating: 4.7,
-    reviewCount: 189,
-    images: ["/images/product-copper-pan-2.png"],
-    tags: ["stainless steel", "10-piece", "induction"],
-    specs: [
-      { label: "Pieces", value: "10-piece set" },
-      { label: "Material", value: "Tri-ply stainless steel" },
-      { label: "Compatible", value: "All cooktops incl. induction" },
-      { label: "Oven Safe", value: "Up to 500°F" },
-    ],
-    shortDescription: "10-piece tri-ply stainless steel set for every cooking task.",
-    description:
-      "10-piece tri-ply stainless steel cookware set engineered for professional results at home. Impact-bonded bases eliminate hot spots, riveted stay-cool handles, and every piece is oven safe to 500°F. Works on all cooktops including induction.",
-    badge: "Best Seller",
-    isFeatured: false,
-    isNewArrival: false,
-  },
-  {
-    slug: "french-rolling-pin-baking-set",
-    name: "French Rolling Pin & Baking Set",
-    category: "bakeware",
-    price: 3499,
-    compareAtPrice: 4499,
-    sku: "HN-BAKE-010",
-    stock: 44,
-    rating: 4.6,
-    reviewCount: 98,
-    images: ["/images/product-walnut-boards.png"],
-    tags: ["baking", "beechwood", "pastry"],
-    specs: [
-      { label: "Material", value: "Solid beechwood" },
-      { label: "Includes", value: "Rolling pin + pastry mat" },
-      { label: "Design", value: "Tapered French style" },
-      { label: "Care", value: "Hand wash, oil regularly" },
-    ],
-    shortDescription: "Tapered beechwood French rolling pin with a non-stick pastry mat.",
-    description:
-      "The tapered French rolling pin gives you superior control for pastry, pizza, and cookies. Paired with a food-grade silicone pastry mat printed with measurement guides, this set turns any counter into a baker's station.",
-    isNewArrival: false,
-  },
-  {
-    slug: "espresso-machine-compact",
-    name: "Compact Espresso Machine",
-    category: "appliances",
-    price: 27999,
-    compareAtPrice: 34999,
-    sku: "HN-ESP-011",
-    stock: 12,
-    rating: 4.8,
-    reviewCount: 176,
-    images: ["/images/product-stand-mixer.png"],
-    tags: ["espresso", "15-bar", "compact"],
-    specs: [
-      { label: "Pressure", value: "15-bar pump" },
-      { label: "Reservoir", value: "1.5 L removable" },
-      { label: "Modes", value: "Single & double shot" },
-      { label: "Steam Wand", value: "Yes, for latte art" },
-    ],
-    shortDescription: "Café-grade 15-bar espresso in a counter-friendly footprint.",
-    description:
-      "Pull rich, velvety shots at home with a 15-bar Italian pump, precise temperature control, and a powerful steam wand for silky microfoam. The compact footprint fits any kitchen without sacrificing café-grade performance.",
-    badge: "Top Rated",
-    isNewArrival: false,
-  },
-  {
-    slug: "bamboo-utensil-organizer",
-    name: "Bamboo Utensil Organizer",
-    category: "storage",
-    price: 2499,
-    sku: "HN-ORG-012",
-    stock: 60,
-    rating: 4.5,
     reviewCount: 87,
-    images: ["/images/product-glass-storage.png"],
-    tags: ["bamboo", "drawer", "organizer"],
+    images: ["/images/product-satin-pillowcase.png"],
+    tags: ["bestseller", "sale"],
     specs: [
-      { label: "Material", value: "Sustainable bamboo" },
-      { label: "Compartments", value: "6 expandable slots" },
-      { label: "Fits", value: "Standard 18in drawers" },
-      { label: "Care", value: "Wipe clean" },
+      { label: "Material", value: "Premium satin silk" },
+      { label: "Sizes", value: "Standard" },
     ],
-    shortDescription: "Expandable bamboo drawer organizer for tidy kitchen tools.",
+    colors: [
+      { name: "Pink", hex: "#cb9d9d" },
+      { name: "Navy Blue", hex: "#28335b" },
+      { name: "Sky Blue", hex: "#8aaccc" },
+      { name: "Black", hex: "#080906" },
+    ],
+    shortDescription: "Sleep in smooth comfort — wake up fresh, frizz-free, and glowing.",
     description:
-      "Keep every spatula and whisk within reach. This expandable bamboo organizer adjusts from 6 to 8 compartments to fit your drawer, with a smooth sanded finish and sturdy finger-jointed corners built to last.",
-    isNewArrival: false,
+      "Sleep in smooth comfort with our premium satin silk pillowcase. Designed to protect your hair and skin, it's the perfect beauty sleep essential for waking up fresh, frizz-free, and glowing.\n\nReduces Hair Frizz & Breakage – Minimizes friction to keep hair smooth and tangle-free.\nPrevents Sleep Lines & Wrinkles – Gentle on skin, reducing creases and signs of aging.\nRetains Skin & Hair Moisture – Unlike cotton, satin won't absorb natural oils.\nHypoallergenic & Gentle – Ideal for sensitive skin and allergy-prone users.\nCool & Comfortable – Breathable fabric keeps you cool all night.",
+    badge: "Bestseller",
+    isFeatured: true,
+    isNewArrival: true,
   },
   {
-    slug: "linen-napkin-set",
-    name: "Stonewashed Linen Napkin Set",
-    category: "dining",
-    price: 2999,
-    compareAtPrice: 3999,
-    sku: "HN-LINEN-013",
-    stock: 48,
-    rating: 4.6,
-    reviewCount: 64,
-    images: ["/images/product-ceramic-dinner-set.png"],
-    tags: ["linen", "napkins", "natural"],
-    specs: [
-      { label: "Pieces", value: "Set of 6" },
-      { label: "Material", value: "100% French flax linen" },
-      { label: "Size", value: '18 x 18 in' },
-      { label: "Care", value: "Machine washable" },
-    ],
-    shortDescription: "Soft stonewashed linen napkins in warm, natural tones.",
-    description:
-      "Cut from 100% French flax linen and stonewashed for everyday softness, these napkins drape beautifully and get better with every wash. Warm, natural tones complement both casual meals and holiday tables.",
-    isNewArrival: false,
-  },
-  {
-    slug: "kitchen-cleaning-brush-set",
-    name: "Kitchen Cleaning Brush Set",
-    category: "cleaning",
-    price: 1999,
-    sku: "HN-CLEAN-014",
-    stock: 70,
-    rating: 4.4,
-    reviewCount: 73,
-    images: ["/images/product-mixing-bowls.png"],
-    tags: ["cleaning", "bamboo", "brush"],
-    specs: [
-      { label: "Pieces", value: "4 brushes + holder" },
-      { label: "Bristles", value: "Plant-based" },
-      { label: "Handles", value: "FSC-certified bamboo" },
-      { label: "Use", value: "Dishes, produce, cast iron" },
-    ],
-    shortDescription: "Plant-fiber brushes with bamboo handles for every cleaning task.",
-    description:
-      "A complete natural cleaning kit: a dish brush with replaceable head, a pot scrubber for cast iron, a produce brush, and a detail brush for crevices — all with FSC-certified bamboo handles and durable plant-fiber bristles.",
-    isNewArrival: false,
-  },
-  {
-    slug: "copper-measuring-spoon-set",
-    name: "Copper Measuring Spoon Set",
-    category: "kitchen-tools",
-    price: 1699,
-    compareAtPrice: 2199,
-    sku: "HN-MEAS-015",
-    stock: 55,
+    slug: "heatless-hair-curler-set",
+    name: "Heatless Hair Curler Set",
+    category: "bestsellers",
+    price: 34000,
+    sku: "ELY-003",
+    stock: 0,
     rating: 4.7,
-    reviewCount: 59,
-    images: ["/images/product-copper-pan.png"],
-    tags: ["copper", "measuring", "gift"],
+    reviewCount: 53,
+    images: ["/images/product-heatless-curler.png"],
+    tags: ["bestseller"],
     specs: [
-      { label: "Pieces", value: "Set of 6 + ring" },
-      { label: "Material", value: "Solid copper" },
-      { label: "Sizes", value: "1/8 tsp to 1 tbsp" },
-      { label: "Care", value: "Hand wash & dry" },
+      { label: "Includes", value: "Curling rod + 2 scrunchies" },
+      { label: "Method", value: "Heatless" },
     ],
-    shortDescription: "Solid-copper measuring spoons, stamped with permanent markings.",
+    colors: [
+      { name: "Black", hex: "#080906" },
+      { name: "Navy Blue", hex: "#28335b" },
+    ],
+    shortDescription: "Beautiful curls without heat damage.",
     description:
-      "These solid-copper measuring spoons bring warmth to the prep bench and accuracy to every recipe. Permanently stamped size markings won't fade, and the included brass ring keeps the set together in the drawer.",
-    isNewArrival: false,
+      "Get beautiful curls without heat damage. Our Heatless Hair Curling Set creates soft, long-lasting curls, reduces frizz, and keeps hair smooth & healthy.",
+    badge: "Bestseller",
+    isFeatured: true,
+    isNewArrival: true,
   },
   {
-    slug: "dried-eucalyptus-bundle",
-    name: "Dried Eucalyptus Kitchen Bundle",
-    category: "decor",
-    price: 2199,
-    sku: "HN-DECOR-016",
-    stock: 38,
-    rating: 4.5,
-    reviewCount: 41,
-    images: ["/images/product-walnut-boards.png"],
-    tags: ["eucalyptus", "dried", "decor"],
+    slug: "natural-bamboo-hair-brush-square",
+    name: "Natural Bamboo Hair Brush - Square",
+    category: "brush-combs",
+    price: 47000,
+    sku: "ELY-004",
+    stock: 16,
+    rating: 4.6,
+    reviewCount: 31,
+    images: ["/images/product-bamboo-brush-square.png"],
+    tags: [],
     specs: [
-      { label: "Stems", value: "12-15 dried stems" },
-      { label: "Length", value: "16-18 in" },
-      { label: "Scent", value: "Natural eucalyptus" },
-      { label: "Longevity", value: "Years with care" },
+      { label: "Material", value: "Natural bamboo" },
+      { label: "Shape", value: "Square" },
     ],
-    shortDescription: "Fragrant dried eucalyptus for shelves, islands and open nooks.",
+    shortDescription: "Square bamboo paddle brush for gentle daily detangling.",
     description:
-      "A generous bundle of dried eucalyptus that brings soft green-silver tone and a gentle natural scent to the kitchen. Style it across a shelf, above the range hood, or in a crock on the island.",
-    isNewArrival: false,
+      "Glide through knots with our Natural Bamboo Hair Brush. The square paddle design and smooth bamboo bristles detangle gently, distribute natural oils, and add shine — an eco-friendly essential for healthy hair.",
+    isFeatured: true,
+    isNewArrival: true,
+  },
+  {
+    slug: "sandalwood-paddle-hairbrush-oval",
+    name: "Sandalwood Paddle Hairbrush – Oval",
+    category: "brush-combs",
+    price: 47000,
+    sku: "ELY-005",
+    stock: 21,
+    rating: 4.8,
+    reviewCount: 44,
+    images: ["/images/product-sandalwood-paddle.png"],
+    tags: [],
+    specs: [
+      { label: "Material", value: "100% natural sandalwood" },
+      { label: "Shape", value: "Oval paddle" },
+    ],
+    shortDescription: "Sandalwood paddle brush that detangles, smooths, and reduces frizz.",
+    description:
+      "This natural wooden brush gently glides through your hair to detangle, smooth, and reduce frizz. Its anti-static properties help maintain shine while preventing breakage and split ends — the perfect daily essential for healthy, beautiful hair.\n\nBenefits:\n- Reduces hair breakage and split ends\n- Prevents static & frizz naturally\n- Improves scalp blood circulation\n- Leaves hair silky, shiny & manageable",
+    isFeatured: true,
+    isNewArrival: true,
+  },
+  {
+    slug: "sandalwood-hairbrush-oval",
+    name: "Sandalwood Hairbrush - Oval",
+    category: "brush-combs",
+    price: 54000,
+    sku: "ELY-006",
+    stock: 39,
+    rating: 4.9,
+    reviewCount: 61,
+    images: ["/images/product-sandalwood-oval.png"],
+    tags: [],
+    specs: [
+      { label: "Material", value: "100% natural sandalwood" },
+      { label: "Shape", value: "Oval" },
+    ],
+    shortDescription: "Effortless detangling with a soothing sandalwood aroma.",
+    description:
+      "Experience effortless detangling with our Premium Sandalwood Detangling Hairbrush – Oval Style. Crafted from 100% natural sandalwood, this elegant brush gently glides through your hair, reducing breakage, frizz, and static while adding a natural shine and soothing aroma.",
+    isNewArrival: true,
+  },
+  {
+    slug: "natural-bamboo-hair-brush-oval",
+    name: "Natural Bamboo Hair Brush - Oval",
+    category: "brush-combs",
+    price: 45000,
+    sku: "ELY-007",
+    stock: 11,
+    rating: 4.5,
+    reviewCount: 18,
+    images: ["/images/product-bamboo-brush-oval.png"],
+    tags: [],
+    specs: [
+      { label: "Material", value: "Natural bamboo" },
+      { label: "Shape", value: "Oval" },
+    ],
+    shortDescription: "Oval bamboo brush — gentle on scalp, kind to hair.",
+    description:
+      "The oval sibling of our bamboo classic. Rounded pins massage the scalp while the pneumatic cushion adapts to your head's shape — comfortable, anti-static, and beautifully finished.",
+  },
+  {
+    slug: "stainless-steel-gua-sha",
+    name: "Stainless Steel Gua Sha",
+    category: "beauty-tools",
+    price: 66500,
+    sku: "ELY-008",
+    stock: 121,
+    rating: 4.8,
+    reviewCount: 72,
+    images: ["/images/product-gua-sha.png"],
+    tags: [],
+    specs: [
+      { label: "Material", value: "Stainless steel" },
+      { label: "Finish", value: "Polished mirror" },
+    ],
+    shortDescription: "Cooling stainless steel gua sha for a sculpted, de-puffed glow.",
+    description:
+      "Elevate your skincare routine with this cooling stainless steel gua sha. Glide it over your favorite serum or moisturizer to help relax facial tension, reduce puffiness, and boost your natural glow.",
+    howToUse:
+      "Apply a few drops of serum or moisturizer, then glide the tool outward from the center of your face — cheeks, jawline, brow, and neck — using light, sweeping strokes. Chill in the fridge before use for extra de-puffing.",
+    isFeatured: true,
+  },
+  {
+    slug: "exfoliating-body-gloves",
+    name: "Exfoliating Body Gloves | 100% Natural Viscose Fiber",
+    category: "brush-combs",
+    price: 34000,
+    sku: "ELY-009",
+    stock: 49,
+    rating: 4.7,
+    reviewCount: 39,
+    images: ["/images/product-exfoliating-gloves.png"],
+    tags: [],
+    specs: [
+      { label: "Material", value: "100% natural viscose" },
+      { label: "Set", value: "1 pair" },
+    ],
+    sizes: ["Pink", "Sky Blue", "Black"],
+    shortDescription: "Spa-like exfoliation at home — softer, brighter skin every use.",
+    description:
+      "Experience spa-like exfoliation at home with our 100% Natural Viscose Exfoliating Gloves. Designed to gently remove dead skin cells, unclog pores, and reveal softer, smoother, and brighter skin after every use.",
+  },
+  {
+    slug: "facial-threading-tool",
+    name: "Facial Threading Tool",
+    category: "beauty-tools",
+    price: 44000,
+    sku: "ELY-010",
+    stock: 24,
+    rating: 4.4,
+    reviewCount: 12,
+    images: ["/images/product-threading-tool.png"],
+    tags: [],
+    specs: [
+      { label: "Type", value: "Spring coil" },
+      { label: "Use", value: "Facial hair removal" },
+    ],
+    shortDescription: "Salon-style threading for smooth, hair-free skin.",
+    description:
+      "Remove unwanted facial hair the traditional way — without wax or chemicals. The spring coil traps hair at the root and lifts it away in a gentle sweeping motion, leaving skin smooth for weeks.",
+    howToUse: "Hold the handles, bend the coil against the skin, and roll outward across the area. Follow with a soothing moisturizer.",
+  },
+  {
+    slug: "moisturizing-spa-socks",
+    name: "Moisturizing Spa Socks",
+    category: "beauty-tools",
+    price: 54000,
+    sku: "ELY-011",
+    stock: 0,
+    rating: 4.6,
+    reviewCount: 21,
+    images: ["/images/product-spa-socks.png"],
+    tags: [],
+    specs: [
+      { label: "Type", value: "Gel-lined spa socks" },
+      { label: "Care", value: "Hand wash" },
+    ],
+    sizes: ["Pink", "Black"],
+    shortDescription: "Overnight heel repair with a moisturizing gel lining.",
+    description:
+      "Slip into softness. These spa socks carry a vitamin-rich gel lining that hydrates dry heels and cracked skin while you sleep — wake up to noticeably smoother feet.",
+  },
+  {
+    slug: "crystal-hair-remover",
+    name: "Crystal Hair Remover",
+    category: "beauty-tools",
+    price: 52000,
+    sku: "ELY-012",
+    stock: 30,
+    rating: 4.5,
+    reviewCount: 28,
+    images: ["/images/product-crystal-hair-remover.png"],
+    tags: [],
+    specs: [
+      { label: "Material", value: "Crystal glass" },
+      { label: "Reusability", value: "Eco-friendly, reusable" },
+    ],
+    shortDescription: "Gently buffs away unwanted hair — no razors, no waxing.",
+    description:
+      "Say goodbye to razors and painful waxing! Our Crystal Hair Remover gently buffs away unwanted hair and dead skin cells, leaving your skin silky-smooth and glowing. Easy to use, eco-friendly, and reusable — it's perfect for legs, arms, and sensitive areas. Just rub in circular motions and reveal softer skin instantly!",
+    howToUse: "Rub in gentle circular motions on dry skin, then rinse and moisturize. Rinse the tool after each use.",
+  },
+  {
+    slug: "full-silicon-scalp-massager",
+    name: "Full Silicon Scalp Massager",
+    category: "beauty-tools",
+    price: 48000,
+    sku: "ELY-013",
+    stock: 19,
+    rating: 4.7,
+    reviewCount: 33,
+    images: ["/images/product-scalp-massager.png"],
+    tags: [],
+    specs: [
+      { label: "Material", value: "Food-grade silicone" },
+      { label: "Bristles", value: "Soft flexible tips" },
+    ],
+    colors: [
+      { name: "Pink", hex: "#CB9D9D" },
+      { name: "Black", hex: "#080906" },
+      { name: "Beige", hex: "#E5C38F" },
+    ],
+    sizes: ["Pink", "Black", "Beige"],
+    shortDescription: "A scalp massage with every wash — lifts, cleans, stimulates.",
+    description:
+      "Turn every wash into a spa ritual. The soft silicone tips lift away buildup, stimulate circulation, and feel wonderful — while the full-silicon body rinses clean and never hosts bacteria.",
+  },
+  {
+    slug: "derma-roller-titanium",
+    name: "Derma Roller - Titanium",
+    category: "beauty-tools",
+    price: 48800,
+    sku: "ELY-014",
+    stock: 15,
+    rating: 4.8,
+    reviewCount: 57,
+    images: ["/images/product-derma-roller.png"],
+    tags: [],
+    specs: [
+      { label: "Needles", value: "Titanium micro-needles" },
+      { label: "Sizes", value: "0.5mm / 1.0mm" },
+    ],
+    sizes: ["0.5mm", "1.0mm"],
+    shortDescription: "Stimulates collagen for smoother, firmer, glowing skin.",
+    description:
+      "Transform your skincare routine with the Derma Roller! Featuring fine, ultra-precise needles, this tool gently stimulates collagen production, reduces fine lines, minimizes pores, and promotes smoother, firmer skin. Perfect for enhancing absorption of your favorite serums and creams, it's your go-to for a glowing, rejuvenated complexion. Safe, easy to use, and ideal for all skin types — unlock radiant skin with every roll!",
+    howToUse:
+      "Sanitize before use. Roll gently 4-8 times per area in horizontal, vertical, and diagonal directions with light pressure. Apply serum afterwards. Use 2-3 times per week; replace the head every 10-15 uses.",
+  },
+  {
+    slug: "derma-stamp-titanium",
+    name: "Derma Stamp - Titanium",
+    category: "beauty-tools",
+    price: 79000,
+    sku: "ELY-015",
+    stock: 9,
+    rating: 4.9,
+    reviewCount: 26,
+    images: ["/images/product-derma-stamp.png"],
+    tags: [],
+    specs: [
+      { label: "Needles", value: "Titanium" },
+      { label: "Type", value: "Stamp pen" },
+    ],
+    shortDescription: "Healthy hair & glowing skin, made simple!",
+    description:
+      "Healthy hair & glowing skin, made simple! The Derma Stamp's precision titanium head creates tiny micro-channels that boost serum absorption and stimulate renewal — for denser-looking hair and a fresher complexion.",
+    howToUse: "Sanitize, then press the stamp gently over the target area 3-5 times. Follow with your serum. Discontinue if irritation occurs.",
+  },
+  {
+    slug: "travel-silicone-mask-applicator-set-4-pcs",
+    name: "Travel Silicone Mask Applicator Set 4 Pcs",
+    category: "beauty-tools",
+    price: 12000,
+    sku: "ELY-016",
+    stock: 6,
+    rating: 4.6,
+    reviewCount: 15,
+    images: ["/images/product-mask-applicator.png"],
+    tags: [],
+    specs: [
+      { label: "Set", value: "4 pieces" },
+      { label: "Material", value: "Silicone" },
+    ],
+    shortDescription: "Travel-friendly, hygienic, multi-use mask applicators.",
+    description:
+      "❣️ Travel-friendly ❣️ Hygienic ❣️ Multi-use\n\nThis 4-piece silicone set spreads masks, peels, and creams evenly — no product wasted on bristles or fingers. Flexible heads reach every contour; the compact case slips into any bag.",
+  },
+  {
+    slug: "wooden-cleansing-brush",
+    name: "Wooden cleansing brush",
+    category: "beauty-tools",
+    price: 44000,
+    compareAtPrice: 60000,
+    sku: "ELY-017",
+    stock: 65,
+    rating: 4.7,
+    reviewCount: 42,
+    images: ["/images/product-cleansing-brush.png"],
+    tags: ["bestseller", "sale"],
+    specs: [
+      { label: "Material", value: "Wood + soft bristles" },
+      { label: "Design", value: "Dual-sided" },
+    ],
+    shortDescription: "A deeper, more effective cleanse — refreshed, smooth, glowing.",
+    description:
+      "Transform your skincare routine with the Wooden Cleansing Brush, designed to deliver a deeper, more effective cleanse. Its soft bristles and dual-sided design make it ideal for both exfoliation and cleansing, leaving your skin feeling refreshed, smooth, and glowing.",
+    badge: "Sale",
+  },
+  {
+    slug: "anti-cellulite-dry-body-brush",
+    name: "Anti-cellulite Dry Body Brush",
+    category: "brush-combs",
+    price: 107000,
+    compareAtPrice: 119600,
+    sku: "ELY-018",
+    stock: 11,
+    rating: 4.8,
+    reviewCount: 35,
+    images: ["/images/product-body-brush.png"],
+    tags: ["sale"],
+    specs: [
+      { label: "Bristles", value: "Natural" },
+      { label: "Ritual", value: "Dry brushing" },
+    ],
+    shortDescription: "Revive your skin with our detox dry body brush.",
+    description:
+      "Revive your skin with our detox dry body brush. This ancient ritual stimulates lymphatic flow, boosts circulation, smooths the appearance of cellulite, and reveals softer, radiant skin.",
+    howToUse: "On dry skin before showering, brush upward from the feet toward the heart with light pressure. Shower and moisturize after.",
+    badge: "Sale",
+  },
+  {
+    slug: "facial-ice-bowl",
+    name: "Facial Ice Bowl – Foldable & Travel-Friendly",
+    category: "beauty-tools",
+    price: 104000,
+    sku: "ELY-019",
+    stock: 0,
+    rating: 4.7,
+    reviewCount: 19,
+    images: ["/images/product-ice-bowl.png"],
+    tags: [],
+    specs: [
+      { label: "Material", value: "Food-grade silicone" },
+      { label: "Design", value: "Foldable" },
+    ],
+    shortDescription: "Cold therapy anytime, anywhere.",
+    description:
+      "Refresh and elevate your skincare routine with this foldable Face Ice Bath Bowl — perfect for quick, effective cold therapy anytime, anywhere. The skin-safe silicone bowl collapses flat for travel and pops back into shape in a second.",
+    howToUse: "Fill with water and ice, submerge the face for 10-30 seconds, pat dry, and follow with serum.",
   },
 ];
 
 const SLIDES = [
   {
-    title: "New Arrivals",
-    subtitle: "Explore our latest collection of beautifully designed kitchen essentials.",
-    image: "/images/hero-new-arrivals.png",
-    ctaText: "Browse Collection",
-    ctaLink: "/products",
+    title: "The Art of Radiance",
+    subtitle: "Luxury botanicals. Clinical precision. Your skin, elevated.",
+    image: "/images/hero-main.png",
+    ctaText: "SHOP THE COLLECTION",
+    ctaLink: "/shop",
     sortOrder: 1,
-  },
-  {
-    title: "Elevate Your Kitchen",
-    subtitle: "Discover premium cookware and tools for the modern home chef.",
-    image: "/images/hero-elevate.png",
-    ctaText: "Shop Now",
-    ctaLink: "/products",
-    sortOrder: 2,
-  },
-  {
-    title: "Sale Up to 40% Off",
-    subtitle: "Limited time offers on top-rated home and kitchen products.",
-    image: "/images/hero-sale.png",
-    ctaText: "Shop the Sale",
-    ctaLink: "/products",
-    sortOrder: 3,
   },
 ];
 
 const SETTINGS: Record<string, string> = {
-  storeName: "HomeNest",
-  tagline: "Premium home & kitchen products for the modern lifestyle",
-  contactEmail: "hello@homenest.com",
-  contactPhone: "+1 (555) 123-4567",
-  address: "123 Kitchen Lane, Home City, HC 10001",
-  taxRatePercent: "7.5",
-  standardShippingCents: "695",
-  expressShippingCents: "1895",
-  freeShippingThresholdCents: "5000",
-  socialInstagram: "https://instagram.com",
-  socialPinterest: "https://pinterest.com",
-  socialFacebook: "https://facebook.com",
-  socialTikTok: "https://tiktok.com",
+  storeName: "ElyBeauty",
+  tagline: "Luxury skincare crafted from nature's finest botanicals. Clean beauty, elevated.",
+  contactEmail: "helloelybeauty@gmail.com",
+  contactPhone: "01787385459",
+  address: "Dhaka, Bangladesh",
+  taxRatePercent: "0",
+  // ElyBeauty shipping tiers (verified live): Dhaka ৳70 / outside Dhaka ৳130.
+  // The checkout derives the tier from the City/District field.
+  standardShippingCents: "7000",
+  expressShippingCents: "13000",
+  freeShippingThresholdCents: "300000",
+  whatsappNumber: "8801787385459",
+  socialFacebook: "https://www.facebook.com/triggersafu",
 };
 
 // S51-1: the array is authored in the ADMIN DISPLAY order (FREESHIP →
@@ -542,42 +540,42 @@ export const COUPONS = [
   // Session-20 S20-6: a first-class free_shipping coupon — zeroes shipping
   // outright. (Fresh databases get this row; an EXISTING database keeps its
   // earlier fixed-type FREESHIP — the seed is create-only, both work.)
-  { code: "FREESHIP", type: "free_shipping", value: 0, description: "Free standard shipping on orders over $30", minSubtotal: 3000, expiresAt: null, maxRedemptions: null },
-  { code: "SAVE20", type: "percent", value: 20, description: "20% off orders over $100", minSubtotal: 10000, expiresAt: null, maxRedemptions: 500 },
+  { code: "FREESHIP", type: "free_shipping", value: 0, description: "Free shipping on orders over ৳3,000", minSubtotal: 300000, expiresAt: null, maxRedemptions: null },
+  { code: "SAVE20", type: "percent", value: 20, description: "20% off orders over ৳1,000", minSubtotal: 100000, expiresAt: null, maxRedemptions: 500 },
   // Lifecycle fields (expiresAt / maxRedemptions) are enforced by
   // isCouponRedeemable at coupon-lookup and inside the checkout transaction.
   { code: "WELCOME10", type: "percent", value: 10, description: "10% off your first order", minSubtotal: 0, expiresAt: null, maxRedemptions: null },
 ];
 
 const REVIEW_TEMPLATES = [
-  { title: "Exceeded expectations", comment: "Beautifully made and clearly built to last. It has already become part of my daily routine — I could not be happier with this purchase." },
+  { title: "Exceeded expectations", comment: "Beautifully made and clearly built to last. It has already become part of my daily ritual — I could not be happier with this purchase." },
   { title: "Wonderful quality", comment: "The finish is gorgeous and it feels great to use. Arrived quickly and packaged with real care. Would happily buy again as a gift." },
   { title: "Worth every penny", comment: "I compared several options before choosing this one and I am glad I did. The quality difference is obvious the moment you hold it." },
-  { title: "My kitchen favorite", comment: "I use this constantly and it still looks brand new. Friends keep asking where I got it — highly recommend to anyone upgrading their kitchen." },
+  { title: "My favorite find", comment: "I use this constantly and it still looks brand new. Friends keep asking where I got it — highly recommend to anyone building their routine." },
 ];
 
 async function main() {
-  console.log("Seeding HomeNest Kitchen…");
+  console.log("Seeding ElyBeauty…");
 
   // ---- Users ----
   const admin = await prisma.user.upsert({
-    where: { email: "admin@homenestkitchen.com" },
+    where: { email: "admin@elybeauty.com" },
     update: {},
     create: {
-      email: "admin@homenestkitchen.com",
+      email: "admin@elybeauty.com",
       name: "Store Admin",
-      phone: "+1 (555) 123-4500",
+      phone: "01787385459",
       role: "admin",
       passwordHash: scryptHash("Admin123!"),
     },
   });
   const demo = await prisma.user.upsert({
-    where: { email: "demo@homenestkitchen.com" },
+    where: { email: "demo@elybeauty.com" },
     update: {},
     create: {
-      email: "demo@homenestkitchen.com",
-      name: "Jordan Rivera",
-      phone: "+1 (512) 555-0133",
+      email: "demo@elybeauty.com",
+      name: "Ayesha Rahman",
+      phone: "01787385459",
       role: "customer",
       passwordHash: scryptHash("Demo1234!"),
     },
@@ -589,12 +587,13 @@ async function main() {
       id: "seed-demo-address",
       userId: demo.id,
       label: "Home",
-      fullName: "Jordan Rivera",
-      phone: "+1 (512) 555-0133",
-      line1: "482 Maple Avenue",
-      city: "Austin",
-      state: "TX",
-      postalCode: "73301",
+      fullName: "Ayesha Rahman",
+      phone: "01787385459",
+      line1: "House 12, Road 5, Dhanmondi",
+      city: "Dhaka",
+      state: "Dhaka",
+      postalCode: "1205",
+      country: "Bangladesh",
       isDefault: true,
     },
   });
@@ -608,6 +607,7 @@ async function main() {
       update: {
         name: cat.name,
         description: cat.description,
+        imageUrl: cat.imageUrl,
         icon: cat.icon,
         iconGradient: cat.iconGradient,
         sortOrder: cat.sortOrder,
@@ -620,15 +620,12 @@ async function main() {
 
   // ---- Products ----
   let createdProducts = 0;
-  // Session-12 S12-5 (re-aligned session-33 S33-1 and session-34 S34-1):
-  // create rows with BACKDATED timestamps (productSeedCreatedAt) so the
-  // seed-list order = the reference's authored order = the `createdAt: desc`
-  // consumers' newest-first order (products "Newest", home New Arrivals +
-  // Featured). The live reference re-ordered its catalog twice since the
-  // original pinning (session-33, then session-34 — the core list now
-  // matches the current live order, Damascus-first); the superset tail
-  // follows (create-only: reseeds never rewrite the createdAt of existing
-  // rows — re-ordering requires a fresh DB).
+  // Session-12 S12-5 (ElyBeauty re-aligned run-72): create rows with
+  // BACKDATED timestamps (productSeedCreatedAt) so the seed-list order =
+  // the reference's authored order = the `createdAt: desc` consumers'
+  // newest-first order (/shop "Newest" and the home "Curated for You"
+  // grid). Create-only: reseeds never rewrite the createdAt of existing
+  // rows — re-ordering requires a fresh DB.
   for (const [index, p] of PRODUCTS.entries()) {
     const categoryId = categoryIds.get(p.category);
     if (!categoryId) throw new Error(`Unknown category ${p.category} for ${p.slug}`);
@@ -647,6 +644,10 @@ async function main() {
       images: JSON.stringify(p.images),
       tags: JSON.stringify(p.tags),
       specs: JSON.stringify(p.specs),
+      colors: JSON.stringify(p.colors ?? []),
+      sizes: JSON.stringify(p.sizes ?? []),
+      howToUse: p.howToUse ?? "",
+      ingredients: p.ingredients ?? "",
       badge: p.badge ?? null,
       isFeatured: p.isFeatured ?? false,
       isNewArrival: p.isNewArrival ?? false,
@@ -671,7 +672,7 @@ async function main() {
           data: {
             productId: product.id,
             userId: demo.id,
-            author: "Jordan Rivera",
+            author: "Ayesha Rahman",
             rating: Math.round(p.rating),
             title: template.title,
             comment: template.comment,

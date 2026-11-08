@@ -251,7 +251,6 @@ describe("POST /api/checkout — order-number allocation exhaustion (C1)", () =>
         },
       ],
     } as never);
-    vi.mocked(db.order.count).mockResolvedValue(0);
     const numberCollision = Object.assign(new Error("Unique constraint failed"), {
       code: "P2002",
       meta: { target: ["number"] },
@@ -270,8 +269,9 @@ describe("POST /api/checkout — order-number allocation exhaustion (C1)", () =>
     await expect(res.json()).resolves.toEqual({
       error: "Something went wrong placing your order.",
     });
-    // Five allocation attempts, each re-reading the counter for the next suffix.
-    expect(db.order.count).toHaveBeenCalledTimes(5);
+    // Five allocation attempts (run-72: each mints a fresh ELY-XXXXXXXX
+    // candidate — no counter read), each rejected by the NUMBER collision.
+    expect(db.$transaction).toHaveBeenCalledTimes(5);
     // The P2002 on the NUMBER must NOT route into the idempotency recovery
     // branch (session-8 S8-3 discrimination) — replayAuthorized is never consulted.
     expect(db.order.findUnique).not.toHaveBeenCalled();

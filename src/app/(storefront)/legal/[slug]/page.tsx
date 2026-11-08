@@ -46,7 +46,7 @@ export default async function LegalPage({ params }: { params: Promise<{ slug: st
   // admin-editable contactEmail used to be shadowed by a hardcoded address.
   const contactEmail = await getSettings()
     .then((s) => s.contactEmail)
-    .catch(() => "hello@homenest.com");
+    .catch(() => "helloelybeauty@gmail.com");
 
   return (
     <div className="container-page py-10 sm:py-14">

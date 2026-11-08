@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Order Confirmation",
-  description: "Thank you for your HomeNest order.",
+  description: "Thank you for your ElyBeauty order.",
   // A buyer receipt must never become search-engine content.
   robots: { index: false, follow: false },
 };
@@ -132,7 +132,7 @@ export default async function OrderSuccessPage({
               <Link href="/track-order">Track an Order</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link href="/products">Continue Shopping</Link>
+              <Link href="/shop">Continue Shopping</Link>
             </Button>
           </div>
         </div>
@@ -279,7 +279,7 @@ export default async function OrderSuccessPage({
           </Link>
         </Button>
         <Button variant="outline" asChild className="h-11 px-7">
-          <Link href="/products">Continue Shopping</Link>
+          <Link href="/shop">Continue Shopping</Link>
         </Button>
       </div>
       <p className="mt-6 text-xs text-muted-foreground">

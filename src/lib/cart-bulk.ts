@@ -11,22 +11,30 @@
 import { MAX_CART_QUANTITY, clampPurchaseQuantity } from "./cart-quantity";
 
 /**
- * Collapse `[productId, quantity]` items into one wanted quantity per
- * product. Repeated ids SUM (a duplicated wishlist entry means "want it
- * more", not "want it twice"), with the same 99 ceiling the cart enforces —
- * the per-line stock clamp runs later, at plan time.
+ * Collapse `[productId, variant, quantity]` items into one wanted quantity per
+ * product+variant LINE (run-72: the same product in two colors is two lines).
+ * Repeated line keys SUM (a duplicated wishlist entry means "want it more",
+ * not "want it twice"), with the same 99 ceiling the cart enforces — the
+ * per-line stock clamp runs later, at plan time. The map key is the
+ * composite `${productId}|${variant}` the route splits before its upserts.
  */
 export function dedupeBulkWanted(
-  items: ReadonlyArray<{ productId: string; quantity: number }>,
+  items: ReadonlyArray<{ productId: string; quantity: number; variant?: string }>,
 ): Map<string, number> {
   const wanted = new Map<string, number>();
   for (const item of items) {
-    wanted.set(
-      item.productId,
-      Math.min((wanted.get(item.productId) ?? 0) + item.quantity, MAX_CART_QUANTITY),
-    );
+    const key = `${item.productId}|${item.variant ?? ""}`;
+    wanted.set(key, Math.min((wanted.get(key) ?? 0) + item.quantity, MAX_CART_QUANTITY));
   }
   return wanted;
+}
+
+/** Split a dedupeBulkWanted key back into its (productId, variant) pair. */
+export function splitBulkKey(key: string): { productId: string; variant: string } {
+  const parts = key.split("|");
+  const productId = parts[0] ?? "";
+  const variant = parts[1] ?? "";
+  return { productId, variant };
 }
 
 /**

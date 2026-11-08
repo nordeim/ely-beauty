@@ -13,6 +13,9 @@ export type ProductCardData = {
   categoryName: string;
   categorySlug: string;
   badge: string | null;
+  /** ElyBeauty color swatches (run-72) — the grid's dots. */
+  colors: { name: string; hex: string }[];
+  shortDescription: string;
 };
 
 export function parseImages(json: string): string[] {
@@ -43,6 +46,30 @@ export function parseSpecs(json: string): ParsedSpec[] {
   }
 }
 
+export type ColorOption = { name: string; hex: string };
+
+/** Parse the Product.colors JSON column (ElyBeauty variants, run-72). */
+export function parseColors(json: string): ColorOption[] {
+  try {
+    const parsed: unknown = JSON.parse(json);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (v): v is ColorOption =>
+        typeof v === "object" &&
+        v !== null &&
+        typeof (v as ColorOption).name === "string" &&
+        typeof (v as ColorOption).hex === "string",
+    );
+  } catch {
+    return [];
+  }
+}
+
+/** Parse the Product.sizes JSON column (ElyBeauty variants, run-72). */
+export function parseSizes(json: string): string[] {
+  return parseImages(json);
+}
+
 /** Project a Prisma Product + Category into the card shape. */
 export function toCardData(product: Product, category: Pick<Category, "name" | "slug">): ProductCardData {
   return {
@@ -56,6 +83,8 @@ export function toCardData(product: Product, category: Pick<Category, "name" | "
     categoryName: category.name,
     categorySlug: category.slug,
     badge: product.badge,
+    colors: parseColors(product.colors),
+    shortDescription: product.shortDescription,
   };
 }
 
@@ -72,8 +101,7 @@ export const SORT_OPTIONS = [
   { value: "newest", label: "Newest" },
   { value: "price-asc", label: "Price: Low to High" },
   { value: "price-desc", label: "Price: High to Low" },
-  { value: "rating", label: "Top Rated" },
-  { value: "name", label: "Name: A to Z" },
+  { value: "name", label: "Name: A-Z" },
 ] as const;
 
 /** Storefront product query — search + category + sort + pagination. */

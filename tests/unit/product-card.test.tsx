@@ -45,15 +45,17 @@ afterEach(() => {
 
 const BASE: ProductCardData = {
   id: "prod-1",
-  name: "Damascus Steel Chef Knife Set",
-  image: "/images/products/damascus.png",
-  price: 19999,
-  compareAtPrice: 27999,
+  name: "Pure Satin Silk Pillowcase",
+  image: "/images/product-satin-pillowcase.png",
+  price: 28800,
+  compareAtPrice: 35000,
   rating: 4.9,
-  reviewCount: 412,
-  categoryName: "Kitchen Tools",
-  categorySlug: "kitchen-tools",
-  badge: "Featured",
+  reviewCount: 87,
+  categoryName: "Bestsellers",
+  categorySlug: "bestsellers",
+  badge: "Bestseller",
+  colors: [{ name: "Pink", hex: "#cb9d9d" }],
+  shortDescription: "Sleep in smooth comfort.",
 };
 
 // The badge renders discountPercent(price, compareAtPrice) + "%".
@@ -63,25 +65,27 @@ function renderCard(overrides: Partial<ProductCardData> = {}) {
 }
 
 describe("ProductCard media link label (S47-3)", () => {
-  it("names the media link with product name AND the visible discount + badge text", () => {
+  it("names the media link with product name AND the visible badge text", () => {
     renderCard();
     // The media link is the only link whose accessible name carries the
     // visible badge text; the title link below the media keeps the plain name.
-    const media = screen.getByRole("link", { name: /-29%/ });
-    expect(media).toHaveAccessibleName(/Damascus Steel Chef Knife Set/);
+    // Run-72 anatomy: the SALE rect renders when a compare-at exists (the
+    // "-N%" number pill is retired — the reference shows the word "Sale").
+    const media = screen.getByRole("link", { name: /Sale/ });
+    expect(media).toHaveAccessibleName(/Pure Satin Silk Pillowcase/);
     // The VISIBLE text must be contained in the accessible name (2.5.3).
-    expect(media).toHaveAccessibleName(/-29%/);
-    expect(media).toHaveAccessibleName(/Featured/);
+    expect(media).toHaveAccessibleName(/Sale/);
+    expect(media).toHaveAccessibleName(/Bestseller/);
   });
 
   it("omits absent badges from the name instead of padding with separators", () => {
     renderCard({ badge: null, compareAtPrice: null });
     // No badges → both the media link and the title link carry the plain
     // product name exactly.
-    const links = screen.getAllByRole("link", { name: "Damascus Steel Chef Knife Set" });
+    const links = screen.getAllByRole("link", { name: "Pure Satin Silk Pillowcase" });
     expect(links).toHaveLength(2);
     for (const link of links) {
-      expect(link).toHaveAccessibleName("Damascus Steel Chef Knife Set");
+      expect(link).toHaveAccessibleName("Pure Satin Silk Pillowcase");
     }
   });
 
@@ -89,7 +93,7 @@ describe("ProductCard media link label (S47-3)", () => {
     renderCard();
     // Two links point at /product/prod-1: the media link (badges folded in)
     // and the title link (visible name only).
-    const title = screen.getByRole("link", { name: "Damascus Steel Chef Knife Set" });
-    expect(title).toHaveAccessibleName("Damascus Steel Chef Knife Set");
+    const title = screen.getByRole("link", { name: "Pure Satin Silk Pillowcase" });
+    expect(title).toHaveAccessibleName("Pure Satin Silk Pillowcase");
   });
 });

@@ -16,7 +16,7 @@ import { siteBaseUrl } from "@/lib/seo";
 // Exported for tests/unit/seo-routes.test.ts.
 export const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
   { path: "/", priority: 1, changeFrequency: "daily" },
-  { path: "/products", priority: 0.9, changeFrequency: "daily" },
+  { path: "/shop", priority: 0.9, changeFrequency: "daily" },
   { path: "/about", priority: 0.6, changeFrequency: "monthly" },
   { path: "/contact", priority: 0.6, changeFrequency: "monthly" },
   { path: "/legal/privacy-policy", priority: 0.3, changeFrequency: "yearly" },

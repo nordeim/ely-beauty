@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Shopping Cart",
-  description: "Review the items in your HomeNest cart before checkout.",
+  description: "Review the items in your ElyBeauty bag before checkout.",
   // Per-visitor private content — nothing here for a search engine
   // (session-8 S8-9: matches the wishlist/checkout-success/admin noindex set).
   robots: { index: false, follow: true },
@@ -40,7 +40,7 @@ export default async function CartPage() {
             Looks like you haven&apos;t added anything yet.
           </p>
           <Button asChild className="mt-6 h-11 px-7">
-            <Link href="/products">Start Shopping</Link>
+            <Link href="/shop">Start Shopping</Link>
           </Button>
         </div>
       </div>
@@ -90,7 +90,7 @@ export default async function CartPage() {
               <Link href="/checkout">Checkout</Link>
             </Button>
             <Button variant="outline" asChild className="mt-2 h-11 w-full">
-              <Link href="/products">Continue Shopping</Link>
+              <Link href="/shop">Continue Shopping</Link>
             </Button>
           </div>
         </aside>

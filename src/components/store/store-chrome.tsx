@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { ShoppingBag, X } from "lucide-react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 import { MAX_CART_QUANTITY } from "@/lib/cart-quantity";
 import { formatMoney } from "@/lib/money";
@@ -13,10 +14,11 @@ import { Header } from "./header";
 import { MobileNav } from "./mobile-nav";
 
 /**
- * StoreChrome — the sticky header wrapper (reference DOM order): sticky
- * header bar, then the mobile push-down nav panel, then the page body and
- * footer inside ONE inert-able shell, with the cart drawer riding at the end
- * so it overlays everything.
+ * StoreChrome — the fixed header wrapper (reference DOM order): fixed
+ * 80px header (transparent over the home hero, solid ivory + hairline
+ * border elsewhere), then the mobile push-down nav panel, then the page
+ * body and footer inside ONE inert-able shell, with the cart drawer riding
+ * at the end so it overlays everything.
  */
 export function StoreChrome({
   user,
@@ -34,8 +36,18 @@ export function StoreChrome({
   // back to the server-computed prop — no hydration guard (and no
   // set-state-on-mount effect) is needed. (Context type is `number | null`,
   // session-9 S9-1 — initializing at 0 made this fallback dead code.)
-  const { cartCount: liveCount, cartDrawerOpen } = useStore();
+  const { cartCount: liveCount, cartDrawerOpen, mobileNavOpen } = useStore();
   const count = liveCount ?? cartCount;
+  const pathname = usePathname();
+
+  // The home route renders its hero full-bleed UNDER the fixed header
+  // (the reference's transparent-over-hero bar); every other route pads
+  // the body down past the solid bar. Run-72 fix: while the mobile push-down
+  // panel is OPEN the home route must join the solid-bar layout too — the
+  // panel is the first in-flow child, so with no body offset its top rows
+  // (Search, Shop, …) render UNDER the fixed bar and are unreachable
+  // (verified: elementFromPoint lands on the header, clicks never arrive).
+  const overHero = pathname === "/" && !mobileNavOpen;
 
   return (
     <>
@@ -50,9 +62,13 @@ export function StoreChrome({
       <div
         data-testid="page-shell"
         inert={cartDrawerOpen}
-        className="flex min-h-screen flex-col"
+        className={overHero ? "flex min-h-screen flex-col" : "flex min-h-screen flex-col pt-20"}
       >
-        <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
+        <header
+          className={`fixed top-0 z-40 w-full ${
+            overHero ? "bg-transparent" : "border-b border-border bg-background/95 backdrop-blur"
+          }`}
+        >
           <Header user={user} cartCount={count} />
         </header>
         <MobileNav
@@ -75,11 +91,13 @@ type DrawerLine = {
   unitPrice: number;
   quantity: number;
   lineTotal: number;
+  variant?: string;
 };
 
 /**
- * CartDrawer — slide-in cart sheet. Loads its lines on open (single fetch),
- * supports quantity updates and removal, mirrors the reference's mini-cart.
+ * CartDrawer — slide-in cart sheet ("Your Bag", the reference's title).
+ * Loads its lines on open (single fetch), supports quantity updates and
+ * removal, mirrors the reference's mini-cart.
  * `lines === null` means "loading" — no sync setState in the open effect.
  */
 function CartDrawer() {
@@ -159,6 +177,7 @@ function CartDrawer() {
   }, [cartDrawerOpen, setCartDrawerOpen]);
 
   const resolvedLines = lines ?? [];
+  const itemCount = resolvedLines.reduce((sum, l) => sum + l.quantity, 0);
   const subtotal = resolvedLines.reduce((sum, l) => sum + l.lineTotal, 0);
 
   async function updateQty(lineId: string, quantity: number) {
@@ -222,7 +241,7 @@ function CartDrawer() {
       <aside
         role="dialog"
         aria-modal="true"
-        aria-label="Shopping cart"
+        aria-label="Shopping bag"
         data-testid="cart-drawer"
         ref={drawerRef}
         // Session-13 S13-3: the panel is always mounted for the transform
@@ -234,40 +253,40 @@ function CartDrawer() {
         // trap does not apply.
         inert={!cartDrawerOpen}
         aria-hidden={!cartDrawerOpen}
-        className={`fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-card shadow-xl transition-transform duration-300 ease-out ${
+        className={`fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-background shadow-xl transition-transform duration-300 ease-out ${
           cartDrawerOpen ? "translate-x-0" : "pointer-events-none translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between border-b border-border px-5 py-4">
-          <h2 className="font-display text-lg font-semibold">Your Cart</h2>
+        <div className="flex items-center justify-between border-b border-border px-6 py-5">
+          <h2 className="font-display text-2xl font-medium">Your Bag {itemCount > 0 && `(${itemCount})`}</h2>
           <button
             type="button"
             ref={closeRef}
             onClick={() => setCartDrawerOpen(false)}
             aria-label="Close cart"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex h-9 w-9 items-center justify-center text-muted-foreground hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 py-4">
+        <div className="flex-1 overflow-y-auto px-6 py-5">
           {loading ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">Loading your cart…</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">Loading your bag…</p>
           ) : resolvedLines.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-12 text-center">
               <ShoppingBag className="h-10 w-10 text-muted-foreground/40" aria-hidden />
-              <p className="font-medium">Your cart is empty</p>
-              <p className="text-sm text-muted-foreground">Browse the collection and find something you love.</p>
+              <p className="font-medium">Your bag is empty</p>
+              <p className="text-sm text-muted-foreground">Discover the collection and find something you love.</p>
               <Button onClick={() => setCartDrawerOpen(false)} asChild>
-                <Link href="/products">Continue Shopping</Link>
+                <Link href="/shop">Continue Shopping</Link>
               </Button>
             </div>
           ) : (
-            <ul className="flex flex-col gap-4">
+            <ul className="flex flex-col gap-5">
               {resolvedLines.map((line) => (
-                <li key={line.id} className="flex gap-3">
-                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-secondary">
+                <li key={line.id} className="flex gap-4">
+                  <div className="relative h-24 w-20 shrink-0 overflow-hidden bg-secondary">
                     <Image src={line.image} alt={line.name} fill sizes="80px" className="object-cover" />
                   </div>
                   <div className="flex flex-1 flex-col">
@@ -278,14 +297,17 @@ function CartDrawer() {
                         onClick={() => updateQty(line.id, 0)}
                         disabled={pendingId === line.id}
                         aria-label={`Remove ${line.name}`}
-                        className="text-muted-foreground transition-colors hover:text-destructive disabled:opacity-50"
+                        className="text-xs uppercase tracking-wide text-muted-foreground underline underline-offset-4 transition-colors hover:text-destructive disabled:opacity-50"
                       >
-                        <X className="h-4 w-4" />
+                        Remove
                       </button>
                     </div>
+                    {line.variant ? (
+                      <p className="text-xs text-muted-foreground">{line.variant}</p>
+                    ) : null}
                     <p className="text-sm text-muted-foreground">{formatMoney(line.unitPrice)}</p>
                     <div className="mt-auto flex items-center justify-between">
-                      <div className="inline-flex items-center rounded-lg border border-input">
+                      <div className="inline-flex items-center border border-input">
                         <button
                           type="button"
                           onClick={() => updateQty(line.id, Math.max(0, line.quantity - 1))}
@@ -310,7 +332,7 @@ function CartDrawer() {
                           +
                         </button>
                       </div>
-                      <p className="text-sm font-bold">{formatMoney(line.lineTotal)}</p>
+                      <p className="text-sm font-semibold">{formatMoney(line.lineTotal)}</p>
                     </div>
                   </div>
                 </li>
@@ -320,18 +342,18 @@ function CartDrawer() {
         </div>
 
         {resolvedLines.length > 0 && (
-          <div className="border-t border-border px-5 py-4">
+          <div className="border-t border-border px-6 py-5">
             <div className="mb-3 flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
-              <span className="text-base font-bold">{formatMoney(subtotal)}</span>
+              <span className="text-base font-semibold">{formatMoney(subtotal)}</span>
             </div>
             <p className="mb-3 text-xs text-muted-foreground">
-              Shipping, taxes and discount codes are calculated at checkout.
+              Shipping and discount codes are calculated at checkout.
             </p>
             <div className="flex flex-col gap-2">
               <Button asChild className="w-full">
                 <Link href="/checkout" onClick={() => setCartDrawerOpen(false)}>
-                  Checkout
+                  CHECKOUT
                 </Link>
               </Button>
               <Button variant="outline" asChild className="w-full">

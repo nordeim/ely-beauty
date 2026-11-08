@@ -1,23 +1,36 @@
 import { expect, test } from "@playwright/test";
-import { gotoHydrated } from "./helpers";
+import { gotoHydrated, addToCartViaDetailPage, PILLOWCASE } from "./helpers";
 
 /**
- * Session-20 S20-6 — the `free_shipping` coupon type end-to-end. The seeded
- * FREESHIP coupon zeroes shipping OUTRIGHT (independent of the spend
- * threshold): the pin cart ($34.99) sits ABOVE the coupon's $30 minimum but
- * BELOW the $50 free-shipping threshold, so without the coupon standard
- * shipping costs $6.95 — the "FREE" assertions are meaningful, not
- * threshold accidents. Pins the full money path: the cart's applied label,
- * the checkout mirror, and the SERVER-derived receipt (the strongest pin —
- * computeOrderMoney's couponFreeShipping override, re-derived in-tx).
+ * Session-20 S20-6 — the `free_shipping` coupon type end-to-end (run-72
+ * BDT re-pins). The seeded FREESHIP coupon has a ৳3,000 minimum — the same
+ * figure as the free-shipping threshold — so the pin cart starts BELOW both
+ * (৳288: the nag renders AND the coupon's own minimum gate rejects), then
+ * crosses them (৳3,210 / ৳3,168) where FREESHIP applies and drives the
+ * checkout + receipt shipping rows to FREE. Pins the full money path: the
+ * cart's applied label, the checkout mirror (data-testid summary-shipping),
+ * and the SERVER-derived receipt (the strongest pin — computeOrderMoney's
+ * couponFreeShipping override, re-derived in-tx).
+ *
+ * Stock discipline (the S14-4 drain class): the ৳3,000-min carts use
+ * quantity 3 of the ৳1,070 body brush (test 1 — the only order that touches
+ * its stock) and an 11×৳288 cart line that is never ordered (test 2 — cart
+ * mutations don't reserve stock), so one fresh-server run can never deplete
+ * the seed stock the other specs pin against.
  */
+const BODY_BRUSH = "Anti-cellulite Dry Body Brush";
+
 test.describe("free_shipping coupon (S20-6)", () => {
-  test("FREESHIP zeroes shipping below the spend threshold, through the receipt", async ({ page }) => {
-    // Guest cart with a $34.99 product (min $30 met, threshold $50 NOT met).
-    await gotoHydrated(page, "/products");
-    const card = page.locator("article").filter({ hasText: "French Rolling Pin & Baking Set" }).first();
-    await card.getByRole("button", { name: "Add to Cart" }).click();
-    await expect(page.getByTestId("cart-count")).toHaveText("1");
+  test("FREESHIP zeroes shipping at/above its ৳3,000 minimum, through the receipt", async ({ page }) => {
+    // Guest cart at ৳3,210 (qty 3 × ৳1,070) — above the coupon's ৳3,000 min.
+    // The brush is #18 in the newest-first catalog, beyond page 1 of the
+    // 12-per-page global grid — reach its card through the brush-combs
+    // category listing (6 products, always a single page).
+    await addToCartViaDetailPage(page, BODY_BRUSH, {
+      quantity: 3,
+      path: "/shop?category=brush-combs",
+    });
+    await expect(page.getByTestId("cart-count")).toHaveText("3");
 
     // Apply FREESHIP at the cart — the applied block carries the seeded
     // description plus the free_shipping label.
@@ -25,7 +38,7 @@ test.describe("free_shipping coupon (S20-6)", () => {
     await page.getByLabel("Coupon code").fill("FREESHIP");
     await page.getByRole("button", { name: "Apply", exact: true }).click();
     await expect(
-      page.getByText("FREESHIP: Free standard shipping on orders over $30 — applied at checkout"),
+      page.getByText("FREESHIP: Free shipping on orders over ৳3,000 — applied at checkout"),
     ).toBeVisible();
     // The label renders in the applied block AND the success toast — the
     // .first() takes the block (the toast is transient).
@@ -35,79 +48,76 @@ test.describe("free_shipping coupon (S20-6)", () => {
     await page.getByRole("link", { name: "Checkout" }).first().click();
     await expect(page).toHaveURL(/\/checkout/);
 
-    await page.getByLabel("Email").fill("freeship@example.com");
-    await page.getByLabel("Full name").fill("Free Ship");
-    await page.getByLabel("Street address").fill("9 Shipping Way");
-    await page.getByLabel("City").fill("Austin");
-    await page.getByLabel("State").fill("TX");
-    await page.getByLabel("Postal code").fill("73301");
-    await page.getByLabel("Phone").first().fill("+1 512 555 0140");
-    // Standard shipping is the default; continue.
-    await page.getByRole("button", { name: /Continue/ }).click();
+    await page.getByRole("textbox", { name: "Full Name *" }).fill("Free Ship");
+    await page.getByRole("textbox", { name: "Email *" }).fill("freeship@example.com");
+    await page.getByRole("textbox", { name: "Phone Number *" }).fill("01712345640");
+    await page.getByRole("textbox", { name: "Address *" }).fill("9 Shipping Way, Uttara");
+    await page.getByRole("textbox", { name: "City / District *" }).fill("Dhaka");
 
-    await page.getByLabel("Card number").fill("4242 4242 4242 4242");
-    await page.getByLabel("Expiry").fill("12/28");
-    await page.getByLabel("CVC").fill("123");
-    await page.getByRole("button", { name: /Review|Continue/ }).click();
+    // The summary's shipping row (pinned on the actual row, not a bare
+    // getByText("FREE") — a case-insensitive substring that would also hit
+    // the coupon label's "Free shipping") shows the coupon's zero.
+    await expect(page.getByTestId("summary-shipping")).toHaveText("FREE");
 
-    // Step 3: the coupon is still applied and the SHIPPING ROWS are FREE —
-    // pinned on the actual shipping lines (the review card's dl row AND the
-    // sticky summary's), not a bare getByText("FREE"), which is a
-    // case-insensitive substring match that also hits the coupon label's
-    // "Free shipping" — the vacuous pin that let the dropped mirror flag
-    // (session-21 S21-3) pass 65/65. The review card renders only at step 3
-    // (conditional mount); the summary aside renders on every step.
-    await expect(page.getByRole("heading", { name: "Review Your Order" })).toBeVisible();
-    await expect(page.getByText(/Coupon FREESHIP — Free shipping/)).toBeVisible();
-    const summaryShippingRow = page
-      .getByRole("complementary", { name: "Order summary" })
-      .locator("dl div", { has: page.getByText("Shipping", { exact: true }) });
-    await expect(summaryShippingRow).toHaveCount(1);
-    await expect(summaryShippingRow).toContainText("FREE");
-    const reviewShippingRow = page
-      .locator("section dl div", { has: page.getByText("Shipping", { exact: true }) });
-    await expect(reviewShippingRow).toHaveCount(1);
-    await expect(reviewShippingRow).toContainText("FREE");
-    await page.getByRole("button", { name: /Place Order/ }).click();
+    // Place the order — the button total carries no shipping.
+    const placeOrder = page.getByTestId("place-order");
+    await expect(placeOrder).toHaveText("PLACE ORDER — ৳3,210");
+    await placeOrder.click();
 
     // The SERVER-derived receipt pins the real math (not just the mirror).
-    await expect(page).toHaveURL(/\/checkout\/success\?order=ORD-\d{4}-\d{3}&token=/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/checkout\/success\?order=ELY-[A-Z0-9]{8}&token=/, { timeout: 15_000 });
     const params = new URL(page.url()).searchParams;
     await expect(page.getByRole("heading", { name: /Thank You/i })).toBeVisible();
     const shippingRow = page.locator("dl div", { has: page.getByText("Shipping", { exact: true }) });
     await expect(shippingRow).toContainText("FREE");
-    expect(params.get("order")).toMatch(/^ORD-\d{4}-\d{3}$/);
+    expect(params.get("order")).toMatch(/^ELY-[A-Z0-9]{8}$/);
   });
 
-  // Session-23 S23-2 — the cart's free-shipping hint is coupon-aware (the
-  // S21-7 deferral resolved). The same pin cart ($34.99, below the $50
-  // threshold) shows the progress nag pre-apply; an applied FREESHIP swaps
-  // the nag for the coupon-attributed block (shipping is ALREADY free — the
-  // "Add $X more" text would contradict the applied block right below it);
-  // removing the coupon restores the threshold-based hint.
-  test("the cart hint goes coupon-aware: nag → applied → restore", async ({ page }) => {
-    await gotoHydrated(page, "/products");
-    const card = page.locator("article").filter({ hasText: "French Rolling Pin & Baking Set" }).first();
-    await card.getByRole("button", { name: "Add to Cart" }).click();
-    await expect(page.getByTestId("cart-count")).toHaveText("1");
-
+  // Session-23 S23-2 (run-72 re-pins) — the cart's free-shipping hint is
+  // coupon-aware. A ৳288 cart sits below the ৳3,000 threshold (the progress
+  // nag renders) AND below FREESHIP's own minimum (the apply rejects with the
+  // server's minimum-subtotal error). Crossing the threshold via the cart
+  // page's qty stepper swaps the nag for the unlocked block; an applied
+  // FREESHIP then swaps it for the coupon-attributed block (shipping is
+  // ALREADY free — the threshold text would contradict the applied block
+  // right below it); removing the coupon restores the threshold-based hint.
+  test("the cart hint goes coupon-aware: nag → minimum rejection → unlocked → applied → restore", async ({
+    page,
+  }) => {
+    await addToCartViaDetailPage(page, PILLOWCASE.cardText);
     await gotoHydrated(page, "/cart");
-    const nag = page.getByText("Add $15.01 more for free shipping");
+
+    // Below the threshold: the "৳X more" nag + the progressbar.
+    const nag = page.getByText("Add ৳2,712 more for free shipping");
     await expect(nag).toBeVisible();
     await expect(page.getByRole("progressbar", { name: "Progress toward free shipping" })).toBeVisible();
 
-    // Apply FREESHIP — the nag and the progressbar give way to the
-    // coupon-attributed block.
+    // FREESHIP's OWN gate rejects below ৳3,000 — the coupon is not a way
+    // around the minimum.
+    await page.getByLabel("Coupon code").fill("FREESHIP");
+    await page.getByRole("button", { name: "Apply", exact: true }).click();
+    await expect(page.locator("#cart-coupon-error")).toContainText(/minimum subtotal/i);
+    await expect(nag).toBeVisible();
+
+    // Cross the threshold through the cart page's qty stepper (11 × ৳288).
+    const increase = page.getByRole("button", { name: /Increase quantity of / });
+    for (let i = 0; i < 10; i += 1) {
+      await increase.click();
+    }
+    await expect(page.getByText("You've unlocked free shipping!")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("progressbar", { name: "Progress toward free shipping" })).toHaveCount(0);
+
+    // Apply FREESHIP — the threshold block gives way to the coupon-attributed
+    // block.
     await page.getByLabel("Coupon code").fill("FREESHIP");
     await page.getByRole("button", { name: "Apply", exact: true }).click();
     await expect(page.getByText("Free shipping active — FREESHIP applied at checkout")).toBeVisible();
-    await expect(nag).toHaveCount(0);
+    await expect(page.getByText("You've unlocked free shipping!")).toHaveCount(0);
     await expect(page.getByRole("progressbar", { name: "Progress toward free shipping" })).toHaveCount(0);
 
     // Remove — the threshold-based hint returns.
     await page.getByRole("button", { name: "Remove coupon FREESHIP" }).click();
-    await expect(nag).toBeVisible();
-    await expect(page.getByRole("progressbar", { name: "Progress toward free shipping" })).toBeVisible();
+    await expect(page.getByText("You've unlocked free shipping!")).toBeVisible();
     await expect(page.getByText("Free shipping active — FREESHIP applied at checkout")).toHaveCount(0);
   });
 });

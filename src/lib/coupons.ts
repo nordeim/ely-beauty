@@ -33,8 +33,9 @@ export function couponLabel(type: string, value: number): string {
 /** Pure discount computation for a validated coupon against a subtotal. */
 export function couponDiscount(coupon: CouponInfo, subtotal: number): CouponApplication {
   if (subtotal < coupon.minSubtotal) {
-    const min = (coupon.minSubtotal / 100).toFixed(2);
-    return { ok: false, error: `This code requires a minimum subtotal of $${min}.` };
+    const min = coupon.minSubtotal / 100;
+    const minLabel = Number.isInteger(min) ? String(min) : min.toFixed(2);
+    return { ok: false, error: `This code requires a minimum subtotal of ৳${minLabel}.` };
   }
   if (coupon.type === "percent") {
     if (coupon.value < 1 || coupon.value > 100) {

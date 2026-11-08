@@ -59,7 +59,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="flex items-start gap-6">
         <aside className="sticky top-6 hidden w-60 shrink-0 flex-col rounded-2xl bg-foreground p-4 text-background shadow-md lg:flex lg:min-h-[calc(100vh-4rem)]">
           <div className="px-2 pb-4">
-            <p className="font-display text-lg font-bold leading-tight">HomeNest</p>
+            <p className="font-display text-lg font-bold leading-tight">ElyBeauty</p>
             <p className="mt-0.5 text-xs text-background/60">Store Management Console</p>
           </div>
 

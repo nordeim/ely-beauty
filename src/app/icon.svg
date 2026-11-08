@@ -1,7 +1,6 @@
+<!-- ElyBeauty mark: a rose-gold "E" monogram on an ivory roundel -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- HomeNest Kitchen mark: a warm home silhouette over a terracotta roundel -->
-  <circle cx="32" cy="32" r="30" fill="#c2410c"/>
-  <path d="M32 14 L52 32 H46 V48 H18 V32 H12 Z" fill="#faf7f2"/>
-  <path d="M26 48 v-10 a6 6 0 0 1 12 0 v10 Z" fill="#c2410c"/>
-  <circle cx="32" cy="26" r="3" fill="#f97316"/>
+  <circle cx="32" cy="32" r="30" fill="#f9f7f6"/>
+  <circle cx="32" cy="32" r="29" fill="none" stroke="#b08d57" stroke-width="1.5"/>
+  <text x="32" y="43" text-anchor="middle" font-family="Georgia, 'Cormorant Garamond', serif" font-size="34" font-weight="500" fill="#c4717d">E</text>
 </svg>

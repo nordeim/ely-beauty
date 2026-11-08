@@ -17,6 +17,11 @@ const nextConfig: NextConfig = {
   // Next 16 dev-origin protection silently blocks dev chunks served to a
   // 127.0.0.1 origin — allow both loopback hostnames during development.
   allowedDevOrigins: ["127.0.0.1", "localhost"],
+  // ElyBeauty (run-72): the listing route is /shop (reference parity) —
+  // /products permanently redirects so every legacy deep link survives.
+  async redirects() {
+    return [{ source: "/products", destination: "/shop", permanent: true }];
+  },
   images: {
     // Product/hero art ships as self-hosted static files in public/images;
     // optimization is disabled so the standalone server needs no sharp

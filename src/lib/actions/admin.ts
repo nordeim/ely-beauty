@@ -112,7 +112,7 @@ export async function upsertProductAction(data: ProductUpsertInput): Promise<Adm
   revalidatePath("/admin/products");
   revalidatePath("/admin");
   revalidatePath("/");
-  revalidatePath("/products");
+  revalidatePath("/shop");
   return { ok: true };
 }
 
@@ -135,7 +135,7 @@ export async function deleteProductAction(id: string): Promise<AdminActionResult
   revalidatePath("/admin/products");
   revalidatePath("/admin");
   revalidatePath("/");
-  revalidatePath("/products");
+  revalidatePath("/shop");
   return { ok: true };
 }
 
@@ -159,7 +159,7 @@ export async function toggleProductActiveAction(id: string, isActive: boolean): 
   revalidatePath("/admin/products");
   revalidatePath("/admin");
   revalidatePath("/");
-  revalidatePath("/products");
+  revalidatePath("/shop");
   return { ok: true };
 }
 
@@ -241,7 +241,7 @@ export async function upsertCategoryAction(data: CategoryUpsertInput): Promise<A
   revalidatePath("/admin/categories");
   revalidatePath("/admin/products");
   revalidatePath("/");
-  revalidatePath("/products");
+  revalidatePath("/shop");
   return { ok: true };
 }
 
@@ -269,7 +269,7 @@ export async function deleteCategoryAction(id: string): Promise<AdminActionResul
 
   revalidatePath("/admin/categories");
   revalidatePath("/");
-  revalidatePath("/products");
+  revalidatePath("/shop");
   return { ok: true };
 }
 
@@ -372,7 +372,7 @@ export async function upsertSlideAction(data: SlideUpsertInput): Promise<AdminAc
     subtitle: input.subtitle ?? "",
     image: input.image,
     ctaText: input.ctaText ?? "Shop Now",
-    ctaLink: input.ctaLink ?? "/products",
+    ctaLink: input.ctaLink ?? "/shop",
     sortOrder: input.sortOrder ?? 0,
     isActive: input.isActive ?? true,
   };

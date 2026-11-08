@@ -3,19 +3,24 @@ import { describe, expect, it } from "vitest";
 import { discountPercent, formatMoney, parseDollarsToCents } from "@/lib/money";
 
 describe("formatMoney", () => {
-  it("formats integer cents as USD", () => {
-    expect(formatMoney(19999)).toBe("$199.99");
-    expect(formatMoney(5)).toBe("$0.05");
-    expect(formatMoney(0)).toBe("$0.00");
-    expect(formatMoney(123456)).toBe("$1,234.56");
+  it("formats integer cents as BDT (whole taka when no poisha)", () => {
+    expect(formatMoney(28800)).toBe("৳288");
+    expect(formatMoney(37000)).toBe("৳370");
+    expect(formatMoney(0)).toBe("৳0");
+    expect(formatMoney(107000)).toBe("৳1,070");
+  });
+
+  it("renders poisha only when present", () => {
+    expect(formatMoney(36550)).toBe("৳365.50");
+    expect(formatMoney(5)).toBe("৳0.05");
   });
 
   it("handles negative amounts", () => {
-    expect(formatMoney(-1999)).toBe("-$19.99");
+    expect(formatMoney(-1999)).toBe("-৳19.99");
   });
 
   it("rounds fractional input", () => {
-    expect(formatMoney(199.6)).toBe("$2.00");
+    expect(formatMoney(199.6)).toBe("৳2");
   });
 });
 
@@ -27,8 +32,9 @@ describe("parseDollarsToCents", () => {
   });
 
   it("strips currency symbols and thousands separators", () => {
+    expect(parseDollarsToCents("৳1,299.50")).toBe(129950);
     expect(parseDollarsToCents("$1,299.50")).toBe(129950);
-    expect(parseDollarsToCents(" $42 ")).toBe(4200);
+    expect(parseDollarsToCents(" 42 ")).toBe(4200);
   });
 
   it("accepts at most two decimal places", () => {

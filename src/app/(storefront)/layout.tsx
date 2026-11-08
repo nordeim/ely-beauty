@@ -33,7 +33,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
   const organizationJsonLd = buildOrganizationJsonLd({
     baseUrl: siteUrl,
     name: settings.storeName,
-    description: settings.tagline || "Premium home & kitchen products for the modern lifestyle",
+    description: settings.tagline || "Luxury skincare crafted from nature's finest botanicals. Clean beauty, elevated.",
     email: settings.contactEmail,
     phone: settings.contactPhone,
     socials,
@@ -74,6 +74,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
               socialInstagram: settings.socialInstagram,
               socialPinterest: settings.socialPinterest,
               socialTikTok: settings.socialTikTok,
+              whatsappNumber: settings.whatsappNumber,
             }}
           />
         }

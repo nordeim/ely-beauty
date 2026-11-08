@@ -1,21 +1,25 @@
 import { expect, test } from "@playwright/test";
-import { gotoHydrated } from "./helpers";
-
+import { gotoHydrated, addToCartViaDetailPage, PILLOWCASE } from "./helpers";
 /**
- * Guest shopping flow — the revenue path: add to cart (mini drawer),
- * cart page math, coupon apply, 3-step checkout with a demo card, and the
- * success page with a real ORD-YYYY-NNN order number.
+ * Guest shopping flow — the revenue path (run-72 anatomy): add to cart
+ * through the product DETAIL page (cards are link-only), the mini drawer
+ * ("Your Bag"), cart page math, coupon apply, the SINGLE-PAGE checkout
+ * (Contact + Shipping + Cash on Delivery), and the success page with a real
+ * ELY-XXXXXXXX order number.
  */
 test.describe("shopping flow", () => {
-  test("add to cart updates the header badge and mini drawer", async ({ page }) => {
-    await gotoHydrated(page, "/products");
-
+  test("add to cart updates the header badge and mini drawer (variant carries through)", async ({
+    page,
+  }) => {
     // S13-3: the CLOSED drawer must be inert — invisible off-screen controls
     // must not stay in the tab order or the accessibility tree.
     const drawer = page.getByTestId("cart-drawer");
+    await gotoHydrated(page, "/shop");
     await expect(drawer).toHaveAttribute("inert", "");
 
-    await page.locator("article").first().getByRole("button", { name: "Add to Cart" }).click();
+    // Run-72: ADD TO CART lives on the detail page; pick the Navy Blue color
+    // so the variant rides the line into the drawer.
+    await addToCartViaDetailPage(page, PILLOWCASE.cardText, { variant: "Navy Blue" });
     await expect(page.getByTestId("cart-count")).toBeVisible();
     await expect(page.getByTestId("cart-count")).toHaveText("1");
 
@@ -23,7 +27,14 @@ test.describe("shopping flow", () => {
     await page.getByRole("button", { name: /^Cart/ }).click();
     await expect(drawer).toBeVisible();
     await expect(drawer).not.toHaveAttribute("inert");
+    await expect(drawer.getByText("Your Bag (1)")).toBeVisible();
+    await expect(drawer.getByText(PILLOWCASE.name)).toBeVisible();
+    await expect(drawer.getByText("Navy Blue")).toBeVisible();
+    await expect(drawer.getByText("Remove", { exact: true })).toBeVisible();
     await expect(drawer.getByText("Subtotal")).toBeVisible();
+    await expect(drawer.getByText("৳288").first()).toBeVisible();
+    await expect(drawer.getByRole("link", { name: "CHECKOUT" })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: "View Cart" })).toBeVisible();
     await drawer.getByRole("button", { name: "Close cart" }).click();
     // The drawer is an always-mounted translate-x panel (the Tailwind v4-safe
     // pattern) — assert off-viewport + inert rather than DOM removal.
@@ -33,8 +44,7 @@ test.describe("shopping flow", () => {
   });
 
   test("the open cart drawer is a real modal (S16-3)", async ({ page }) => {
-    await gotoHydrated(page, "/products");
-    await page.locator("article").first().getByRole("button", { name: "Add to Cart" }).click();
+    await addToCartViaDetailPage(page, PILLOWCASE.cardText, { variant: "Navy Blue" });
     await expect(page.getByTestId("cart-count")).toHaveText("1");
 
     const drawer = page.getByTestId("cart-drawer");
@@ -67,8 +77,7 @@ test.describe("shopping flow", () => {
   });
 
   test("full guest checkout places an order", async ({ page }) => {
-    await gotoHydrated(page, "/products");
-    await page.locator("article").first().getByRole("button", { name: "Add to Cart" }).click();
+    await addToCartViaDetailPage(page, PILLOWCASE.cardText, { variant: "Navy Blue" });
     await expect(page.getByTestId("cart-count")).toHaveText("1");
 
     // Cart page -> Checkout
@@ -77,33 +86,42 @@ test.describe("shopping flow", () => {
     await page.getByRole("link", { name: "Checkout" }).first().click();
     await expect(page).toHaveURL(/\/checkout/);
 
-    // Step 1: shipping details
-    await page.getByLabel("Email").fill("guest@example.com");
-    await page.getByLabel("Full name").fill("Guest Buyer");
-    await page.getByLabel("Street address").fill("12 Test Lane");
-    await page.getByLabel("City").fill("Austin");
-    await page.getByLabel("State").fill("TX");
-    await page.getByLabel("Postal code").fill("73301");
-    await page.getByLabel("Phone").first().fill("+1 512 555 0100");
-    // Standard shipping is the default; continue.
-    await page.getByRole("button", { name: /Continue/ }).click();
+    // Single-page checkout (run-72): the Order Summary mirrors the line with
+    // its variant + qty, and the shipping row derives from the city tier.
+    await expect(page.getByRole("heading", { name: "Order Summary" })).toBeVisible();
+    await expect(page.getByText("Navy Blue").first()).toBeVisible();
+    await expect(page.getByText("Qty: 1")).toBeVisible();
+    await expect(page.getByTestId("summary-shipping")).toHaveText("Enter city to calculate");
 
-    // Step 2: payment (demo card)
-    await page.getByLabel("Card number").fill("4242 4242 4242 4242");
-    await page.getByLabel("Expiry").fill("12/28");
-    await page.getByLabel("CVC").fill("123");
-    await page.getByRole("button", { name: /Review|Continue/ }).click();
+    // Contact + Shipping Address. (Role+name locators: the shipping SECTION
+    // is labelled "Shipping Address", which a bare getByLabel("Address")
+    // substring-matches — strict mode.)
+    await page.getByRole("textbox", { name: "Full Name *" }).fill("Guest Buyer");
+    await page.getByRole("textbox", { name: "Email *" }).fill("guest@example.com");
+    await page.getByRole("textbox", { name: "Phone Number *" }).fill("01712345678");
+    await page.getByRole("textbox", { name: "Address *" }).fill("12 Test Lane, Dhanmondi");
+    await page.getByRole("textbox", { name: "City / District *" }).fill("Chattogram");
+    await expect(page.getByTestId("summary-shipping")).toHaveText("৳130");
+    await page.getByRole("textbox", { name: "City / District *" }).fill("Dhaka");
+    await expect(page.getByTestId("summary-shipping")).toHaveText("৳70");
+    await expect(page.getByRole("textbox", { name: "Country *" })).toHaveValue("Bangladesh");
 
-    // Step 3: place the order
-    await expect(page.getByRole("heading", { name: "Review Your Order" })).toBeVisible();
-    await page.getByRole("button", { name: /Place Order/ }).click();
+    // Payment: Cash on Delivery is the only (default-checked) option.
+    const cod = page.getByRole("radio", { name: /Cash on Delivery/ });
+    await expect(cod).toBeChecked();
+    await page.getByLabel("Order notes (optional)").fill("Leave at the front desk.");
+
+    // PLACE ORDER — ৳358 (৳288 line + ৳70 Dhaka shipping).
+    const placeOrder = page.getByTestId("place-order");
+    await expect(placeOrder).toHaveText("PLACE ORDER — ৳358");
+    await placeOrder.click();
 
     // Success page with a real order number + access token.
-    await expect(page).toHaveURL(/\/checkout\/success\?order=ORD-\d{4}-\d{3}&token=/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/checkout\/success\?order=ELY-[A-Z0-9]{8}&token=/, { timeout: 15_000 });
     await expect(page.getByRole("heading", { name: /Thank You/i })).toBeVisible();
     const params = new URL(page.url()).searchParams;
     const orderNumber = params.get("order");
-    expect(orderNumber).toMatch(/^ORD-\d{4}-\d{3}$/);
+    expect(orderNumber).toMatch(/^ELY-[A-Z0-9]{8}$/);
     expect(params.get("token") ?? "").toMatch(/^[0-9a-f]{32}$/);
 
     // ACCESS CONTRACT (S3-1): the sequential number alone must NOT reveal the
@@ -131,7 +149,7 @@ test.describe("shopping flow", () => {
 
   test("checkout replay with the same idempotency key returns the same order (S3-5)", async ({ request, browser }) => {
     // Pick an in-stock product via the public typeahead API.
-    const search = await request.get("/api/search?q=knife");
+    const search = await request.get("/api/search?q=pillowcase");
     expect(search.ok()).toBeTruthy();
     const { results } = (await search.json()) as { results: Array<{ id: string }> };
     expect(results.length).toBeGreaterThan(0);
@@ -150,19 +168,19 @@ test.describe("shopping flow", () => {
       idempotencyKey: crypto.randomUUID(),
       address: {
         fullName: "Replay Test",
-        phone: "+1 512 555 0177",
-        line1: "7 Retry Court",
-        city: "Austin",
-        state: "TX",
-        postalCode: "73301",
-        country: "United States",
+        phone: "01712345677",
+        line1: "7 Retry Court, Banani",
+        city: "Dhaka",
+        state: "Dhaka",
+        postalCode: "1213",
+        country: "Bangladesh",
       },
     };
 
     const first = await request.post("/api/checkout", { data: checkoutBody });
     expect(first.ok()).toBeTruthy();
     const firstBody = (await first.json()) as { orderNumber?: string; token?: string };
-    expect(firstBody.orderNumber).toMatch(/^ORD-\d{4}-\d{3}$/);
+    expect(firstBody.orderNumber).toMatch(/^ELY-[A-Z0-9]{8}$/);
 
     // The replay (lost response / double click) returns the SAME receipt —
     // not a 409 "cart empty" and not a second order.
@@ -212,9 +230,7 @@ test.describe("shopping flow", () => {
   });
 
   test("coupon WELCOME10 reduces the total", async ({ page }) => {
-    await gotoHydrated(page, "/products");
-    await page.locator("article").first().getByRole("button", { name: "Add to Cart" }).click();
-    await expect(page.getByTestId("cart-count")).toHaveText("1");
+    await addToCartViaDetailPage(page, PILLOWCASE.cardText);
     await gotoHydrated(page, "/cart");
 
     await page.getByLabel("Coupon code").fill("WELCOME10");
@@ -225,26 +241,18 @@ test.describe("shopping flow", () => {
 
   test("track-order finds a placed order (number + email required)", async ({ page }) => {
     // Place one order via the API-backed UI flow (condensed), then track it.
-    await gotoHydrated(page, "/products");
-    await page.locator("article").first().getByRole("button", { name: "Add to Cart" }).click();
+    await addToCartViaDetailPage(page, PILLOWCASE.cardText);
     // The badge proves the POST /api/cart landed before we navigate away.
     await expect(page.getByTestId("cart-count")).toHaveText("1");
     await gotoHydrated(page, "/checkout");
     const buyerEmail = "guest2@example.com";
-    await page.getByLabel("Email").fill(buyerEmail);
-    await page.getByLabel("Full name").fill("Tracker Test");
-    await page.getByLabel("Street address").fill("9 Loop Road");
-    await page.getByLabel("City").fill("Austin");
-    await page.getByLabel("State").fill("TX");
-    await page.getByLabel("Postal code").fill("73301");
-    await page.getByLabel("Phone").first().fill("+1 512 555 0199");
-    await page.getByRole("button", { name: /Continue/ }).click();
-    await page.getByLabel("Card number").fill("4242 4242 4242 4242");
-    await page.getByLabel("Expiry").fill("11/28");
-    await page.getByLabel("CVC").fill("321");
-    await page.getByRole("button", { name: /Review|Continue/ }).click();
-    await page.getByRole("button", { name: /Place Order/ }).click();
-    await expect(page).toHaveURL(/\/checkout\/success\?order=ORD-\d{4}-\d{3}/, { timeout: 15_000 });
+    await page.getByRole("textbox", { name: "Full Name *" }).fill("Tracker Test");
+    await page.getByRole("textbox", { name: "Email *" }).fill(buyerEmail);
+    await page.getByRole("textbox", { name: "Phone Number *" }).fill("01712345699");
+    await page.getByRole("textbox", { name: "Address *" }).fill("9 Loop Road, Mirpur");
+    await page.getByRole("textbox", { name: "City / District *" }).fill("Dhaka");
+    await page.getByTestId("place-order").click();
+    await expect(page).toHaveURL(/\/checkout\/success\?order=ELY-[A-Z0-9]{8}/, { timeout: 15_000 });
     const orderNumber = new URL(page.url()).searchParams.get("order");
 
     // Security contract: the number alone must NOT unlock the order's PII.
@@ -271,7 +279,7 @@ test.describe("shopping flow", () => {
     // Seed a real guest cart (cookie jar on `request`), then poke a line id
     // that can never exist. The scoped conditional writes must map the lost
     // race to the same friendly 404 a concurrent delete produces.
-    const search = await request.get("/api/search?q=knife");
+    const search = await request.get("/api/search?q=pillowcase");
     expect(search.ok()).toBeTruthy();
     const { results } = (await search.json()) as { results: Array<{ id: string }> };
     const add = await request.post("/api/cart", {

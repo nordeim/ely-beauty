@@ -40,7 +40,7 @@ function emptySlide(nextSortOrder: number): SlideFormValues {
     subtitle: "",
     image: "",
     ctaText: "Shop Now",
-    ctaLink: "/products",
+    ctaLink: "/shop",
     sortOrder: nextSortOrder,
     isActive: true,
   };
@@ -198,7 +198,7 @@ export function SlideDialogButton({
                 id="slide-cta-link"
                 value={form.ctaLink}
                 onChange={(e) => setField("ctaLink", e.target.value)}
-                placeholder="/products"
+                placeholder="/shop"
                 maxLength={200}
                 required
               />

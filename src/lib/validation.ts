@@ -48,8 +48,11 @@ export const addressSchema = z.object({
   line1: z.string().trim().min(4, "Street address is required").max(120),
   line2: z.string().trim().max(120).optional().or(z.literal("")),
   city: z.string().trim().min(2, "City is required").max(60),
-  state: z.string().trim().min(2, "State is required").max(60),
-  postalCode: z.string().trim().min(3, "Postal code is required").max(20),
+  // ElyBeauty (run-72): the reference's BD checkout has no state field and
+  // an optional ZIP — both are now optional (empty allowed); the checkout
+  // back-fills state from the city when absent.
+  state: z.string().trim().max(60).optional().or(z.literal("")),
+  postalCode: z.string().trim().max(20).optional().or(z.literal("")),
   country: z.string().trim().min(2).max(60).default("United States"),
 });
 
@@ -66,6 +69,9 @@ export const addressDefaultSchema = z.object({
 export const cartMutateSchema = z.object({
   productId: z.string().min(1),
   quantity: z.number().int().min(1).max(MAX_CART_QUANTITY, `Quantity is limited to ${MAX_CART_QUANTITY} per item.`),
+  // ElyBeauty variant selection (run-72): the color/size chosen on the
+  // detail page. "" = no variant. Part of the line identity.
+  variant: z.string().trim().max(60).optional().default(""),
 });
 
 /**
@@ -80,6 +86,7 @@ export const cartBulkSchema = z.object({
       z.object({
         productId: z.string().min(1),
         quantity: z.number().int().min(1).max(MAX_CART_QUANTITY, `Quantity is limited to ${MAX_CART_QUANTITY} per item.`),
+        variant: z.string().trim().max(60).optional().default(""),
       }),
     )
     .min(1, "No items to add.")
@@ -114,6 +121,8 @@ export const checkoutSchema = z.object({
   paymentMethod: z.enum(PAYMENT_METHODS),
   couponCode: z.string().trim().max(40).optional().or(z.literal("")),
   saveAddress: z.boolean().optional(),
+  // ElyBeauty (run-72): the checkout's optional Order Notes field.
+  notes: z.string().trim().max(500, "Notes are too long").optional().or(z.literal("")),
   // Client-generated (crypto.randomUUID). A retry that carries the same key
   // returns the already-placed order instead of double-ordering.
   idempotencyKey: z.string().trim().min(16, "Invalid idempotency key").max(64).optional(),
@@ -322,7 +331,7 @@ export const carouselSlideInputSchema = z.object({
   subtitle: z.string().trim().max(200).default(""),
   image: imageUrlSchema,
   ctaText: z.string().trim().min(2).max(40).default("Shop Now"),
-  ctaLink: safeLinkSchema.default("/products"),
+  ctaLink: safeLinkSchema.default("/shop"),
   sortOrder: z.number().int().min(0).max(99).default(0),
   isActive: z.boolean().default(true),
 });

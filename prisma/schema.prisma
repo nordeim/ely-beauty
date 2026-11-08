@@ -1,5 +1,6 @@
-// HomeNest Kitchen — Prisma schema (SQLite)
-// Money is stored as INTEGER CENTS everywhere (see src/lib/money.ts).
+// ElyBeauty — Prisma schema (SQLite)
+// Money is stored as INTEGER CENTS (poisha; ৳1 = 100) everywhere (see
+// src/lib/money.ts).
 // SQLite has no native enums — status/role fields are Strings validated by
 // Zod schemas at the application boundary (src/lib/validation.ts).
 
@@ -45,7 +46,8 @@ model Category {
   id           String    @id @default(cuid())
   slug         String    @unique
   name         String
-  description  String    @default("")
+  description  String    @default("") // the tile caption ("Serums, creams & treatments")
+  imageUrl     String    @default("") // the tile photo (root-relative store path)
   icon         String    @default("package") // lucide icon component name
   iconGradient String    @default("from-orange-400 to-orange-600")
   sortOrder    Int       @default(0)
@@ -73,6 +75,12 @@ model Product {
   images           String         @default("[]") // JSON-encoded string[]
   tags             String         @default("[]") // JSON-encoded string[]
   specs            String         @default("[]") // JSON-encoded {label,value}[]
+  // ElyBeauty variants (run-72): color swatches [{name,hex}] and size
+  // options (string[]) — the detail page's COLOR:/SIZE: selectors.
+  colors           String         @default("[]") // JSON-encoded {name,hex}[]
+  sizes            String         @default("[]") // JSON-encoded string[]
+  howToUse         String         @default("")
+  ingredients      String         @default("")
   badge            String? // "Featured" | "Best Seller" | ...
   isFeatured       Boolean        @default(false)
   isNewArrival     Boolean        @default(false)
@@ -120,9 +128,13 @@ model CartItem {
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   quantity  Int      @default(1)
+  // ElyBeauty variant selection ("Pink", "0.5mm", …). "" = no variant.
+  // Part of the line identity: the same product in two colors is two lines
+  // (empty-string default keeps the UNIQUE dedupe NULL-safe on SQLite).
+  variant   String   @default("")
   createdAt DateTime @default(now())
 
-  @@unique([cartId, productId])
+  @@unique([cartId, productId, variant])
 }
 
 model Wishlist {
@@ -169,7 +181,7 @@ model Address {
 
 model Order {
   id              String       @id @default(cuid())
-  number          String       @unique // ORD-YYYY-NNN (zero-padded 3)
+  number          String       @unique // ELY-XXXXXXXX (8-char uppercase base36)
   // Client-generated checkout key: a retry with the same key returns the
   // already-placed order instead of double-ordering (nullable: legacy rows).
   idempotencyKey  String?      @unique
@@ -204,6 +216,8 @@ model Order {
   paymentStatus          String?
   carrier         String?
   trackingNumber  String?
+  // ElyBeauty (run-72): the checkout's optional Order Notes field.
+  notes           String?
   placedAt        DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   items           OrderItem[]

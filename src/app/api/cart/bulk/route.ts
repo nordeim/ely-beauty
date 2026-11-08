@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/lib/auth";
 import { getOrCreateCart, getCartSummary } from "@/lib/cart";
-import { dedupeBulkWanted, planBulkUpsertQuantity } from "@/lib/cart-bulk";
+import { dedupeBulkWanted, planBulkUpsertQuantity, splitBulkKey } from "@/lib/cart-bulk";
 import { db } from "@/lib/db";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { cartBulkSchema, firstError } from "@/lib/validation";
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     const wanted = dedupeBulkWanted(parsed.data.items);
 
     const products = await db.product.findMany({
-      where: { id: { in: Array.from(wanted.keys()) }, isActive: true },
+      where: { id: { in: Array.from(wanted.keys()).map((k) => splitBulkKey(k).productId) }, isActive: true },
       select: { id: true, stock: true },
     });
     const stockById = new Map(products.map((p) => [p.id, p.stock]));
@@ -59,11 +59,12 @@ export async function POST(request: NextRequest) {
     const added = await db.$transaction(async (tx) => {
       let count = 0;
       let soldOut = 0;
-      for (const [productId, quantity] of wanted) {
+      for (const [planKey, quantity] of wanted) {
+        const { productId, variant } = splitBulkKey(planKey);
         const stock = stockById.get(productId);
         if (stock === undefined) continue; // gone/inactive — reported as skipped
         const existing = await tx.cartItem.findUnique({
-          where: { cartId_productId: { cartId, productId } },
+          where: { cartId_productId_variant: { cartId, productId, variant } },
         });
         const clamped = planBulkUpsertQuantity(existing?.quantity ?? 0, quantity, stock);
         if (clamped === 0) {
@@ -74,8 +75,8 @@ export async function POST(request: NextRequest) {
           continue;
         }
         await tx.cartItem.upsert({
-          where: { cartId_productId: { cartId, productId } },
-          create: { cartId, productId, quantity: clamped },
+          where: { cartId_productId_variant: { cartId, productId, variant } },
+          create: { cartId, productId, variant, quantity: clamped },
           update: { quantity: clamped },
         });
         count += 1;

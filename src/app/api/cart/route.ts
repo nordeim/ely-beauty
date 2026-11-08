@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ error: firstError(parsed.error) }, { status: 400 });
     }
-    const { productId, quantity } = parsed.data;
+    const { productId, quantity, variant } = parsed.data;
 
     // Guest-reachable row creation — metered like the other unauthenticated
     // writes, or a scripted client that ignores cookies mints a Cart row per
@@ -49,10 +49,12 @@ export async function POST(request: NextRequest) {
     // Read + upsert in ONE transaction: two concurrent add-to-carts must not
     // lose an increment (lost-update race). The quantity routes through the
     // SAME clamp as PATCH (stock ceiling + 99 cap) so POST and PATCH can
-    // never disagree about what a line can hold.
+    // never disagree about what a line can hold. The line identity is
+    // (cartId, productId, variant) — the same product in two colors is two
+    // lines (run-72).
     const nextQty = await db.$transaction(async (tx) => {
       const existing = await tx.cartItem.findUnique({
-        where: { cartId_productId: { cartId, productId } },
+        where: { cartId_productId_variant: { cartId, productId, variant } },
       });
       const requested = (existing?.quantity ?? 0) + quantity;
       const clamped = clampPurchaseQuantity(requested, product.stock);
@@ -61,8 +63,8 @@ export async function POST(request: NextRequest) {
         return 0;
       }
       await tx.cartItem.upsert({
-        where: { cartId_productId: { cartId, productId } },
-        create: { cartId, productId, quantity: clamped },
+        where: { cartId_productId_variant: { cartId, productId, variant } },
+        create: { cartId, productId, variant, quantity: clamped },
         update: { quantity: clamped },
       });
       return clamped;
