@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useStore } from "./store-provider";
 import { Header } from "./header";
 import { MobileNav } from "./mobile-nav";
+import { SearchOverlay } from "./search-overlay";
 
 /**
  * StoreChrome — the fixed header wrapper (reference DOM order): fixed
@@ -36,7 +37,7 @@ export function StoreChrome({
   // back to the server-computed prop — no hydration guard (and no
   // set-state-on-mount effect) is needed. (Context type is `number | null`,
   // session-9 S9-1 — initializing at 0 made this fallback dead code.)
-  const { cartCount: liveCount, cartDrawerOpen } = useStore();
+  const { cartCount: liveCount, cartDrawerOpen, searchOverlayOpen, setSearchOverlayOpen } = useStore();
   const count = liveCount ?? cartCount;
   const pathname = usePathname();
 
@@ -89,6 +90,11 @@ export function StoreChrome({
         {children}
         {footer}
       </div>
+      {/* S77-2: the shared full-screen search overlay rides at the end of
+          the chrome (with the cart drawer) so its z-[70] sits above every
+          layer — the header icon and the mobile panel's SEARCH row toggle
+          the same state. */}
+      <SearchOverlay open={searchOverlayOpen} onClose={() => setSearchOverlayOpen(false)} />
       <CartDrawer />
     </>
   );

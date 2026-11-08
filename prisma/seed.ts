@@ -15,9 +15,18 @@
 import { pathToFileURL } from "node:url";
 import { PrismaClient } from "@prisma/client";
 import { scryptHash } from "../src/lib/password";
+import { resolveProcessDatabaseUrl } from "../src/lib/db-path";
 import { couponSeedCreatedAt, productSeedCreatedAt, productSeedUpdate } from "../src/lib/seed-policy";
 
-const prisma = new PrismaClient();
+// S77-6 (audit F7): the seed routes through the db-path seam — the SAME
+// schema-anchored resolution the app runtime uses (src/lib/db-path.ts) — so
+// a relative DATABASE_URL in .env resolves identically for db:seed,
+// db:push and the running server, regardless of the shell's exported env.
+// A bare client constructor (the pre-S77 shape) followed whatever
+// DATABASE_URL the shell carried — the root cause of the recurring "rows
+// survive fresh reseeds" convergence rituals (see AGENTS.md's db-path
+// contract).
+const prisma = new PrismaClient({ datasourceUrl: resolveProcessDatabaseUrl() });
 
 type Spec = { label: string; value: string };
 type ColorOption = { name: string; hex: string };

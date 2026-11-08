@@ -58,9 +58,12 @@ describe("S75 measured layout frame (source pins)", () => {
     expect(header).toMatch(/ lg:h-20 /);
     // The kitchen-era fixed 80px bar is gone.
     expect(header).not.toMatch(/grid h-20 grid-cols/);
-    // The search overlay tracks the responsive bar.
-    expect(header).toMatch(/top-16 z-50/);
-    expect(header).toMatch(/lg:top-20/);
+    // S77-2: the search surface moved out of the header into the shared
+    // full-screen overlay (search-overlay.tsx) — the header carries no
+    // overlay markup of its own anymore, just the icon that toggles the
+    // store state.
+    expect(header).not.toMatch(/top-16 z-50/);
+    expect(header).not.toMatch(/lg:top-20/);
   });
 
   it("D-1: the body offset is the reference's main clearance (pt-20 lg:pt-24)", () => {
@@ -224,5 +227,69 @@ describe("S76 measured card + variant anatomy (source pins)", () => {
     // The non-home branch: border-t + border-b + bg/95 + blur.
     expect(chrome).toMatch(/border-t border-b border-border bg-background\/95 backdrop-blur/);
     expect(chrome).not.toMatch(/"border-b border-border bg-background\/95 backdrop-blur"/);
+  });
+});
+
+describe("S77 measured search-overlay anatomy (source pins)", () => {
+  it("D-1: the search overlay is the reference's full-screen z-[70] sheet (not a top-16 dropdown)", () => {
+    const overlay = src("components/store/search-overlay.tsx");
+    expect(overlay).toContain("fixed inset-0 z-[70] bg-background/95 backdrop-blur-xs");
+    // The dropdown anatomy is gone.
+    expect(overlay).not.toContain("top-16");
+    expect(overlay).not.toContain("shadow-sm");
+    // The content column: the reference's max-w-2xl with pt-24 lg:pt-32 —
+    // NOT the page-shell gutter.
+    expect(overlay).toContain("max-w-2xl mx-auto px-6 pt-24 lg:pt-32");
+    expect(overlay).not.toContain("container-page");
+  });
+
+  it("D-1b: the search input rides the display serif at text-lg lg:text-2xl with the tight 1.1 leading", () => {
+    const overlay = src("components/store/search-overlay.tsx");
+    expect(overlay).toMatch(/font-display text-lg leading-\[1\.1\] lg:text-2xl/);
+  });
+
+  it("D-2: the result rows are the reference's single-column 80px anatomy", () => {
+    const overlay = src("components/store/search-overlay.tsx");
+    // Single column, 4px gaps (the reference's 84px row rhythm).
+    expect(overlay).toMatch(/flex flex-col gap-1/);
+    // 12px row padding over the 56px image = the 80px row.
+    expect(overlay).toMatch(/items-center gap-4 p-3/);
+    // The old two-column grid is gone.
+    expect(overlay).not.toContain("sm:grid-cols-2");
+    // The price is font-light (the reference's 14px/300).
+    expect(overlay).toMatch(/text-sm font-light/);
+  });
+
+  it("D-1c: the mobile panel's SEARCH row opens the shared overlay (no in-panel swap)", () => {
+    const nav = src("components/store/mobile-nav.tsx");
+    // The SEARCH row toggles the shared overlay state.
+    expect(nav).toMatch(/setSearchOverlayOpen\(true\)/);
+    // The in-panel search component is retired.
+    expect(nav).not.toContain("PanelSearch");
+    expect(nav).not.toContain("mobile-panel-search");
+  });
+
+  it("D-1d: the header search icon drives the shared overlay state", () => {
+    const header = src("components/store/header.tsx");
+    expect(header).toMatch(/setSearchOverlayOpen/);
+    // The old local-state overlay + dropdown container are gone from the
+    // header (the overlay component moved to its own module).
+    expect(header).not.toContain("DesktopSearchOverlay");
+    expect(header).not.toContain("searchOpen");
+  });
+
+  it("S77-7a: the product twitter card uses the metaDescription fallback", () => {
+    const page = src("app/(storefront)/product/[id]/page.tsx");
+    // The twitter description composes from the same metaDescription
+    // fallback as description/openGraph (S76-8's completion — it used to
+    // read product.shortDescription directly, shipping empty card copy for
+    // the six no-card-copy products).
+    expect(page).toMatch(/twitter:\s*\{\s*card:[^}]*description:\s*metaDescription/s);
+  });
+
+  it("S77-7b: the product metadata query filters isActive (no inactive-product title leaks)", () => {
+    const page = src("app/(storefront)/product/[id]/page.tsx");
+    const metadataWhere = page.match(/where:\s*\{\s*id,\s*isActive:\s*true\s*\}/);
+    expect(metadataWhere).not.toBeNull();
   });
 });

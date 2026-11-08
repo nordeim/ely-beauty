@@ -10,9 +10,12 @@
 // Idempotent: skips existing files.
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = "/home/z/my-project/ely-beauty";
+// S77-8 (audit F11): derive the repo root from this module's location —
+// the hardcoded sandbox path broke the script outside this exact checkout.
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "public", "images");
 
 const MOOD =
@@ -39,14 +42,7 @@ const jobs = [
   ["product-cleansing-brush", `Wooden facial cleansing brush with soft natural bristles, dual-sided, standing upright, on ${MOOD}`, `Close-up of the natural bristles and wood handle junction of a cleansing brush, on ${MOOD}`],
   ["product-body-brush", `Natural bristle dry body brush with wooden handle laid diagonally, on ${MOOD}`, `Close-up of the natural fiber bristles and wooden back of a dry body brush, on ${MOOD}`],
   ["product-ice-bowl", `Foldable pink silicone facial ice bath bowl with matching ice roller, water droplets on the bowl, on ${MOOD}`, `Close-up of the pink silicone folding rim of a facial ice bowl with the ice roller beside, on ${MOOD}`],
-  ["placeholder-product-1", null, null],
-  ["placeholder-product-2", null, null],
 ];
-
-// The 2 draft products (unpublished) get variants too — find their slugs from the seed.
-import { readFileSync } from "node:fs";
-const seed = readFileSync(join(ROOT, "prisma", "seed.ts"), "utf8");
-const draftSlugs = [...seed.matchAll(/slug: "([^"]+)"/g)].map(m => m[1]);
 
 let ok = 0, skipped = 0, failed = [];
 for (const [base, p2, p3] of jobs) {

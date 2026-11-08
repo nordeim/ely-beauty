@@ -116,7 +116,7 @@ test.describe("storefront", () => {
     await expect(page.getByText("Stainless Steel Gua Sha").first()).toBeVisible();
   });
 
-  test("the desktop search overlay finds products live and navigates", async ({ page }) => {
+  test("the search overlay finds products live and navigates (the S77 full-screen anatomy)", async ({ page }) => {
     await gotoHydrated(page, "/shop");
 
     // Open the header's search overlay.
@@ -124,17 +124,45 @@ test.describe("storefront", () => {
     const overlay = page.getByTestId("search-overlay");
     await expect(overlay).toBeVisible();
 
-    // Live typeahead: results carry name + category + ৳ price.
+    // D-1 (S77-2, measured live): the overlay is FULL-SCREEN (the viewport
+    // box at 1440×900) — the header-anchored dropdown retired.
+    const overlayBox = await overlay.boundingBox();
+    expect(overlayBox?.x).toBeCloseTo(0, 1);
+    expect(overlayBox?.y).toBeCloseTo(0, 1);
+    expect(overlayBox?.width).toBeCloseTo(1440, 0);
+    expect(overlayBox?.height).toBeCloseTo(900, 0);
+
+    // The content column is the reference's max-w-2xl, centered; the input
+    // rides the display serif at 24px at lg.
+    const column = overlay.locator("div.max-w-2xl");
+    const colBox = await column.boundingBox();
+    expect(colBox?.width).toBeCloseTo(672, 0);
+    expect(colBox?.x).toBeCloseTo((1440 - 672) / 2, 0);
     const input = overlay.getByRole("searchbox", { name: "Search products" });
+    const fontSize = await input.evaluate((el) => getComputedStyle(el).fontSize);
+    expect(fontSize).toBe("24px");
+    // The display serif — next/font's generated family name carries the
+    // Cormorant token (matched case-insensitively for the hashed suffix).
+    const fontFamily = await input.evaluate((el) => getComputedStyle(el).fontFamily);
+    expect(fontFamily).toMatch(/cormorant/i);
+
+    // Live typeahead: rows carry name + the shortDescription copy + ৳ price
+    // (S77-3 — the category label retired with the row anatomy fix).
     await input.fill("silk");
     await expect(overlay.getByText("Pure Satin Silk Pillowcase – For Hair & Skin")).toBeVisible({
       timeout: 10_000,
     });
-    await expect(overlay.getByText("Bestsellers").first()).toBeVisible();
+    await expect(overlay.getByText("Sleep in smooth comfort", { exact: false }).first()).toBeVisible();
     await expect(overlay.getByText("৳288").first()).toBeVisible();
 
+    // D-2: the rows are the reference's single-column 80px anatomy.
+    const row = overlay.getByRole("link", { name: /Pure Satin Silk Pillowcase/ });
+    const rowBox = await row.boundingBox();
+    expect(rowBox?.height).toBeCloseTo(80, 0);
+    expect(rowBox?.width).toBeCloseTo(624, 0);
+
     // Navigating a result closes the overlay and lands on the detail page.
-    await overlay.getByRole("link", { name: /Pure Satin Silk Pillowcase/ }).click();
+    await row.click();
     await expect(page).toHaveURL(/\/product\//);
     await expect(page.getByTestId("search-overlay")).toHaveCount(0);
   });
@@ -248,11 +276,13 @@ test.describe("storefront — the S75 measured frame (desktop layout geometry)",
   });
 
   test("the product detail frame renders 544px columns (gap-8 lg:gap-16 + the gutter)", async ({ page, request }) => {
-    // Any in-stock product — resolved through the search API (the authored
-    // order's lead piece is reference-true sold-out; "silk" hits the stocked
-    // Pillowcase). The request fixture carries the absolute base URL — a
+    // The stocked Pillowcase — resolved through the search API with a
+    // single-hit term. (S77-4 changed the result order to the authored
+    // catalog order, under which "silk" leads with the reference-true
+    // SOLD-OUT bonnet — the frame test needs the stocked product.)
+    // The request fixture carries the absolute base URL — a
     // relative fetch inside page.evaluate on a fresh context fails to parse.
-    const res = await request.get("/api/search?q=silk");
+    const res = await request.get("/api/search?q=pillowcase");
     const data = (await res.json()) as { results?: { id: string }[] };
     const productId = data.results?.[0]?.id;
     expect(productId).toBeTruthy();
@@ -298,7 +328,7 @@ test.describe("storefront — the S76 measured card + variant anatomy (desktop g
   });
 
   test("the product h1 rides the reference's heading scale: 48px at lg (D-5)", async ({ page, request }) => {
-    const res = await request.get("/api/search?q=silk");
+    const res = await request.get("/api/search?q=pillowcase");
     const data = (await res.json()) as { results?: { id: string }[] };
     const productId = data.results?.[0]?.id;
     expect(productId).toBeTruthy();

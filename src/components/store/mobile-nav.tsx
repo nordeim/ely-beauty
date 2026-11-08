@@ -2,12 +2,18 @@
 
 /**
  * MobileNav — the reference's push-down panel below the fixed header: an
- * ivory panel with a SEARCH row (icon + label) that swaps the panel content
- * for a search input + live results, then the four uppercase nav links —
- * and NOTHING else (S74-2: the reference's panel ends at About; the
+ * ivory panel with a SEARCH row (icon + label) and the four uppercase nav
+ * links — and NOTHING else (S74-2: the reference's panel ends at About; the
  * Sign In/Wishlist/Admin rows were scaffold heritage and are gone — the
  * wishlist entry lives in the footer's SUPPORT column, account on the
  * header icon).
+ *
+ * S77-2: the SEARCH row opens the shared FULL-SCREEN search overlay (the
+ * reference's single search surface — measured live: both the header icon
+ * and the panel's SEARCH row open `fixed inset-0 z-[70]
+ * bg-background/95 backdrop-blur-sm`). The old in-panel content swap is
+ * retired; the panel stays open underneath the overlay, exactly like
+ * the reference.
  *
  * Tailwind v4 trap-log note (the bug this file is structured around): v4
  * changed the generation order of display utilities, so JS-toggling the
@@ -22,13 +28,11 @@
  * The e2e regression guard is tests/e2e/mobile-navigation.spec.ts.
  */
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, X } from "lucide-react";
+import { Search } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { formatMoney } from "@/lib/money";
 import { useStore } from "./store-provider";
 
 const NAV_LINKS = [
@@ -38,16 +42,13 @@ const NAV_LINKS = [
   { href: "/about", label: "About" },
 ];
 
-type SearchResult = { id: string; name: string; image: string; price: number; category: string };
-
 export function MobileNav() {
-  const { mobileNavOpen, setMobileNavOpen, mobileNavSearch, setMobileNavSearch } = useStore();
+  const { mobileNavOpen, setMobileNavOpen, setSearchOverlayOpen } = useStore();
   const pathname = usePathname();
 
   // Close on route change (links navigate) — matches reference behavior.
   React.useEffect(() => {
     setMobileNavOpen(false);
-    setMobileNavSearch(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
@@ -63,23 +64,19 @@ export function MobileNav() {
           container-page utility in stylesheet order, the run-75 bug that
           rendered 16px instead of the reference's 24px). */}
       <div className="container-page py-6">
-        {mobileNavSearch ? (
-          <PanelSearch onExit={() => setMobileNavSearch(false)} />
-        ) : (
-          <nav aria-label="Mobile" className="flex flex-col gap-4">
-            <button
-              type="button"
-              onClick={() => setMobileNavSearch(true)}
-              className="flex items-center gap-3 text-sm uppercase tracking-[0.1em] text-foreground transition-colors hover:text-primary"
-            >
-              <Search className="h-4 w-4" aria-hidden />
-              Search
-            </button>
-            {NAV_LINKS.map((link) => (
-              <MobileNavLink key={link.href} href={link.href} label={link.label} />
-            ))}
-          </nav>
-        )}
+        <nav aria-label="Mobile" className="flex flex-col gap-4">
+          <button
+            type="button"
+            onClick={() => setSearchOverlayOpen(true)}
+            className="flex items-center gap-3 text-sm uppercase tracking-[0.1em] text-foreground transition-colors hover:text-primary"
+          >
+            <Search className="h-4 w-4" aria-hidden />
+            Search
+          </button>
+          {NAV_LINKS.map((link) => (
+            <MobileNavLink key={link.href} href={link.href} label={link.label} />
+          ))}
+        </nav>
       </div>
     </div>
   );
@@ -106,91 +103,5 @@ function MobileNavLink({ href, label, className }: { href: string; label: string
     >
       {label}
     </Link>
-  );
-}
-
-/**
- * PanelSearch — the in-panel search flow: input + Close search + live
- * results (the reference's exact interaction). Navigating a result closes
- * the panel via the route-change effect.
- */
-function PanelSearch({ onExit }: { onExit: () => void }) {
-  const [query, setQuery] = React.useState("");
-  const [results, setResults] = React.useState<SearchResult[]>([]);
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  React.useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  // Debounced typeahead against /api/search — the same endpoint the desktop
-  // overlay uses; <2 chars renders nothing (the endpoint's own floor, checked
-  // inside the timer so the effect never calls setState synchronously).
-  React.useEffect(() => {
-    let cancelled = false;
-    const t = setTimeout(() => {
-      const term = query.trim();
-      if (term.length < 2) {
-        setResults([]);
-        return;
-      }
-      fetch(`/api/search?q=${encodeURIComponent(term)}`)
-        .then((r) => r.json())
-        .then((data: { results?: SearchResult[] }) => !cancelled && setResults(data.results ?? []))
-        .catch(() => !cancelled && setResults([]));
-    }, 250);
-    return () => {
-      cancelled = true;
-      clearTimeout(t);
-    };
-  }, [query]);
-
-  return (
-    <div className="flex flex-col gap-4" data-testid="mobile-panel-search">
-      <div className="flex items-center gap-4 border-b border-border pb-4">
-        <Search className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
-        <input
-          ref={inputRef}
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search products..."
-          aria-label="Search products"
-          className="flex-1 bg-transparent text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
-        />
-        <button
-          type="button"
-          onClick={onExit}
-          aria-label="Close search"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-        >
-          <X className="h-5 w-5" />
-        </button>
-      </div>
-      {results.length > 0 && (
-        <ul className="flex flex-col gap-1">
-          {results.map((r) => (
-            <li key={r.id}>
-              <Link
-                href={`/product/${r.id}`}
-                className="flex items-center gap-4 p-2 transition-colors hover:bg-secondary"
-              >
-                <span className="relative h-14 w-14 shrink-0 overflow-hidden bg-secondary">
-                  <Image src={r.image} alt="" fill sizes="56px" className="object-cover" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">{r.name}</span>
-                  <span className="block text-xs text-muted-foreground">{r.category}</span>
-                </span>
-                <span className="text-sm font-semibold">{formatMoney(r.price)}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-      {query.trim().length >= 2 && results.length === 0 && (
-        <p className="text-sm text-muted-foreground">No products match “{query.trim()}”.</p>
-      )}
-    </div>
   );
 }

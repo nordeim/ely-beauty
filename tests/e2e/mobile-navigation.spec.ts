@@ -148,7 +148,10 @@ test.describe("mobile navigation (Tailwind v4 regression guard)", () => {
       .toBe(true);
   });
 
-  test("the panel search flow swaps links for a live search that navigates", async ({ page }) => {
+  test("the panel SEARCH row opens the full-screen overlay that searches and navigates", async ({ page }) => {
+    // S77-2 (D-1, measured live): the reference's panel SEARCH row opens
+    // the SAME full-screen overlay the header icon opens (z-[70]
+    // bg-background/95 backdrop-blur) — the in-panel content swap retired.
     // On the home route (the run-72 fix: the solid-bar layout while the
     // panel is open keeps the panel's rows reachable under the fixed bar).
     const menuButton = page.getByTestId("mobile-menu-button");
@@ -156,24 +159,38 @@ test.describe("mobile navigation (Tailwind v4 regression guard)", () => {
     const panel = page.getByTestId("mobile-menu");
     await panel.getByRole("button", { name: "Search", exact: true }).click();
 
-    // The panel content swaps to the search input + its Close affordance.
-    const searchMode = page.getByTestId("mobile-panel-search");
-    await expect(searchMode).toBeVisible();
-    const input = searchMode.getByRole("searchbox", { name: "Search products" });
+    // The shared full-screen overlay mounts above the open panel.
+    const overlay = page.getByTestId("search-overlay");
+    await expect(overlay).toBeVisible();
+    const input = overlay.getByRole("searchbox", { name: "Search products" });
     await expect(input).toBeVisible();
-    await expect(searchMode.getByRole("button", { name: "Close search" })).toBeVisible();
+    await expect(overlay.getByRole("button", { name: "Close search" })).toBeVisible();
 
-    // Live typeahead: results carry name + category + ৳ price.
+    // The overlay is full-screen (the layout viewport box, not a header
+    // dropdown). The iPhone 13 descriptor's viewport is 390x664 (the
+    // visible-viewport approximation) — pinned dynamically so a descriptor
+    // change cannot silently break it.
+    const viewport = page.viewportSize();
+    const overlayBox = await overlay.boundingBox();
+    expect(overlayBox?.x).toBeCloseTo(0, 1);
+    expect(overlayBox?.y).toBeCloseTo(0, 1);
+    expect(overlayBox?.width).toBeCloseTo(viewport?.width ?? 390, 0);
+    expect(overlayBox?.height).toBeCloseTo(viewport?.height ?? 664, 0);
+
+    // Live typeahead: rows carry name + the shortDescription copy + ৳ price
+    // (S77-3 — the category label retired with the row anatomy fix).
     await input.fill("silk");
-    await expect(searchMode.getByText("Pure Satin Silk Pillowcase – For Hair & Skin")).toBeVisible({
+    await expect(overlay.getByText("Pure Satin Silk Pillowcase – For Hair & Skin")).toBeVisible({
       timeout: 10_000,
     });
-    await expect(searchMode.getByText("Bestsellers").first()).toBeVisible();
-    await expect(searchMode.getByText("৳288").first()).toBeVisible();
+    await expect(overlay.getByText("Sleep in smooth comfort", { exact: false }).first()).toBeVisible();
+    await expect(overlay.getByText("৳288").first()).toBeVisible();
 
-    // Navigating a result closes the panel via the route-change effect.
-    await searchMode.getByRole("link", { name: /Pure Satin Silk Pillowcase/ }).click();
+    // Navigating a result closes the overlay and the panel (route-change
+    // effects), landing on the detail page.
+    await overlay.getByRole("link", { name: /Pure Satin Silk Pillowcase/ }).click();
     await expect(page).toHaveURL(/\/product\//);
+    await expect(page.getByTestId("search-overlay")).toHaveCount(0);
     await expect(page.getByTestId("mobile-menu")).toHaveCount(0);
   });
 });

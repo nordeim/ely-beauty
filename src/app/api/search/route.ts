@@ -24,10 +24,24 @@ export async function GET(request: NextRequest) {
     const products = await db.product.findMany({
       where: {
         isActive: true,
-        OR: [{ name: { contains: q } }, { shortDescription: { contains: q } }, { tags: { contains: q } }],
+        // S77-4 (D-3, measured live): the reference's typeahead matches the
+        // LONG description too — "silk" returns the Sandalwood Paddle
+        // Hairbrush there purely through "silky" in its long copy. The
+        // contains clauses are substring matches on SQLite, so "silk"
+        // hitting "silky" is exactly the reference's behavior.
+        OR: [
+          { name: { contains: q } },
+          { shortDescription: { contains: q } },
+          { tags: { contains: q } },
+          { description: { contains: q } },
+        ],
       },
-      include: { category: { select: { name: true, slug: true } } },
-      orderBy: { rating: "desc" },
+      orderBy: {
+        // S77-4 (D-4): the authored catalog order (the seed's backdated
+        // createdAt renders index 0 first) — the reference's result order,
+        // not a rating sort.
+        createdAt: "desc",
+      },
       take: 8,
     });
 
@@ -37,7 +51,11 @@ export async function GET(request: NextRequest) {
         name: p.name,
         image: parseImages(p.images)[0] ?? "/images/placeholder.svg",
         price: p.price,
-        category: p.category.name,
+        // S77-3 (D-2): the row's visible copy is the shortDescription
+        // ("" renders no line — the reference's no-copy products show name +
+        // price only; this is NOT the metadata fallback, which uses the
+        // long copy). The category label is gone from the rows.
+        description: p.shortDescription,
       })),
     });
   } catch {

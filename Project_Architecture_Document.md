@@ -1,4 +1,4 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.4
+# ElyBeauty — Master Project Architecture Document (PAD) v2.5
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
@@ -7,6 +7,37 @@
 **Audience:** Senior Engineers, Tech Leads, DevOps, and Onboarding Engineers
 **Rule:** Every architectural decision in this document traces to a specific rationale. Nothing is here "because it's popular."
 
+
+#### Revision Block — v2.5 (Run 77 — the search-overlay parity & dependency-hygiene cycle)
+
+- `[SR]` **The search surface closed to byte-exact**: BOTH the header
+  icon and the mobile panel's SEARCH row now open the reference's
+  FULL-SCREEN overlay (`fixed inset-0 z-[70] bg-background/95
+  backdrop-blur-xs`, the `max-w-2xl mx-auto px-6 pt-24 lg:pt-32`
+  column, the Cormorant `text-lg lg:text-2xl leading-[1.1]` input,
+  single-column 80px rows with name + shortDescription + font-light ৳
+  price) — the header-anchored dropdown and the in-panel swap retired
+  (`src/components/store/search-overlay.tsx`, the shared
+  `searchOverlayOpen` store state).
+- `[SR]` **The search contract**: `/api/search` matches the long
+  description too and orders by the authored catalog order
+  (`createdAt desc`); the payload carries `description:
+  shortDescription` (the category label retired).
+- `[SR]` **Dependency hygiene**: next 16.4.0 → 16.4.5 (3 critical
+  runtime advisories closed), prisma 6.11.1 → 6.12.0 in-range, the
+  lockfile's root name corrected to ely-beauty; the zod + vitest-chain
+  advisories recorded as accepted risks in AGENTS.md's dependency-risk
+  ledger (breaking-major migrations stay planned epics).
+- `[SR]` **The seed routes through the db-path seam**
+  (`datasourceUrl: resolveProcessDatabaseUrl()`) — the recurring
+  shell-shadow reseed rituals retired.
+- `[SR]` **The push-target cluster fixed** (the wrapper's
+  DEFAULT_REMOTE, the runbook, CLAUDE.md — all say ely-beauty now).
+- `[SR]` **Tests**: 576 → 599 unit (+23: the search-overlay component
+  pins, the search-route contract pins, the seed-seam pins, the S77
+  layout-token pins), 77 e2e (the panel-search spec rewritten for the
+  overlay; the storefront search spec extended with the measured
+  geometry).
 
 #### Revision Block — v2.4 (Run 76 — the clean-build recovery & card-anatomy parity cycle)
 
@@ -105,7 +136,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, select, sheet, label, tabs, radio) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^3.25 | Single validation boundary (ADR-005) |
-| Unit tests | Vitest | ^3.2 | Node-env suite (576 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins — see §8.1) |
+| Unit tests | Vitest | ^3.2 | Node-env suite (599 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins — see §8.1) |
 | E2E tests | Playwright | ^1.64 | 77 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
@@ -355,7 +386,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 576 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 599 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -410,7 +441,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 | `validation.test.ts` (S17-2 addendum) | `MAX_CART_QUANTITY` is 99 and the cart schemas interpolate the shared constant |
 | `api-boundaries.test.ts` (C7 addendum) | Cart DELETE `?all=1`: no cart → `{itemCount:0}` with `deleteMany` never called; guest cart → cartId-scoped `deleteMany` + the fresh summary's `itemCount` |
 
-### 8.2 E2E (Playwright — 74 tests: 67 desktop + 7 mobile-navigation, `tests/e2e/`)
+### 8.2 E2E (Playwright — 77 tests: 70 desktop + 7 mobile-navigation, `tests/e2e/`)
 
 Two projects: `mobile-navigation` (iPhone-13 device emulation on Chromium — WebKit is not installable in the target sandbox) and `desktop-chromium` (1440×900). The config first runs `scripts/restore-demo-stock.ts` (S14-4 — e2e checkouts permanently drain the traffic-owned demo stock) and then boots the standalone production build on :3100 with `/api/health` as the readiness probe (reusing an existing healthy server, whose state is already restored).
 
@@ -609,7 +640,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
 | `prisma/schema.prisma` / `seed.ts` | 19 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 576 unit · 77 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins) |
+| `tests/unit/*` · `tests/e2e/*` | 599 unit · 77 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---

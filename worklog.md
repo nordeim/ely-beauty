@@ -1762,3 +1762,74 @@ Work Log:
 
 Stage Summary:
 - Run 76 complete: the clean-build recovery cycle — the pushed run-75 tree's build breaker (prose leaking into the Tailwind candidate scan) closed with the structural @source not guard, and 12 live-measured card/variant anatomy deltas closed to byte-exact (the shop grid rhythm, the flow-anchored card text block, the 48px product heading scale, the pill chips, the double-ring swatches, the 64×80 thumbs, the non-home border-t, the badge/description data parity, and the VLM-verified 3-image galleries). The suite grew 563 → 576 unit / 74 → 77 e2e. Five new traps encoded in the SKILL: prose is a compile input; a warm Turbopack cache can false-green a broken tree; the stale jiti cache breaks next/font; VLM-verify generated imagery; pin typography scales, not wrap-dependent box heights.
+
+---
+Task ID: 77
+Agent: Super Z (main agent + 77-a read-only audit subagent)
+Task: Run-77 cycle for github.com/nordeim/ely-beauty — workspace refresh (fresh clone; the sandbox
+was recycled), docs review, gates re-validation, deep audit 77-a, live-reference re-measurement,
+TDD remediation (S77-1..S77-12), screenshots, the docs sweep, commit + SSH push to main.
+
+Work Log:
+- Fresh clone to 356899b (the operator's session-8/9 log commit); docs re-read
+  (AGENTS/CLAUDE/README/PAD v2.4/SKILL v2.4.0/session_8/session_9/REMEDIATION_PLAN/worklog);
+  skills/ excluded per contract.
+- Environment: .env from .env.example, db/ at the repo root, db:setup seeded (19 products); the
+  sandbox's ambient DATABASE_URL (outside the repo) converged via the documented symlink after the
+  standalone health probe reported db:down; Playwright chromium binaries installed for the fresh
+  sandbox.
+- Gates on the pulled tree: lint ✓ · typecheck ✓ · typecheck:tests ✓ · 576/576 unit ✓ · clean
+  build ✓ · 77/77 e2e ✓ — the docs' claimed state matched reality.
+- Deep audit 77-a (read-only subagent): 9/9 anchors PASS, 0 CRITICAL code defects; 3 HIGH (next
+  16.4.0's 3 critical CVEs; the zod <4.6.6 advisory; the push-target cluster stale at TWO
+  generations — the wrapper's DEFAULT_REMOTE pointed at task-management, the runbook override at
+  homenest-store-s) + 4 MEDIUM (CLAUDE.md counts 550/74 vs 576/77; the "16-product catalog" claim
+  vs the actual 19; REMEDIATION_PLAN's "21 products" + garbled line; the seed bypassing the
+  db-path seam) + 4 LOW + 3 NIT + 5 INFO. .env.example ↔ code verified clean both directions;
+  conflict markers/secrets clean. The homenest-store-s config spot-check: all shared configs
+  byte-identical.
+- Live-reference re-measurement (agent-browser, both sites, both viewports, logged in): all
+  S75/S76 pinned surfaces re-verified GREEN byte-exact; ONE new delta family measured — the
+  search surface (the reference's full-screen z-[70] overlay with the max-w-2xl column, the
+  Cormorant 18/24px input, single-column 80px description-bearing rows, description-inclusive
+  matching, authored-order results vs the clone's header-anchored dropdown + in-panel swap +
+  category labels + rating ordering).
+- Remediation plan (Session 77) appended with the measured-values table, validated against the
+  codebase, executed TDD-first: RED batch (23 unit pins — search-overlay component ×10,
+  search-route contract ×4, seed-seam ×2, layout-token S77 ×7) ran 11-failing → GREEN.
+  Implementation: the shared search-overlay.tsx (store state + StoreChrome render site; the
+  dropdown + PanelSearch retired), the /api/search field/order/payload contract, the seed's
+  datasourceUrl seam, the twitter-card fallback, the product metadata isActive filter, the
+  gen-gallery-variants cleanup, the money comment, npm audit fix (next 16.4.5 + prisma 6.12.0 +
+  the lockfile root name), the push-target cluster, the zod/vitest risk ledger.
+- Refined post-measurement: backdrop-blur-xs (v4's xs = the reference's 4px; its sm is 8px — the
+  rename trap) + the input's leading-[1.1] (the reference's tight heading box).
+- E2E updates: the panel-search spec rewritten (the SEARCH row opens the overlay; the full-screen
+  box pinned against viewportSize() — the iPhone 13 descriptor's viewport is 390×664, not 844);
+  the storefront search spec extended (1440×900 box, the 672px column, the 24px Cormorant input,
+  the 80×624 rows, the shortDescription copy); the two q=silk product resolutions switched to
+  q=pillowcase (the authored-order flip made results[0] the sold-out bonnet).
+- Final gates: lint ✓ · typecheck ✓ · typecheck:tests ✓ · 599/599 unit (+23) · clean build ✓ ·
+  77/77 e2e.
+- The fixed surfaces re-measured GREEN against the live reference (byte-exact: the overlay
+  full-screen z-70 bg/95 blur(4px), the column x:384 w:672, the input 24px Cormorant ±2px, the
+  mobile input 18px/20px ±1px, 4 rows @624×80 @84px rhythm in the authored order with
+  description lines, ৳ prices).
+- Screenshots regenerated; docs sweep: REMEDIATION_PLAN Session 77 (this execution log),
+  session_10.md, worklog (this entry), README (599/77 + the search row), AGENTS.md (the S77
+  search-surface + mobile-menu contracts, the db-path seed correction, the dependency-risk
+  ledger), CLAUDE.md (599/77 + 19-product + push target + the S77 parity paragraph), PAD v2.5,
+  ely-beauty_SKILL.md v2.5.0 (the H1 retitled) with five new encoded traps.
+- Commit + push to main through the SSH wrapper (fast-forward, no new branches; remote verified).
+
+Stage Summary:
+- Run 77 complete: the search-overlay parity cycle — the reference's full-screen search surface
+  (both entry points, the Cormorant input, the 80px description-bearing rows, the
+  description-inclusive authored-order typeahead) closed to byte-exact, the dependency hygiene
+  landed (next's 3 critical CVEs patched; the accepted-risk ledger recorded), the push-target
+  landmine defused (all three stale references now say ely-beauty), the seed routed through the
+  db-path seam, and the docs-truth debt paid (counts, the 19-product catalog, the SKILL H1). The
+  suite grew 576 → 599 unit / 77 e2e. New traps encoded: the v4 backdrop-blur rename; the iPhone
+  13 descriptor's 664px viewport; source-pin comments must not quote the retired pattern; a
+  search-ordering change is a test-fixture blast radius; npm audit fix's safe lane vs the
+  deliberate-epic majors.

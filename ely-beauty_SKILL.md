@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.4.0
+version: 2.5.0
 last_updated: 2026-11-08
-project_state: "576 unit tests · 77 e2e tests · lint/typecheck/typecheck:tests/build green · RUN-76 (session 6): the clean-build recovery & card-anatomy parity cycle — the PUSHED run-75 tree did not build clean (Tailwind v4's candidate scan read the docs sweep's colon-form md:aspect-[3:1] in four doc files as a class candidate → invalid aspect-ratio:3:1 in the compiled CSS → the production PostCSS pass died; run-75's final build was a stale-cache false-green). Fixed with the @source not scan guard (docs/, skills/, tests/, scripts/, **/*.md — pinned by tailwind-scan-guard.test.ts with a REAL compile assertion) + the doc typos. Deep audit 76-a: 9/9 anchors PASS, 0 C/H/M. The live re-measurement found 12 card/variant deltas — all fixed TDD-first (563 → 576 unit, 74 → 77 e2e): the /shop grid gaps (24/24 + 32/48, 363px cards), the card text block's flow anchoring (pt-4, default name leading, no mt-auto — row-normalized 447px cards), the product h1 36/48 @lg, the 38px pill size chips (ivory active text), the 36px double-ring swatches, the 64×80 thumbs, the non-home border-t, the bonnet's badge/description data parity, and the 3-image VLM-verified galleries (9 generated sets + 10 PIL crop sets). Every fixed surface re-measured byte-exact against the live reference."
+project_state: "599 unit tests · 77 e2e tests · lint/typecheck/typecheck:tests/build green · RUN-77 (session 10): the search-overlay parity & dependency-hygiene cycle — the audit's 9/9 anchors PASSed with 0 critical code defects; the live re-measurement found ONE delta family (the search surface: the reference opens a FULL-SCREEN overlay `fixed inset-0 z-[70] bg-background/95 backdrop-blur-xs` with a max-w-2xl column + a Cormorant text-lg/lg:text-2xl input from BOTH the header icon and the mobile panel's SEARCH row, single-column 80px rows with name + shortDescription + font-light price, description-inclusive matching, authored-order results — the clone shipped a header-anchored dropdown + an in-panel swap with category labels and rating ordering). Fixed TDD-first (576 → 599 unit, 77 e2e): the shared search-overlay.tsx component (store-provider state, StoreChrome render site), the /api/search field/order/payload contract, the seed's db-path seam (datasourceUrl), next 16.4.0 → 16.4.5 (3 critical CVEs closed; lockfile root-name fix), the push-target cluster (wrapper DEFAULT_REMOTE + runbook + CLAUDE.md all say ely-beauty), the twitter-card metadata fallback, and the docs-truth sweep (CLAUDE.md 599/77 + 19-product + push target, REMEDIATION_PLAN 21→19, the SKILL H1 retitle). Every fixed surface re-measured byte-exact against the live reference (overlay 1440×900 + col x:384 w:672 + input 24px Cormorant + rows 624×80 @84px rhythm; mobile input 18px/20px @y:104 ±1px; 4 description-matched rows in the authored order)."
 tags:
   - nextjs16
   - react19
@@ -25,7 +25,7 @@ tags:
   - tdd
 ---
 
-# HomeNest Kitchen — Project SKILL
+# ElyBeauty — Project SKILL
 
 > **How to use this document.** This is the single source of truth for working
 > in this repository. `AGENTS.md` is the compact operational brief (commands +
@@ -4505,3 +4505,33 @@ docs sweep.
 Key files: `scripts/capture-screenshots.mjs` · `docs/session_132.md` ·
 `research/parity-grid.mjs` (git-ignored) · `research/a11y-audit.mjs`
 (git-ignored) · `research/agent-browser-crosscheck.sh` (git-ignored)
+
+- **Session 77 (run 77, session 10 of the ely-beauty repo): the
+  search-overlay parity & dependency-hygiene cycle.** Deep audit 77-a:
+  9/9 anchors PASS, 0 critical code defects — the real findings were
+  dependency health (next 16.4.0's 3 critical CVEs; the accepted zod
+  risk), the push-target cluster stale at TWO generations (the wrapper's
+  DEFAULT_REMOTE pointed at task-management; the runbook override taught
+  homenest-store-s — an operator following the docs verbatim pushed to
+  the wrong repo), and docs-truth residue (CLAUDE.md's stale test
+  counts, the "16-product catalog" claim vs the actual 19, the plan's
+  "21 products"). The live re-measurement found ONE delta family: the
+  search surface. **Encoded traps**: (1) Tailwind v4's `backdrop-blur`
+  scale is RENAMED from v3 — the reference's `backdrop-blur-sm`
+  (4px) is the clone's `backdrop-blur-xs`; v4's `sm` is 8px. Measure
+  the computed `backdrop-filter`, not the class name. (2) Playwright's
+  `devices["iPhone 13"]` viewport is 390×**664** (the visible-viewport
+  approximation), not the 390×844 screen — pin overlay geometry against
+  `page.viewportSize()`, never the memorized screen size. (3) A
+  source-pin comment must not QUOTE the retired pattern it forbids
+  (`top-16`, the removed component's name, the bare constructor) — the
+  negative `not.toContain` matches prose as readily as code (the
+  run-76 guard-comment class, again). (4) An ordering change in a
+  search API is a test-fixture blast radius: the e2e frame tests
+  resolved "any in-stock product" via `q=silk` + `results[0]`; the
+  authored-order flip made results[0] the SOLD-OUT bonnet. Resolve
+  test fixtures with single-hit terms (`q=pillowcase`), not
+  first-result assumptions. (5) `npm audit fix` (no --force) is the
+  safe lane: in-range bumps only; the breaking-major fixes (zod 4,
+  vitest 5) are deliberate epics, not drive-by upgrades — record the
+  accepted risks in a ledger (AGENTS.md), not in silence.

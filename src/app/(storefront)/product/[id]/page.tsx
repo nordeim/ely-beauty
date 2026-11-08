@@ -25,7 +25,7 @@ type PageProps = { params: Promise<{ id: string }>; searchParams: Promise<Record
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const product = await db.product.findUnique({
-    where: { id },
+    where: { id, isActive: true },
     select: { name: true, shortDescription: true, description: true, images: true },
   });
   if (!product) return { title: "Product not found" };
@@ -53,7 +53,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     twitter: {
       card: "summary_large_image",
       title: product.name,
-      description: product.shortDescription,
+      // S77-7 (audit F8): the S76-8 fallback completion — the twitter card
+      // rides the same metaDescription as description/openGraph (it used
+      // to read shortDescription directly, shipping empty card copy for
+      // the six no-card-copy products).
+      description: metaDescription,
       images: ogImages,
     },
   };

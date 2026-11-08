@@ -10353,3 +10353,234 @@ stretch, NOT a fixed-height block; verified mobile 3-line names + desktop
   + the gallery/badge rows), AGENTS.md (the scan-guard trap + the
   card/chip/gallery contracts), CLAUDE.md (the S76 parity paragraph),
   PAD v2.4, ely-beauty_SKILL.md v2.4.0.
+
+---
+
+## Session 77 — The Search-Overlay Parity & Dependency-Hygiene Cycle
+
+> **Status:** PLANNED → EXECUTING (this cycle)
+> **Date:** 2026-11-08
+> **Inputs:** deep audit 77-a (read-only subagent, 9/9 anchors PASS, 0
+> CRITICAL code defects) + the live-reference re-measurement (agent-browser,
+> both sites, both viewports, logged in) + `npm audit` + the homenest-store-s
+> config diff (all shared configs byte-identical; only the intentional
+> /products→/shop redirect differs).
+
+### Findings feeding this cycle
+
+**Audit 77-a (9/9 anchors PASS):**
+
+- **F1 (HIGH)**: `next@16.4.0` carries 3 CRITICAL advisories
+  (GHSA-2464-fhr4-w9xw image-optimization RCE — mitigated by
+  `images.unoptimized: true`; GHSA-p3m5-59mp-jv5r Server-Actions DoS;
+  GHSA-673q-mjm6-r5xr `use cache` RCE — no `"use cache"` directives exist
+  in src/). Fix: in-range 16.4.x bump via `npm audit fix`.
+- **F2 (HIGH)**: `zod@3.25.76` GHSA-mrhx-c7xc-m3w5 (memory exhaustion on
+  oversized constrained collections). npm's fix is the breaking 4.6.7
+  major. **Decision: accept-and-document this cycle** (the family
+  reference repo ships the same version; every schema bounds its inputs —
+  the bounding audit is the mitigation; the 3→4 migration is a planned
+  epic, recorded in AGENTS.md).
+- **F3 (HIGH, operational)**: the push-target cluster is stale at TWO
+  generations — `docs/ssh_git_wrapper_v3.py` DEFAULT_REMOTE is
+  `task-management.git` (a third repo), the runbook's `--remote` example
+  says `homenest-store-s.git`, CLAUDE.md:118 says both. All three must
+  say `git@github.com:nordeim/ely-beauty.git`.
+- **F4/F5/F6 (MEDIUM, docs-truth)**: CLAUDE.md test counts two runs stale
+  (550/74 vs 576/77), "16-product catalog" (actual 19), REMEDIATION_PLAN
+  S76-9 "all 21 products" + a garbled `→ ain, v2, v3]` line.
+- **F7 (MEDIUM)**: `prisma/seed.ts:20` bypasses the db-path seam (bare
+  `new PrismaClient()`) — the root cause of the recurring shell-shadow
+  convergence rituals in the worklog.
+- **F8 (LOW)**: `twitter.description` missed the S76-8 metaDescription
+  fallback (empty twitter card copy on the six no-card-copy products).
+- **F9 (LOW)**: `ely-beauty_SKILL.md:28` H1 still titles "HomeNest
+  Kitchen — Project SKILL".
+- **F10 (LOW)**: committed package-lock.json root name is
+  `homenest-store` (folded into the F1 bump, which rewrites the lockfile).
+- **F11 (LOW)**: `scripts/gen-gallery-variants.mjs` hardcodes the sandbox
+  ROOT path + a dead `draftSlugs` + two null-prompt no-op jobs.
+- **F12 (NIT)**: `money.ts` back-compat alias comment claims admin-schema
+  importers that do not exist (only its own test imports it).
+- **F13 (NIT)**: product `generateMetadata` lacks the `isActive: true`
+  filter the page body enforces (inactive products leak their name into
+  404 metadata).
+
+**Live-reference re-measurement (all S75/S76 pinned surfaces re-verified
+GREEN byte-exact: the mobile panel y:64 h:214 4×14px links @36px rhythm,
+the 64/80px header, the home sections y:900/1466/2760, the h1 96/96/300 +
+48/52.8 mobile, the shop grid 363×447 @ 48/32 with 19 cards in the same
+authored order, the product h1 48/48/300, the 544×725 main, the 64×80
+thumb buttons, the 36px round swatches). ONE new delta family measured:**
+
+- **D-1: the search UI structure.** The reference's search — from BOTH the
+  header icon AND the mobile panel's SEARCH row — opens a **full-screen
+  overlay**: `fixed inset-0 z-[70] bg-background/95 backdrop-blur-sm`,
+  content column `max-w-2xl mx-auto px-6 pt-24 lg:pt-32`, input
+  `text-lg lg:text-2xl heading-editorial` (Cormorant 18px mobile / 24px
+  desktop), flanked by 20×20 search + close icons, input row
+  `flex items-center gap-4 pb-4 border-b`. The clone renders a DROPDOWN
+  (`fixed inset-x-0 top-16 z-50 border-b bg-background shadow-sm`) from
+  the header icon and an in-panel swap from the panel's SEARCH row.
+- **D-2: the result rows.** Reference: single column (`max-w-2xl`),
+  rows `p-3` (80px tall) spaced `gap-1` (4px), image 56×56, name
+  `text-sm font-medium` truncate, **description** `text-xs` muted
+  truncate (shortDescription — absent line for no-copy products), price
+  `text-sm font-light` right-aligned. Clone: `sm:grid-cols-2` two-column,
+  rows `p-2` (72px) `gap-2` (8px), shows **category** instead of
+  description, price `font-semibold`.
+- **D-3: the search fields.** The reference matches the long description
+  too — "silk" returns 4 rows on the reference (Bonnet, Pillowcase,
+  Sandalwood Paddle — "silky" in its long copy, Crystal Hair Remover)
+  vs the clone's 2 (name/shortDescription/tags only).
+- **D-4: the result order.** The reference renders results in the
+  authored catalog order (createdAt desc = the seed's backdated order);
+  the clone orders by `rating desc`.
+- **Standing deviations kept**: prices render ৳ (the reference's
+  `$370.00` is its own quirk); the clone's scroll lock while the panel is
+  open stays (invisible a11y superset).
+
+### ToDo (TDD-first: RED tests → GREEN implementations)
+
+- [x] **S77-1 (F1+F10)**: `npm audit fix` (in-range next 16.4.x bump
+      closing 3 critical advisories) → lockfile regenerates with the
+      correct `ely-beauty` root name → full gate re-run (lint, typechecks,
+      unit, clean build, e2e).
+- [x] **S77-2 (D-1)**: SearchOverlay rewrite — container
+      `fixed inset-0 z-[70] bg-background/95 backdrop-blur-sm`; content
+      `max-w-2xl mx-auto px-6 pt-24 lg:pt-32`; input
+      `flex-1 bg-transparent font-display text-lg lg:text-2xl
+      text-foreground placeholder:text-muted-foreground`; icons h-5 w-5;
+      input row `flex items-center gap-4 border-b border-border pb-4`.
+      The search-open state moves into the store provider (header icon +
+      the panel's SEARCH row both toggle it; PanelSearch retired; the
+      panel stays open underneath, exactly like the reference).
+- [x] **S77-3 (D-2)**: result rows — `flex flex-col gap-1` single column;
+      row `flex items-center gap-4 p-3 transition-colors hover:bg-secondary`;
+      name `block truncate text-sm font-medium`; description
+      `block truncate text-xs text-muted-foreground` (rendered only when
+      non-empty); price `text-sm font-light`.
+- [x] **S77-4 (D-3 + D-4)**: `/api/search` — add `description: { contains:
+      q }` to the OR clause; order by `createdAt: "desc"` (the authored
+      order); the payload swaps `category` for `description:
+      p.shortDescription` (the row's visible copy — the reference shows no
+      description line for no-copy products; NOT the metadata fallback).
+- [x] **S77-5 (F3)**: the push-target cluster — wrapper DEFAULT_REMOTE →
+      `git@github.com:nordeim/ely-beauty.git`, runbook `--remote` examples,
+      CLAUDE.md Git section, all to the actual URLs.
+- [x] **S77-6 (F7)**: seed through the db-path seam —
+      `new PrismaClient({ datasourceUrl: resolveProcessDatabaseUrl() })`
+      in prisma/seed.ts; unit pin that the seed source references the seam.
+- [x] **S77-7 (F8 + F13)**: `twitter.description` → the metaDescription
+      fallback; product generateMetadata gains `isActive: true`.
+- [x] **S77-8 (F11)**: gen-gallery-variants.mjs — ROOT from
+      `import.meta.dirname/../..`, drop the dead draftSlugs + the two
+      null-prompt placeholder jobs.
+- [x] **S77-9 (F12)**: money.ts — correct the alias comment (test-only
+      importer).
+- [x] **S77-10 (F2)**: zod accepted-risk record — the bounding audit note
+      in AGENTS.md + this plan's execution log (the 3→4 migration stays a
+      planned epic).
+- [x] **S77-11 (F4/F5/F6/F9 + the docs sweep)**: CLAUDE.md counts
+      576/77 + "19-product catalog" + the push-target fix;
+      REMEDIATION_PLAN S76-9 "21"→"19" + the garbled line repair;
+      ely-beauty_SKILL.md H1 retitle (ElyBeauty); session_10 log; worklog
+      entry; README/PAD/SKILL version bumps (PAD v2.5, SKILL v2.5.0) with
+      the S77 contracts.
+- [x] **S77-12 (evidence)**: screenshots regenerated; every fixed surface
+      re-measured against the live reference; full gates; commit + push
+      via the SSH wrapper (to the CORRECT remote).
+
+### Test strategy (RED first)
+
+- `tests/unit/search-overlay.test.tsx` (NEW, jsdom through the REAL
+  component with stubbed fetch — the cart-widgets precedent): the overlay
+  container classes (fixed inset-0 z-[70] bg-background/95
+  backdrop-blur-sm), the content column (max-w-2xl pt-24 lg:pt-32), the
+  input classes (font-display text-lg lg:text-2xl), the single-column
+  rows (p-3, the description line only when non-empty, price font-light).
+- `tests/unit/api-boundaries.test.ts` (EXTEND or a new search-fields
+  test): the search route's OR clause includes `description` (mocked db
+  capture), the payload carries `description` (shortDescription) not
+  `category`, the ordering is `createdAt: "desc"`.
+- `tests/unit/seed-db-path.test.ts` (NEW): the seed imports
+  resolveProcessDatabaseUrl and constructs the client with datasourceUrl
+  (source-level pin — the seed is not import-safe for execution).
+- `tests/e2e/mobile-navigation.spec.ts` (REWRITE the panel-search case):
+      the panel's SEARCH row opens the full-screen overlay (z-70,
+      bg-background/95) over the open panel; typing renders live results;
+      navigating closes everything.
+- `tests/e2e/storefront.spec.ts` (EXTEND): the overlay geometry pins —
+  full-screen box (viewport-sized), the Cormorant 24px input at lg, the
+  max-w-2xl centered content column, the 80px single-column rows, the
+  description line, "silk" returning the description-matched products.
+
+### Execution log (run 77)
+
+- **TDD discipline held**: the RED batch (23 new unit pins across
+  search-overlay.test.tsx ×10, search-route.test.ts ×4,
+  seed-db-path.test.ts ×2, layout-tokens S77 ×7) ran 11-failing before
+  implementation; every fix flipped its pins green. Two test-side
+  lessons encoded by the run: (1) source-pin comments must not QUOTE the
+  retired pattern (`top-16`, the retired component name, the bare client
+  constructor) — the negative pins match prose too (the run-76 guard-
+  comment class); (2) the iPhone 13 descriptor's viewport is 390×664
+  (the visible-viewport approximation), NOT 390×844 — pin overlay
+  geometry against `page.viewportSize()`, not the screen size.
+- **S77-1**: `npm audit fix` → next 16.4.0 → 16.4.5 (3 critical runtime
+  advisories closed; mitigations verified: `images.unoptimized: true`,
+  zero `"use cache"` directives), prisma 6.11.1 → 6.12.0 in-range, the
+  lockfile regenerated with the correct `ely-beauty` root name (F10
+  folded in). Remaining advisories are dev-only (vitest/tinypool) or
+  the accepted zod risk (S77-10's ledger entry in AGENTS.md).
+- **S77-2/S77-3 (the overlay)**: the new `src/components/store/
+  search-overlay.tsx` (the shared full-screen sheet, props-driven,
+  rendered by StoreChrome at the end of the chrome with the cart
+  drawer); the store provider's `mobileNavSearch` state replaced by
+  `searchOverlayOpen`; the header icon and the panel's SEARCH row both
+  toggle it; `DesktopSearchOverlay` + `PanelSearch` retired. Refined
+  post-measurement: `backdrop-blur-xs` (v4's xs = the reference's
+  measured 4px; sm is 8px — the v3-rename trap) and the input's
+  `leading-[1.1]` (the reference's tight heading-editorial box).
+- **S77-4 (the route)**: the OR clause gains `description`; the order
+  flips rating → `createdAt desc` (the authored order — the reference
+  renders Bonnet → Pillowcase → Sandalwood Paddle → Crystal Remover
+  for "silk"); the payload swaps `category` for
+  `description: shortDescription`.
+- **S77-5**: the push-target cluster — wrapper DEFAULT_REMOTE, runbook
+  purpose/sequence/variants/troubleshooting/AGENTS-relationship, and
+  CLAUDE.md's Git section all now say ely-beauty (the runbook's
+  gate command also fixed: `bun run` → the actual npm chain).
+- **S77-6**: the seed constructs `new PrismaClient({ datasourceUrl:
+  resolveProcessDatabaseUrl() })`; AGENTS.md's db-path contract
+  paragraph corrected (the seed now resolves through the seam; only
+  `prisma db push` still follows the shell env).
+- **S77-7**: `twitter.description` → the metaDescription fallback;
+  the product metadata query gains `isActive: true`.
+- **S77-8**: gen-gallery-variants.mjs — ROOT derived from
+  `import.meta.url` (the hardcoded sandbox path retired), the dead
+  draftSlugs read + the two null-prompt placeholder jobs dropped.
+- **S77-9**: the money.ts alias comment corrected (test-only importer).
+- **E2E updates**: the mobile panel-search spec rewritten (the SEARCH
+  row opens the overlay; full-screen box pinned against
+  viewportSize()); the storefront search spec extended (1440×900 box,
+  the 672px centered column, the 24px Cormorant input, the 80×624 rows,
+  the shortDescription copy); the two `/api/search?q=silk` product
+  resolutions switched to `q=pillowcase` (the authored-order flip made
+  "silk" lead with the sold-out bonnet — the in-stock frame tests need
+  the pillowcase).
+- **Every fixed surface re-measured GREEN against the live reference**
+  (agent-browser, both viewports): the overlay 390×844 / 1440×900
+  full-screen z-70 bg/95 blur(4px); the column x:384 w:672; the input
+  y:133 w:536 24px Cormorant (reference y:131 w:534 — ±2px subpixel);
+  the mobile input y:104 h:20 18px (reference y:105 — ±1px); 4
+  single-column rows @624×80 with 84px rhythm, the authored order, the
+  description lines (the bonnet rendering name + price only), ৳ prices.
+- **Gates (all observed green)**: lint · typecheck · typecheck:tests ·
+  **599/599 unit** (60 files; +23) · clean build · **77/77 e2e**.
+- **Docs sweep**: this log, AGENTS.md (the S77 search-surface +
+  mobile-menu contracts, the db-path seed correction, the dependency-
+  risk ledger), CLAUDE.md (599/77 counts, the 19-product catalog, the
+  push target, the S77 parity paragraph), README (counts + the search
+  row), PAD v2.5, ely-beauty_SKILL.md v2.5.0 (retitled H1),
+  docs/session_10.md, worklog.

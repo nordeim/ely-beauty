@@ -1,16 +1,13 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { MAX_CART_QUANTITY } from "@/lib/cart-quantity";
-import { formatMoney } from "@/lib/money";
 import { Logo } from "./logo";
-import { MobileNav } from "./mobile-nav";
 import { useStore } from "./store-provider";
 
 // The reference's nav map (verified live): four uppercase micro-labels.
@@ -25,8 +22,6 @@ const NAV_LINKS = [
   { href: "/shop?category=brush-combs", label: "Brush & Combs" },
   { href: "/about", label: "About" },
 ];
-
-type SearchResult = { id: string; name: string; image: string; price: number; category: string };
 
 /**
  * Header — the reference anatomy: [nav links | centered logo | icon cluster]
@@ -43,9 +38,12 @@ export function Header({
   user: { name: string; role: string } | null;
   cartCount: number;
 }) {
-  const { setMobileNavOpen, mobileNavOpen, cartDrawerOpen, setCartDrawerOpen, setMobileNavSearch } = useStore();
+  // S77-2: the search-open state lives in the store — the header icon and
+  // the mobile panel's SEARCH row toggle the SAME full-screen overlay (the
+  // reference's single search surface; the overlay itself renders from
+  // StoreChrome so it sits above every chrome layer at z-[70]).
+  const { setMobileNavOpen, mobileNavOpen, cartDrawerOpen, setCartDrawerOpen, setSearchOverlayOpen } = useStore();
   const pathname = usePathname();
-  const [searchOpen, setSearchOpen] = React.useState(false);
 
   // Over-hero styling applies on the home route only (the hero image sits
   // directly under the fixed bar there). S75-2: this stays true while the
@@ -78,7 +76,6 @@ export function Header({
             aria-haspopup="menu"
             data-testid="mobile-menu-button"
             onClick={() => {
-              setMobileNavSearch(false);
               setMobileNavOpen(!mobileNavOpen);
             }}
           >
@@ -113,7 +110,7 @@ export function Header({
               "inline-flex h-11 w-11 items-center justify-center transition-opacity hover:opacity-60",
             )}
             aria-label="Search products"
-            onClick={() => setSearchOpen((v) => !v)}
+            onClick={() => setSearchOverlayOpen(true)}
           >
             <Search className="h-5 w-5" />
           </button>
@@ -148,116 +145,6 @@ export function Header({
           </button>
         </div>
       </div>
-      <DesktopSearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
-  );
-}
-
-/**
- * DesktopSearchOverlay — the reference's full-width search sheet: a hairline
- * input row + live results, sliding under the fixed header. Escape closes;
- * navigating a result closes (the overlay unmounts on route change).
- */
-function DesktopSearchOverlay({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [query, setQuery] = React.useState("");
-  const [results, setResults] = React.useState<SearchResult[]>([]);
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const pathname = usePathname();
-
-  // Route change closes the overlay (the reference's overlay dismisses on
-  // navigation). No local resets here — the content component is keyed by
-  // route and re-mounts fresh.
-  React.useEffect(() => {
-    onClose();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
-
-  React.useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-
-  React.useEffect(() => {
-    if (open) inputRef.current?.focus();
-  }, [open]);
-
-  // Debounced typeahead against /api/search (the same endpoint the mobile
-  // panel uses); <2 chars renders nothing (the endpoint's own floor, checked
-  // inside the timer so the effect never calls setState synchronously).
-  React.useEffect(() => {
-    let cancelled = false;
-    const t = setTimeout(() => {
-      const term = query.trim();
-      if (term.length < 2) {
-        setResults([]);
-        return;
-      }
-      fetch(`/api/search?q=${encodeURIComponent(term)}`)
-        .then((r) => r.json())
-        .then((data: { results?: SearchResult[] }) => !cancelled && setResults(data.results ?? []))
-        .catch(() => !cancelled && setResults([]));
-    }, 250);
-    return () => {
-      cancelled = true;
-      clearTimeout(t);
-    };
-  }, [query]);
-
-  if (!open) return null;
-
-  return (
-    // S75-2 (D-1): tracks the responsive header bar (64px mobile / 80px
-    // desktop) so the sheet always slides directly under it.
-    <div className="fixed inset-x-0 top-16 z-50 border-b border-border bg-background shadow-sm lg:top-20" data-testid="search-overlay">
-      <div className="container-page py-6">
-        <div className="flex items-center gap-4 border-b border-border pb-4">
-          <Search className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
-          <input
-            ref={inputRef}
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search products..."
-            aria-label="Search products"
-            className="flex-1 bg-transparent text-lg text-foreground placeholder:text-muted-foreground focus:outline-none"
-          />
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close search"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        {results.length > 0 && (
-          <ul className="grid gap-2 pt-4 sm:grid-cols-2">
-            {results.map((r) => (
-              <li key={r.id}>
-                <Link
-                  href={`/product/${r.id}`}
-                  onClick={onClose}
-                  className="flex items-center gap-4 p-2 transition-colors hover:bg-secondary"
-                >
-                  <span className="relative h-14 w-14 shrink-0 overflow-hidden bg-secondary">
-                    <Image src={r.image} alt="" fill sizes="56px" className="object-cover" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium">{r.name}</span>
-                    <span className="block text-xs text-muted-foreground">{r.category}</span>
-                  </span>
-                  <span className="text-sm font-semibold">{formatMoney(r.price)}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-        {query.trim().length >= 2 && results.length === 0 && (
-          <p className="pt-4 text-sm text-muted-foreground">No products match “{query.trim()}”.</p>
-        )}
-      </div>
-    </div>
   );
 }
