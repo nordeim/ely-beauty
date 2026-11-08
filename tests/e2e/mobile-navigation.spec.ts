@@ -184,7 +184,8 @@ test.describe("mobile navigation (Tailwind v4 regression guard)", () => {
       timeout: 10_000,
     });
     await expect(overlay.getByText("Sleep in smooth comfort", { exact: false }).first()).toBeVisible();
-    await expect(overlay.getByText("৳288").first()).toBeVisible();
+    // S82-1: the reference's overlay row price is its $ template format.
+    await expect(overlay.getByText("$288.00").first()).toBeVisible();
 
     // Navigating a result closes the overlay and the panel (route-change
     // effects), landing on the detail page.

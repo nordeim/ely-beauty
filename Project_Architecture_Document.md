@@ -1,9 +1,44 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.9
+# ElyBeauty — Master Project Architecture Document (PAD) v2.10
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-09
+
+#### Revision Block — v2.10 (Run 82 — the overlay price-format parity & admin-undo cycle)
+
+- `[SR]` **The search overlay's row price renders the reference's `$X.00`
+  template format** (S82-1, D-82-1 — codepoint-measured live 2026-11-09:
+  the reference's overlay price is a literal ASCII `$` (U+0024) + the same
+  numeric value the ৳ grid price carries + ALWAYS two decimals, in the
+  Cormorant serif 14px/300): the pure `formatOverlayPrice(cents)` in
+  `src/lib/money.ts` is consumed ONLY by `search-overlay.tsx`'s result
+  rows; every other money surface (grid cards, detail, cart, checkout,
+  admin, JSON-LD) keeps `formatMoney`'s ৳ whole-taka form. The prior
+  "font-light ৳ price" pin imputed the grid currency — the reference's
+  rendered bytes are the truth (replicate-as-observed).
+- `[SE]` **The admin product dialog can CLEAR a template category** (S82-3,
+  audit 82-a L-3): the Radix Select gains a "None" option routing through
+  the pure `normalizeTemplateCategory` seam (`src/lib/validation.ts` —
+  "none"/""/stray → null); the detail eyebrow then falls back to the first
+  display category. Previously a set template category was irrevocable
+  through the UI.
+- `[SE]` **The first display category is deterministic** (S82-4, audit
+  INFO-2): `productCategoryInclude` orders memberships by the category's
+  `sortOrder` (name tie-break) — `firstCategoryName` (JSON-LD, dashboard
+  low-stock label, analytics attribution) no longer rides row order for
+  the dual-member product.
+- `[SE]` **`upsertProductAction` maps P2003** (S82-5, audit INFO-4) to
+  "A selected category no longer exists." (the pre-check's message, the
+  S17-1 pattern); the restore script's wiring rebuild is transactional +
+  single-read (S82-6, audit INFO-5); the schema junction + seed comments
+  match the declared behavior (S82-2, audit L-1/L-2).
+- `[TE]` Suite: 677 → **691 unit** (+14: the formatOverlayPrice truth table
+  ×4, the normalizeTemplateCategory truth table ×3, the S82 source pins ×7)
+  · 88 → **90 e2e** (+2: the overlay price codepoint pin, the admin
+  template-category clear + revert). The mobile menu re-verified
+  byte-exact ±1px on both sites; the overlay result-set parity confirmed
+  ("silk" → the same 4 products in the same order).
 **Audience:** Senior Engineers, Tech Leads, DevOps, and Onboarding Engineers
 **Rule:** Every architectural decision in this document traces to a specific rationale. Nothing is here "because it's popular."
 

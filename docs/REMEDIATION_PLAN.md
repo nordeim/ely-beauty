@@ -11434,3 +11434,183 @@ grid).
   docs/session_18.md, worklog (Task 75), this log.
 - **Deferred (documented)**: the zod 3→4 migration epic — still
   the standing deferred debt (a dedicated cycle), unchanged.
+
+---
+
+## Session 82 — The Overlay Price-Format Parity & Admin-Undo Cycle
+
+> **Status:** EXECUTING (this cycle)
+> **Date:** 2026-11-09
+> **Inputs:** deep audit 82-a (read-only subagent, web-application +
+> code-review-checklist methodology, skills/ excluded: **12/12 standing
+> anchors PASS, 0 CRITICAL/HIGH/MEDIUM, 3 LOW, 8 INFO** — the run-81
+> changes verified regression-free) + the live-reference re-measurement
+> (agent-browser 0.41.1, logged in, mobile 390×844 + desktop 1440×900)
+> + the config/SEO verification pass (vitest.config.ts +
+> playwright.config.ts complete and green; sitemap/robots/JSON-LD/OG/
+> security headers verified on the running dev server) + the
+> homenest-store-s spot-clone (tech-stack patterns identical — the
+> direct ancestor, nothing new to port).
+
+### Findings feeding this cycle
+
+**The priority surfaces re-verified GREEN (unchanged):** the mobile
+menu panel (the operator's priority surface — panel y:64 h:214/213,
+rows @36px rhythm 89/125/161/197/233 vs the clone's 88/124/160/196/232,
+14px/20px uppercase ls 1.4px, the template filter links, toggle-close,
+SEARCH-row → overlay, route-change close — byte-exact ±1px on BOTH
+sides measured this session), the search overlay's full S78–S80
+anatomy (Cormorant input 18px/300 mobile + 24px desktop, the column
+x:384 w:672, the 60vh-capped list 506.4px, 80px rows radius 2px, the
+hint, the codepoint-exact no-results copy, the result-set parity:
+"silk" → the same 4 products in the same order on both sites), the
+shop catalog order (19/19 positions identical), the detail page (h1
+36px, ৳ price 24px/600 Inter, eyebrow "skincare"), "Complete the
+Ritual" = 3 newest excluding self, the footer template slugs, the
+`?category=sets` empty grid (h1 "Shop" — audit INFO-1 confirmed
+parity-intentional on the live reference), and the desktop nav's
+template links.
+
+**NEW: D-82-1 — the overlay's row PRICE FORMAT (codepoint-measured).**
+The reference's overlay row price renders the Base44 template's USD
+format: `$370.00` / `$288.00` / `$470.00` — literal ASCII dollar
+(U+0024, codepoint-verified), the same numeric value as the ৳ grid
+price, always two decimals, in the Cormorant serif 14px/300 font-light
+(the S79 serif pin holds — only the CURRENCY FORMAT diverges). The
+clone unified on `৳370` (whole-taka BDT) everywhere, so the overlay
+price diverges. The prior "font-light ৳ price" pin imputed the grid
+currency; today's reference bytes are the truth (the
+replicate-as-observed precedent: the S81-3 template-remnant links).
+
+**Audit 82-a findings folded in:**
+
+- **L-1**: the `ProductCategory` schema comment claims "Both FKs
+  Restrict" but the product FK is declared `Cascade` (the correct
+  behavior — only the comment misleads).
+- **L-2**: the seed's `CATEGORIES` comment still claims "the clone
+  links the real slugs (working filters)" — contradicted by the S81-3
+  nav/footer template links.
+- **L-3**: the admin product dialog's Template-category Radix Select
+  has no deselect path — once set, a template category cannot be
+  cleared through the UI (only a direct DB edit).
+- **INFO-2**: `productCategoryInclude` has no `orderBy` — the
+  dual-member product's `categories[0]` (JSON-LD category, the
+  dashboard low-stock label, analytics attribution) is row-order
+  dependent.
+- **INFO-4**: `upsertProductAction`'s catch maps P2002/P2025 but not
+  P2003 — a category deleted in the pre-check→tx window escapes as the
+  generic envelope (the S17-1 `isForeignKeyViolation` helper already
+  exists unused here).
+- **INFO-5**: `restore-demo-stock.ts` double-reads each product and
+  runs the wiring rebuild as 3 separate ops (non-transactional).
+
+### The work items (S82-1 .. S82-7)
+
+- [x] **S82-1 (D-82-1)**: the pure `formatOverlayPrice(cents)` in
+      `src/lib/money.ts` — `$` + en-US grouping + always-2-decimals
+      (the reference's template format: 37000 → `$370.00`,
+      28800 → `$288.00`, 47050 → `$470.50`, 0 → `$0.00`) — consumed
+      ONLY by `search-overlay.tsx`'s row price (every other money
+      surface keeps `formatMoney`'s ৳ whole-taka form). RED: the
+      `money.test.ts` truth table + the `search-overlay.test.tsx`
+      render pin + the layout-tokens source pin + the e2e codepoint
+      pin (the row price's first character is `$` U+0024 and a
+      whole-taka value renders the `.00` suffix — the existing serif
+      font pin stays).
+- [x] **S82-2 (audit L-1/L-2)**: the two comment corrections — the
+      schema junction comment ("categoryId Restrict — the guarded
+      category delete counts junction rows; productId Cascade — a
+      product delete drops its memberships") and the seed CATEGORIES
+      comment (the measured reference nav/footer template-slug
+      mapping). RED: source pins asserting the corrected text (and the
+      retired claims gone).
+- [x] **S82-3 (audit L-3)**: the dialog's Template-category select
+      gains a `<SelectItem value="none">None</SelectItem>`; the
+      submit narrowing routes "none" → null (the placeholder still
+      reads "None" for never-set products). RED: the
+      `normalizeTemplateCategory` pure helper (client-safe, exported
+      from `src/lib/validation.ts`) truth-table pins + the e2e admin
+      clear-and-revert case.
+- [x] **S82-4 (audit INFO-2)**: `productCategoryInclude` gains
+      `orderBy: [{ category: { sortOrder: "asc" } }, { category:
+      { name: "asc" } }]` — the first display category becomes
+      deterministic for the JSON-LD block, the dashboard label and
+      analytics. RED: a source pin on the include shape.
+- [x] **S82-5 (audit INFO-4)**: `upsertProductAction`'s catch maps
+      P2003 (via the existing `isForeignKeyViolation` seam) to
+      "A selected category no longer exists." — the same message the
+      pre-check owns. RED: a source pin on the branch + the
+      session17-hardening seam re-pin.
+- [x] **S82-6 (audit INFO-5)**: `restore-demo-stock.ts` — the two
+      per-product reads merge (categories ride the first select) and
+      the delete-then-create wiring rebuild wraps in one
+      `db.$transaction`. RED: a source pin.
+- [x] **S82-7**: the docs sweep (session_20.md, worklog Task 76,
+      AGENTS/CLAUDE/README counts + the overlay-price contract line,
+      PAD v2.10, SKILL v2.10.0) + 25 dev-server screenshots +
+      `.env.example` re-verify + the final full gate chain + commit +
+      SSH-wrapper push to main.
+
+### Validation against the codebase (pre-execution)
+
+Every change site named and pre-read: `src/lib/money.ts`
+(`formatMoney` at :15 — the new helper sits beside it; no existing
+consumer changes), `src/components/store/search-overlay.tsx` (the row
+price at :201 — the ONLY `formatMoney` import in the file),
+`prisma/schema.prisma:60-65` (the junction comment), `prisma/seed.ts`
+(the CATEGORIES comment block at :69), `src/app/(storefront)/admin/
+products/product-dialog.tsx` (the narrowing at :194-198 + the select
+block at :328-337), `src/lib/validation.ts` (the templateCategory
+enum at :212 — the normalize helper joins the exported pure helpers),
+`src/lib/products.ts:136` (`productCategoryInclude`),
+`src/lib/actions/admin.ts:135-137` (the catch's P2002/P2025 branches —
+the P2003 branch joins them), `src/lib/prisma-errors.ts`
+(`isForeignKeyViolation` exists, tested in session17-hardening),
+`scripts/restore-demo-stock.ts:76-107` (the double read + the trio),
+and the affected test surfaces (`money.test.ts`, `search-overlay.
+test.tsx`, `layout-tokens.test.ts`, `validation.test.ts`,
+`session17-hardening.test.ts`, the storefront e2e's overlay block,
+the admin e2e's dialog flow).
+
+
+### Session 82 execution log
+
+- **Environment**: fresh clone at 515bfa5; npm install; `.env` from
+  `.env.example` + a generated `AUTH_SECRET`; `db:setup` seeded (19
+  products, 4 categories, memberships 7/3/4); the ambient
+  `DATABASE_URL` shadow (parent-folder path) converged via the
+  documented symlink; Playwright chromium installed for the fresh
+  sandbox.
+- **Gates on the pulled tree**: lint ✓ · typecheck ✓ ·
+  typecheck:tests ✓ · 677/677 unit ✓ · clean build ✓ · 88/88 e2e ✓
+  — the docs matched reality.
+- **Audit 82-a**: 12/12 anchors PASS, 0 CRITICAL/HIGH/MEDIUM,
+  3 LOW + 8 INFO; run-81 verified regression-free (the junction,
+  the dual filter, the guarded metadata seam, the multi-select all
+  re-audited clean).
+- **Live re-measurement**: every pinned surface re-verified GREEN
+  (the mobile panel ±1px on both sites; the overlay anatomy; the
+  shop 19/19; the detail; the footer; the ritual) + D-82-1 measured
+  (the overlay's `$X.00` price format, codepoint-verified).
+- **TDD (RED 15 → GREEN)**: the formatOverlayPrice truth table ×4,
+  the normalizeTemplateCategory truth table ×3, the S82 source pins
+  ×7, the overlay render pins updated (৳ → $), and the two e2e
+  additions. One GREEN-phase correction: `as const` on the ordered
+  include broke the typecheck (Prisma rejects readonly orderBy
+  arrays) — `satisfies Prisma.ProductInclude` is the fix, and the
+  source pin was updated to match.
+- **Gates (all observed green)**: lint ✓ · typecheck ✓ ·
+  typecheck:tests ✓ · **691/691 unit** (+14) · clean build ✓ ·
+  **90/90 e2e** (+2).
+- **Evidence**: the clone's overlay renders `$370.00` (cp 36,
+  Cormorant 14px/300 — the reference's exact bytes) while the grid
+  (৳370) and the detail (৳370 Inter 24px/600) keep their pins; the
+  result-set parity confirmed (silk → 4/4 same order); 25
+  dev-server screenshots regenerated + validated; `.env.example`
+  re-verified (no new env vars).
+- **Docs sweep**: AGENTS.md (the S82-1 price contract + 2..82),
+  CLAUDE.md (691/90 + the price-format line), README (counts), PAD
+  v2.10, ely-beauty_SKILL.md v2.10.0 (project_state + the Session
+  82 Appendix B entry), session_20.md, worklog Task 76, this log.
+- **Deferred (documented)**: the zod 3→4 migration epic — still the
+  standing deferred debt (a dedicated cycle), unchanged.

@@ -349,3 +349,21 @@ Stage Summary:
 - Every fixed surface verified against the reference's measured values (the dual filter modes, the memberships, the eyebrow, the ritual, the empty state, the CTA, the mobile panel ±1px).
 - Dev-server screenshots: 25/25 regenerated and validated.
 - Pushed: main via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.
+
+---
+
+Task ID: 76
+Agent: run-82 executor (the overlay price-format parity & admin-undo cycle)
+Task: The full remediation cycle on the RESET workspace (fresh clone at 515bfa5): environment rebuild (npm install, .env with a generated AUTH_SECRET, db:setup, the DATABASE_URL shadow converged via the documented symlink, Playwright chromium) → docs review → gates re-validation (677/677 unit, 88/88 e2e, clean build — docs matched reality) → deep audit 82-a (read-only subagent, web-application + code-review-checklist methodology, skills/ excluded: 12/12 standing anchors PASS, 0 CRITICAL/HIGH/MEDIUM, 3 LOW, 8 INFO; run-81 verified regression-free) → live-reference re-measurement (agent-browser, both viewports, logged in; the mobile-menu priority surface byte-exact ±1px on both sites; every pinned surface re-verified GREEN) → the Session 82 plan (S82-1..S82-7, validated against the codebase) → TDD execution (RED 15 → GREEN; 677 → 691 unit, 88 → 90 e2e) → 25 screenshots off the dev server → the docs sweep (AGENTS/CLAUDE/README/PAD v2.10/SKILL v2.10.0/session_20/this worklog/REMEDIATION_PLAN Session 82) → commit + SSH-wrapper push to main.
+
+Work Log:
+- The discovery (D-82-1): the reference's overlay row price renders the Base44 template's USD format — "$370.00", ASCII U+0024 codepoint-verified, always two decimals, Cormorant 14px/300 — while its grid/detail prices stay ৳. The clone had unified on ৳ everywhere; the prior "font-light ৳ price" pin imputed the grid currency. Fixed with the pure formatOverlayPrice seam (overlay-scoped; every other money surface keeps ৳ — verified on the grid card, the detail page, and the body scan).
+- The audit fixes: the schema junction comment corrected to the declared FK split; the stale seed comment updated to the S81-3 template-slug mapping; the admin dialog's "None" option through the pure normalizeTemplateCategory seam (the clear path — Radix Select cannot deselect); the ordered productCategoryInclude (deterministic first display category); the P2003 mapping in upsertProductAction; the transactional single-read restore-script rebuild.
+- GREEN-phase corrections: `as const` on the ordered include broke the typecheck (Prisma rejects readonly orderBy arrays) — `satisfies Prisma.ProductInclude` is the fix; two e2e pins (mobile-navigation, storefront) carried the old ৳ overlay expectation and were updated to the $ format.
+- The operator's standing instructions verified: DATABASE_URL="file:../db/custom.db" with db/ at the repo root (the .env contract + db-path resolution + the symlink convergence, all held); vitest + playwright configs complete and green; the sitemap/robots/JSON-LD/OG/security-header surfaces verified on the running dev server; the homenest-store-s spot-clone confirmed the tech-stack patterns (the direct ancestor).
+
+Stage Summary:
+- All gates green: lint · typecheck · typecheck:tests · 691/691 unit · clean build · 90/90 e2e.
+- Every fixed surface pinned: the formatOverlayPrice truth table (×4 unit + the e2e codepoint pin), the None clear path (×3 unit + the e2e clear-and-revert), the ordered include / P2003 mapping / transactional rebuild (source pins).
+- Dev-server screenshots: 25/25 regenerated and validated (dimensions + non-trivial sizes).
+- Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.

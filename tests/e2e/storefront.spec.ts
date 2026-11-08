@@ -225,7 +225,8 @@ test.describe("storefront", () => {
       timeout: 10_000,
     });
     await expect(overlay.getByText("Sleep in smooth comfort", { exact: false }).first()).toBeVisible();
-    await expect(overlay.getByText("৳288").first()).toBeVisible();
+    // S82-1: the reference's overlay row price is its $ template format.
+    await expect(overlay.getByText("$288.00").first()).toBeVisible();
 
     // D-2: the rows are the reference's single-column 80px anatomy.
     const row = overlay.getByRole("link", { name: /Pure Satin Silk Pillowcase/ });
@@ -533,6 +534,27 @@ test.describe("storefront — the S79 overlay serif-price, fresh-sheet & focus c
     const price = rows.first().locator("a > span").last();
     const fontFamily = await price.evaluate((el) => getComputedStyle(el).fontFamily);
     expect(fontFamily).toContain("Cormorant");
+  });
+
+  test("the overlay's row price renders the reference's $ template format (S82-1, D-82-1)", async ({ page }) => {
+    await gotoHydrated(page, "/shop");
+    await page.getByRole("button", { name: "Search products" }).click();
+    const overlay = page.getByTestId("search-overlay");
+    await expect(overlay).toBeVisible();
+
+    const input = overlay.getByRole("searchbox", { name: "Search products" });
+    await input.fill("silk");
+    const rows = overlay.locator("ul > li");
+    await expect(rows).toHaveCount(4, { timeout: 10_000 });
+
+    // S82-1 (codepoint-measured live on the reference 2026-11-09): the
+    // overlay's row price renders the Base44 template's USD format —
+    // "$370.00" for the Bonnet (ASCII dollar U+0024, always two decimals)
+    // — while the grid/detail prices stay ৳ whole-taka on both sites.
+    const price = rows.first().locator("a > span").last();
+    await expect(price).toHaveText("$370.00");
+    const firstCodepoint = await price.evaluate((el) => el.textContent?.codePointAt(0));
+    expect(firstCodepoint).toBe(36);
   });
 
   test("reopening the overlay shows a fresh sheet (the reference's reset, S79-2)", async ({ page }) => {

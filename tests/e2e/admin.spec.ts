@@ -90,6 +90,42 @@ test.describe("admin back office", () => {
     await expect(page.getByText("4 products", { exact: true })).toBeVisible();
   });
 
+  test("admin clears a product's template category through the None option (S82-3)", async ({ page }) => {
+    await loginAsAdmin(page);
+    await gotoHydrated(page, "/admin/products");
+    const search = page.getByLabel("Search products by name");
+    await search.fill("Gua Sha");
+    search.press("Enter");
+    await page.getByRole("button", { name: /Edit Stainless Steel Gua Sha/i }).first().click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+
+    // Audit 82-a L-3: Radix Select cannot deselect — the "None" option is
+    // the clear path for a set template category.
+    await dialog.getByRole("combobox", { name: "Template category" }).click();
+    await page.getByRole("option", { name: "None" }).click();
+    await dialog.getByRole("button", { name: "Save Changes" }).click();
+    await expect(dialog).toBeHidden();
+
+    // The detail eyebrow falls back to the first display category
+    // (Beauty Tools) instead of the template "skincare".
+    await gotoHydrated(page, "/shop");
+    await page.getByRole("link", { name: /Stainless Steel Gua Sha/i }).first().click();
+    const eyebrow = page.locator("p.eyebrow-label").first();
+    await expect(eyebrow).toHaveText(/Beauty Tools/i);
+
+    // Revert (self-cleaning — the e2e suite must stay re-runnable).
+    await gotoHydrated(page, "/admin/products");
+    await search.fill("Gua Sha");
+    search.press("Enter");
+    await page.getByRole("button", { name: /Edit Stainless Steel Gua Sha/i }).first().click();
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("combobox", { name: "Template category" }).click();
+    await page.getByRole("option", { name: "Skincare" }).click();
+    await dialog.getByRole("button", { name: "Save Changes" }).click();
+    await expect(dialog).toBeHidden();
+  });
+
   test("orders manager lists orders and opens management", async ({ page }) => {
     await loginAsAdmin(page);
     await gotoHydrated(page, "/admin/orders");

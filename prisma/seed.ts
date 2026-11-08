@@ -66,9 +66,11 @@ type SeedProduct = {
 };
 
 // The reference's four categories (display names + tile captions + imagery
-// as observed live). Slugs use clean kebab-case; the reference's nav carried
-// template-remnant ?category=skincare/body_care links that match none of its
-// real category slugs — the clone links the real slugs (working filters).
+// as observed live). Slugs use clean kebab-case. S81-3/S82-2: the reference's
+// nav AND footer deliberately link the TEMPLATE-remnant filters — Beauty
+// Tools → ?category=skincare, Brush & Combs → ?category=body_care, Gift
+// Sets → ?category=sets (measured live; the clone replicates them
+// as-observed, and the dual-mode /shop filter resolves them).
 const CATEGORIES = [
   {
     slug: "beauty-tools",

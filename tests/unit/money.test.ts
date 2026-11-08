@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { discountPercent, formatMoney, parseDollarsToCents } from "@/lib/money";
+import { discountPercent, formatMoney, formatOverlayPrice, parseDollarsToCents } from "@/lib/money";
 
 describe("formatMoney", () => {
   it("formats integer cents as BDT (whole taka when no poisha)", () => {
@@ -21,6 +21,38 @@ describe("formatMoney", () => {
 
   it("rounds fractional input", () => {
     expect(formatMoney(199.6)).toBe("৳2");
+  });
+});
+
+// S82-1 (D-82-1, codepoint-measured on the live reference 2026-11-09):
+// the reference's SEARCH OVERLAY row price renders the Base44 template's
+// USD format — literal ASCII "$" (U+0024) + the same numeric value as the
+// ৳ grid price + ALWAYS two decimals — while its grid/detail prices stay
+// ৳ whole-taka. The clone's overlay matches the reference's bytes; every
+// other money surface keeps formatMoney's ৳ form.
+describe("formatOverlayPrice (the reference's overlay USD template format)", () => {
+  it("renders $ + value + two decimals for whole-taka amounts", () => {
+    expect(formatOverlayPrice(37000)).toBe("$370.00");
+    expect(formatOverlayPrice(28800)).toBe("$288.00");
+    expect(formatOverlayPrice(47000)).toBe("$470.00");
+  });
+
+  it("renders the poisha part when present (still two decimals)", () => {
+    expect(formatOverlayPrice(47050)).toBe("$470.50");
+    expect(formatOverlayPrice(5)).toBe("$0.05");
+    expect(formatOverlayPrice(19999)).toBe("$199.99");
+  });
+
+  it("zero and thousands grouping", () => {
+    expect(formatOverlayPrice(0)).toBe("$0.00");
+    expect(formatOverlayPrice(107000)).toBe("$1,070.00");
+    expect(formatOverlayPrice(129900)).toBe("$1,299.00");
+  });
+
+  it("the dollar is the ASCII codepoint 36, never the ৳ (U+09F3)", () => {
+    const out = formatOverlayPrice(37000);
+    expect(out.codePointAt(0)).toBe(36);
+    expect(out).not.toContain("৳");
   });
 });
 

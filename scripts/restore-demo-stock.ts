@@ -59,10 +59,19 @@ async function main() {
     for (const product of PRODUCTS) {
       // Seed products ship active (the seed type carries no isActive — the
       // create defaults it) — the restore pins that invariant.
+      // S82-6: ONE read carries the wiring too (the second findUnique is
+      // retired) and the rebuild runs inside a transaction so an
+      // interrupted run can never strand a product with zero memberships.
       const seedActive = true;
       const current = await db.product.findUnique({
         where: { slug: product.slug },
-        select: { stock: true, isActive: true, templateCategory: true },
+        select: {
+          id: true,
+          stock: true,
+          isActive: true,
+          templateCategory: true,
+          categories: { select: { categoryId: true } },
+        },
       });
       if (!current) continue; // catalog row absent — the seed owns creation
       if (current.stock === product.stock && current.isActive === seedActive) {
@@ -85,32 +94,28 @@ async function main() {
 
       // S81-1: rebuild the category wiring (memberships + template) to the
       // seed values — the admin multi-select e2e's interrupted-run backstop.
-      const seeded = await db.product.findUnique({
-        where: { slug: product.slug },
-        select: { id: true, categories: { select: { categoryId: true } } },
-      });
-      if (seeded) {
-        const wanted = product.categories
-          .map((slug) => categoryBySlug.get(slug))
-          .filter((id): id is string => id !== undefined);
-        const have = seeded.categories.map((pc) => pc.categoryId).sort();
-        const want = [...wanted].sort();
-        const wiringDrifted =
-          have.join("|") !== want.join("|") || current.templateCategory !== product.templateCategory;
-        if (wiringDrifted) {
-          await db.productCategory.deleteMany({ where: { productId: seeded.id } });
+      const wanted = product.categories
+        .map((slug) => categoryBySlug.get(slug))
+        .filter((id): id is string => id !== undefined);
+      const have = current.categories.map((pc) => pc.categoryId).sort();
+      const want = [...wanted].sort();
+      const wiringDrifted =
+        have.join("|") !== want.join("|") || current.templateCategory !== product.templateCategory;
+      if (wiringDrifted) {
+        await db.$transaction(async (tx) => {
+          await tx.productCategory.deleteMany({ where: { productId: current.id } });
           if (wanted.length > 0) {
-            await db.productCategory.createMany({
-              data: wanted.map((categoryId) => ({ productId: seeded.id, categoryId })),
+            await tx.productCategory.createMany({
+              data: wanted.map((categoryId) => ({ productId: current.id, categoryId })),
             });
           }
-          await db.product.update({
+          await tx.product.update({
             where: { slug: product.slug },
             data: { templateCategory: product.templateCategory },
           });
-          wiringRestored += 1;
-          console.log(`restored ${product.slug} category wiring to seed`);
-        }
+        });
+        wiringRestored += 1;
+        console.log(`restored ${product.slug} category wiring to seed`);
       }
     }
     console.log(

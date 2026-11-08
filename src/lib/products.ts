@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import type { Product } from "@prisma/client";
+import type { Prisma, Product } from "@prisma/client";
 
 /** The exact shape ProductCard renders — parsed from a Prisma Product row. */
 export type ProductCardData = {
@@ -132,10 +132,20 @@ export function resolveCategoryFilter(
   return { kind: "template", value };
 }
 
-/** The display-category include every product-card query shares (S81-1). */
+/** The display-category include every product-card query shares (S81-1).
+ *  S82-4: ordered by the category's sortOrder (name as the tie-break) so
+ *  the "first" display category is DETERMINISTIC — the dual-member product
+ *  (Bestsellers + Beauty Tools) feeds JSON-LD, the dashboard low-stock
+ *  label and analytics attribution through `firstCategoryName`, and an
+ *  unordered relation read is row-order dependent (audit 82-a INFO-2).
+ *  `satisfies` (not `as const` — a readonly orderBy array is rejected by
+ *  Prisma's include type) keeps the literal shape while validating it. */
 export const productCategoryInclude = {
-  categories: { include: { category: { select: { id: true, name: true, slug: true } } } },
-} as const;
+  categories: {
+    orderBy: [{ category: { sortOrder: "asc" } }, { category: { name: "asc" } }],
+    include: { category: { select: { id: true, name: true, slug: true } } },
+  },
+} satisfies Prisma.ProductInclude;
 
 /** The first display-category name (admin tables, JSON-LD) or null. */
 export function firstCategoryName(

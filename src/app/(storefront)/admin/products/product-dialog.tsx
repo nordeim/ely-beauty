@@ -7,6 +7,7 @@ import { Eye, EyeOff, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { deleteProductAction, toggleProductActiveAction, upsertProductAction } from "@/lib/actions/admin";
 import { slugify } from "@/lib/format";
 import { parseDollarsToCents } from "@/lib/money";
+import { normalizeTemplateCategory } from "@/lib/validation";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
@@ -190,13 +191,7 @@ export function ProductDialogButton({
         name: form.name,
         slug: form.slug,
         categoryIds: form.categoryIds,
-        // Narrow the free string to the schema's enum ("" and stray values → null).
-        templateCategory:
-          form.templateCategory === "skincare" ||
-          form.templateCategory === "lip_care" ||
-          form.templateCategory === "body_care"
-            ? form.templateCategory
-            : null,
+        templateCategory: normalizeTemplateCategory(form.templateCategory),
         shortDescription: form.shortDescription,
         description: form.description,
         price: priceCents,
@@ -332,6 +327,10 @@ export function ProductDialogButton({
                   <SelectValue placeholder="None" />
                 </SelectTrigger>
                 <SelectContent>
+                  {/* S82-3: the None option is the clear path — Radix Select
+                      cannot deselect, so a set template category was
+                      previously irrevocable through the UI. */}
+                  <SelectItem value="none">None</SelectItem>
                   <SelectItem value="skincare">Skincare</SelectItem>
                   <SelectItem value="lip_care">Lip care</SelectItem>
                   <SelectItem value="body_care">Body care</SelectItem>

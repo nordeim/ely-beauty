@@ -388,3 +388,18 @@ export function firstError(error: z.ZodError): string {
 export function clampSearchTerm(value: string, max = 100): string {
   return value.trim().slice(0, max);
 }
+
+/**
+ * S82-3 (audit 82-a L-3): normalize the admin dialog's Template-category
+ * select value for the upsert payload. The Radix Select cannot deselect —
+ * the dialog's "None" option (value "none") is the clear path; "" and any
+ * stray value also normalize to null so a template category can never be
+ * written outside the schema's enum vocabulary.
+ */
+export function normalizeTemplateCategory(
+  value: string,
+): "skincare" | "lip_care" | "body_care" | null {
+  return value === "skincare" || value === "lip_care" || value === "body_care"
+    ? value
+    : null;
+}

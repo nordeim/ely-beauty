@@ -16,6 +16,7 @@ import { getCurrentUser, isAdmin } from "@/lib/auth";
 import { refundEligibility } from "@/lib/admin-payments";
 import { deleteCategoryIfEmpty } from "@/lib/admin-categories";
 import { db } from "@/lib/db";
+import { isForeignKeyViolation } from "@/lib/prisma-errors";
 import { OrderGoneError, applyCarrierTracking } from "@/lib/order-tracking";
 import { applyOrderStatusTransition, canTransitionOrderStatus } from "@/lib/order-status";
 import { settingsPatchSchema, type SettingsPatch } from "@/lib/settings-schema";
@@ -132,6 +133,13 @@ export async function upsertProductAction(data: ProductUpsertInput): Promise<Adm
     }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
       return { ok: false, error: "Product not found. Refresh the list and try again." };
+    }
+    // S82-5 (audit 82-a INFO-4): a category deleted in the pre-check→tx
+    // window raises P2003 on the junction's Restrict FK — map it to the
+    // same message the pre-check owns (the S17-1 deleteCategoryIfEmpty
+    // pattern) instead of the generic envelope.
+    if (isForeignKeyViolation(error)) {
+      return { ok: false, error: "A selected category no longer exists." };
     }
     throw error;
   }

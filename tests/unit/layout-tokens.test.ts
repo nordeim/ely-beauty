@@ -546,3 +546,68 @@ describe("S80 overlay empty-state, centered no-results & raw-body pins (source p
     expect(seam).toMatch(/TextEncoder\(\)\.encode\(text\)\.length/);
   });
 });
+
+// S82 — the overlay price-format parity + audit 82-a source pins.
+//
+// D-82-1 (codepoint-measured on the live reference 2026-11-09): the
+// reference's search-overlay row price renders the Base44 template's USD
+// format ("$370.00" — ASCII U+0024, always two decimals) while its
+// grid/detail prices stay ৳ whole-taka. The clone's overlay matches those
+// bytes through formatOverlayPrice; every other money surface keeps
+// formatMoney. The audit 82-a pins: L-1 the schema junction comment
+// matches the declared FK behaviors; L-2 the seed comment reflects the
+// S81-3 template-slug links; INFO-2 the first display category is
+// deterministic (ordered include); INFO-4 the upsert catch maps P2003;
+// INFO-5 the restore script's wiring rebuild is transactional.
+describe("S82 — the overlay price format + audit 82-a pins", () => {
+  it("S82-1: the overlay row price uses formatOverlayPrice (the reference's $ template format)", () => {
+    const overlay = src("components/store/search-overlay.tsx");
+    expect(overlay).toContain("formatOverlayPrice");
+    expect(overlay).not.toMatch(/formatMoney\(r\.price\)/);
+  });
+
+  it("S82-1b: formatOverlayPrice lives in money.ts beside formatMoney (overlay-scoped, no other consumer)", () => {
+    const money = src("lib/money.ts");
+    expect(money).toMatch(/export function formatOverlayPrice/);
+  });
+
+  it("S82-2: the ProductCategory comment matches the declared FKs (audit L-1)", () => {
+    const schema = readFileSync(
+      path.resolve(import.meta.dirname, "../../prisma/schema.prisma"),
+      "utf8",
+    );
+    expect(schema).not.toContain("Both FKs Restrict");
+    // The comment documents the real split: categoryId Restrict, productId Cascade.
+    expect(schema).toMatch(/categoryId Restrict[\s\S]{0,200}productId Cascade/);
+  });
+
+  it("S82-2b: the seed CATEGORIES comment records the template-slug nav/footer links (audit L-2)", () => {
+    const seed = readFileSync(
+      path.resolve(import.meta.dirname, "../../prisma/seed.ts"),
+      "utf8",
+    );
+    // The retired claim contradicted the S81-3 nav/footer template links.
+    expect(seed).not.toContain("the clone links the real slugs");
+  });
+
+  it("S82-4: the first display category is deterministic (ordered include, audit INFO-2)", () => {
+    const products = src("lib/products.ts");
+    const include = products.match(/export const productCategoryInclude = \{[\s\S]*?satisfies Prisma\.ProductInclude;/)?.[0] ?? "";
+    expect(include).toContain("orderBy");
+    expect(include).toContain("sortOrder");
+  });
+
+  it("S82-5: the upsert catch maps P2003 to the category-gone message (audit INFO-4)", () => {
+    const admin = src("lib/actions/admin.ts");
+    expect(admin).toMatch(/isForeignKeyViolation/);
+    expect(admin.match(/A selected category no longer exists\./g)?.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("S82-6: the restore script's wiring rebuild is transactional + single-read (audit INFO-5)", () => {
+    const script = readFileSync(
+      path.resolve(import.meta.dirname, "../../scripts/restore-demo-stock.ts"),
+      "utf8",
+    );
+    expect(script).toMatch(/\$transaction/);
+  });
+});

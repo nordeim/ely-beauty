@@ -23,6 +23,23 @@ export function formatMoney(cents: number): string {
     : `${sign}${CURRENCY_SYMBOL}${grouped}.${rem.toString().padStart(2, "0")}`;
 }
 
+/**
+ * S82-1 (D-82-1, codepoint-measured on the live reference 2026-11-09): the
+ * reference's SEARCH-OVERLAY row price renders the Base44 template's USD
+ * format — a literal ASCII "$" (U+0024) followed by the same numeric value
+ * the ৳ grid price carries, ALWAYS with two decimals ("$370.00"). The
+ * reference's grid/detail prices stay ৳ whole-taka; only the overlay rides
+ * this template-remnant format, so this helper is consumed ONLY by the
+ * search overlay's result rows (replicate-as-observed, the S81-3 precedent).
+ */
+export function formatOverlayPrice(cents: number): string {
+  const sign = cents < 0 ? "-" : "";
+  const abs = Math.abs(Math.round(cents));
+  const whole = Math.floor(abs / 100);
+  const rem = abs % 100;
+  return `${sign}$${whole.toLocaleString("en-US")}.${rem.toString().padStart(2, "0")}`;
+}
+
 /** Parse a user-typed amount string ("288", "৳1,299", "365.50") into integer
  *  cents. Accepts an optional currency symbol and thousand separators. */
 export function parseAmountToCents(input: string): number | null {

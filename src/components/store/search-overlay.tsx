@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, X } from "lucide-react";
 
-import { formatMoney } from "@/lib/money";
+import { formatOverlayPrice } from "@/lib/money";
 
 // Session 77 S77-2 (D-1, measured live on both sites): the reference's
 // search — from BOTH the header icon AND the mobile panel's SEARCH row —
@@ -198,7 +198,7 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
                       <span className="block truncate text-xs text-muted-foreground">{r.description}</span>
                     ) : null}
                   </span>
-                  <span className="text-sm font-light font-display">{formatMoney(r.price)}</span>
+                  <span className="text-sm font-light font-display">{formatOverlayPrice(r.price)}</span>
                 </Link>
               </li>
             ))}

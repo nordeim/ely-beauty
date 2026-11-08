@@ -136,7 +136,7 @@ describe("SearchOverlay — the S77 result rows (D-2)", () => {
     expect(list?.className).not.toContain("grid-cols-2");
   });
 
-  it("the row copy is the reference's: name + shortDescription (no category), ৳ price", async () => {
+  it("the row copy is the reference's: name + shortDescription (no category), the $ template price", async () => {
     stubSearch();
     renderOverlay();
     const input = screen.getByRole("searchbox", { name: "Search products" });
@@ -145,8 +145,12 @@ describe("SearchOverlay — the S77 result rows (D-2)", () => {
     await waitFor(() => {
       expect(screen.getByText("Sleep in smooth comfort with our premium satin silk pillowcase.")).toBeInTheDocument();
     });
-    // The price renders ৳ whole-taka (the standing currency deviation).
-    expect(screen.getByText("৳288")).toBeInTheDocument();
+    // S82-1 (D-82-1): the reference's overlay renders the Base44 template's
+    // USD format — "$288.00", ASCII dollar + two decimals (codepoint-measured
+    // live 2026-11-09) — while its grid prices stay ৳. The clone matches the
+    // reference's bytes here; the ৳ whole-taka form survives everywhere else.
+    expect(screen.getByText("$288.00")).toBeInTheDocument();
+    expect(screen.queryByText("৳288")).not.toBeInTheDocument();
     // The old category label is gone from the rows.
     expect(screen.queryByText("Bestsellers")).not.toBeInTheDocument();
   });
@@ -176,9 +180,9 @@ describe("SearchOverlay — the S77 result rows (D-2)", () => {
     const input = screen.getByRole("searchbox", { name: "Search products" });
     fireEvent.change(input, { target: { value: "silk" } });
     await waitFor(() => {
-      expect(screen.getByText("৳288")).toBeInTheDocument();
+      expect(screen.getByText("$288.00")).toBeInTheDocument();
     });
-    const price = screen.getByText("৳288");
+    const price = screen.getByText("$288.00");
     expect(price.className).toContain("font-light");
     expect(price.className).not.toContain("font-semibold");
   });
@@ -319,13 +323,14 @@ describe("SearchOverlay — the S79 fresh-sheet, focus & serif-price cycle", () 
     const input = screen.getByRole("searchbox", { name: "Search products" });
     fireEvent.change(input, { target: { value: "silk" } });
     await waitFor(() => {
-      expect(screen.getByText("৳288")).toBeInTheDocument();
+      expect(screen.getByText("$288.00")).toBeInTheDocument();
     });
     // S79-1 (D-1, measured live on both viewports): the reference renders
     // the row price in the display serif — computed "Cormorant Garamond",
     // serif 14px/300, right-aligned (its class carries font-heading
     // font-light). The clone kept the size/weight but rode the body font.
-    const price = screen.getByText("৳288");
+    // S82-1: the TEXT is the reference's $ template format ("$288.00").
+    const price = screen.getByText("$288.00");
     expect(price.className).toContain("font-display");
     expect(price.className).toContain("font-light");
   });

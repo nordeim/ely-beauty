@@ -18,6 +18,7 @@ import {
   carouselSlideInputSchema,
   productInputSchema,
   wishlistToggleSchema,
+  normalizeTemplateCategory,
 } from "@/lib/validation";
 
 describe("registerSchema", () => {
@@ -523,5 +524,29 @@ describe("productInputSchema.categoryIds — the S81-1 many-to-many input", () =
     const out = productInputSchema.safeParse({ ...base, categoryIds: ["cat_beauty-tools"] });
     expect(out.success).toBe(true);
     if (out.success) expect("categoryId" in out.data).toBe(false);
+  });
+});
+
+// S82-3 (audit 82-a L-3): the admin dialog's Template-category Radix
+// Select has no deselect path — once set, a template category could not
+// be cleared through the UI. The dialog now offers a "None" option whose
+// value routes through this pure normalizer (client-safe seam beside the
+// zod schemas it feeds).
+describe("normalizeTemplateCategory — the dialog's None path (S82-3)", () => {
+  it("the three template values pass through", () => {
+    expect(normalizeTemplateCategory("skincare")).toBe("skincare");
+    expect(normalizeTemplateCategory("lip_care")).toBe("lip_care");
+    expect(normalizeTemplateCategory("body_care")).toBe("body_care");
+  });
+
+  it("the None option and the empty string normalize to null (the clear path)", () => {
+    expect(normalizeTemplateCategory("none")).toBeNull();
+    expect(normalizeTemplateCategory("")).toBeNull();
+  });
+
+  it("stray values normalize to null (never an invalid enum write)", () => {
+    expect(normalizeTemplateCategory("Skincare")).toBeNull();
+    expect(normalizeTemplateCategory("sets")).toBeNull();
+    expect(normalizeTemplateCategory("garbage")).toBeNull();
   });
 });

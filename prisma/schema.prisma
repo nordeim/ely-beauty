@@ -60,8 +60,10 @@ model Category {
 /// S81-1: the many-to-many display-category membership (the reference's
 /// category_ids array — its Wooden cleansing brush belongs to Bestsellers
 /// AND Beauty Tools; six of its 19 published products belong to none).
-/// Both FKs Restrict (an in-use category cannot be orphaned by a product
-/// delete; the guarded category delete counts these rows).
+/// categoryId Restrict — an in-use category cannot be deleted (the guarded
+/// category delete counts these rows); productId Cascade — a product delete
+/// drops its membership rows (S82-2: the comment now matches the declared
+/// FK behaviors).
 model ProductCategory {
   productId  String
   categoryId String
