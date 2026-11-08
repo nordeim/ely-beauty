@@ -340,3 +340,70 @@ describe("S77 measured search-overlay anatomy (source pins)", () => {
     expect(metadataWhere).not.toBeNull();
   });
 });
+
+describe("S79 overlay focus-management, fresh-sheet & wrap-repair pins (source pins)", () => {
+  it("S79-1: the overlay's row price rides the display serif (the reference's font-heading)", () => {
+    const overlay = src("components/store/search-overlay.tsx");
+    // S79-1 (D-1, measured live on both viewports): the reference's row
+    // price computes to "Cormorant Garamond", serif 14px/300 — the clone
+    // kept text-sm font-light but rode the body font.
+    expect(overlay).toMatch(/<span className="text-sm font-light font-display">/);
+  });
+
+  it("S79-2: the overlay resets its sheet on close (the reference's fresh reopen)", () => {
+    const overlay = src("components/store/search-overlay.tsx");
+    // The reset rides the open→false transition while the sheet is hidden
+    // (clearing query also drops any in-flight typeahead response through
+    // the debounce cleanup's cancelled flag).
+    expect(overlay).toMatch(/setResults\(\[\]\)/);
+    expect(overlay).toMatch(/setQuery\(""\)/);
+  });
+
+  it("S79-3: the overlay captures its opener and restores focus on close (the drawer's modal contract)", () => {
+    const overlay = src("components/store/search-overlay.tsx");
+    expect(overlay).toMatch(/openerRef/);
+    expect(overlay).toMatch(/openerRef\.current = null/);
+  });
+
+  it("S79-4: the overlay's close button carries the drawer's focus-visible ring", () => {
+    const overlay = src("components/store/search-overlay.tsx");
+    expect(overlay).toMatch(/focus-visible:ring-2 focus-visible:ring-ring/);
+  });
+
+  it("S79-5: the drawer's Tab-wrap selector is valid CSS (the aref] regression guard)", () => {
+    const chrome = src("components/store/store-chrome.tsx");
+    // The run-78-and-earlier selector read `aref]` — INVALID CSS that made
+    // querySelectorAll throw a SyntaxError on EVERY Tab keydown, silently
+    // disabling the S8-7 wrap since its introduction. The repaired selector
+    // must carry a[href] and never the corrupted fragment.
+    expect(chrome).not.toMatch(/aref\]/);
+    expect(chrome).toMatch(/a\[href\]/);
+  });
+
+  it("S79-6: the header's search button announces its dialog state (aria-expanded + aria-haspopup)", () => {
+    const header = src("components/store/header.tsx");
+    // The menu and cart buttons already carry the pair; the search button
+    // announced neither while toggling a role="dialog" overlay.
+    expect(header).toMatch(/aria-expanded=\{searchOverlayOpen\}/);
+    expect(header).toMatch(/aria-haspopup="dialog"/);
+  });
+
+  it("S79-7: the JSON routes parse through the bounded shared seam", () => {
+    const routes = [
+      "app/api/cart/route.ts",
+      "app/api/cart/bulk/route.ts",
+      "app/api/checkout/route.ts",
+      "app/api/contact/route.ts",
+      "app/api/coupon/apply/route.ts",
+      "app/api/newsletter/route.ts",
+      "app/api/wishlist/route.ts",
+      "app/api/addresses/route.ts",
+      "app/api/stripe/payment-intent/route.ts",
+    ];
+    for (const route of routes) {
+      const text = src(route);
+      expect(text, `${route} uses the shared bounded seam`).toMatch(/parseJsonBody|readJsonBody/);
+      expect(text, `${route} no longer parses request.json() directly`).not.toMatch(/await request\.json\(\)/);
+    }
+  });
+});

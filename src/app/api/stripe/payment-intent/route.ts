@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { findCartId, getCartSummary, readCartToken } from "@/lib/cart";
 import { applyCouponCode } from "@/lib/coupons";
 import { computeOrderMoney, shippingMethodForCity } from "@/lib/order-money";
+import { parseJsonBody } from "@/lib/json-body";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { getSettings } from "@/lib/settings";
 import { getStripe, isStripeServerConfigured } from "@/lib/stripe";
@@ -77,19 +78,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let body: unknown = null;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
-  }
-  const parsed = mintBodySchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: firstError(parsed.error) }, { status: 400 });
-  }
-  const snapshot = parsed.data;
-
-  // Per-client budget keyed like the reference's mint (user id, else IP).
+  // S79-7: the per-client budget (keyed like the reference's mint — user
+  // id, else IP) runs BEFORE the parse so garbage/oversize bodies are
+  // metered; the bounded seam caps the read at 32KB.
   const user = await getCurrentUser();
   const limit = rateLimit(`stripe-intent:${user?.id ?? clientIp(request.headers)}`, 10, 10 * 60_000);
   if (!limit.ok) {
@@ -98,6 +89,15 @@ export async function POST(request: NextRequest) {
       { status: 429, headers: { "Retry-After": String(limit.retryAfterSec ?? 60) } },
     );
   }
+  const body = await parseJsonBody(request);
+  if (body === null) {
+    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+  }
+  const parsed = mintBodySchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: firstError(parsed.error) }, { status: 400 });
+  }
+  const snapshot = parsed.data;
 
   const cartId = await findCartId(user?.id ?? null);
   const summary = await getCartSummary(cartId);

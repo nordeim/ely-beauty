@@ -41,26 +41,86 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
   const [query, setQuery] = React.useState("");
   const [results, setResults] = React.useState<SearchResult[]>([]);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const overlayRef = React.useRef<HTMLDivElement>(null);
+  const openerRef = React.useRef<HTMLElement | null>(null);
   const pathname = usePathname();
 
   // Route change closes the overlay (the reference's overlay dismisses on
-  // navigation). No local resets here — the content component is keyed by
-  // route and re-mounts fresh.
+  // navigation). No local resets here — the render-time adjustment below
+  // owns the fresh-sheet reset (S79-2).
   React.useEffect(() => {
     onClose();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
+  // S79-2 (D-2, measured live): the reference RESETS on close/reopen —
+  // query "" and zero rows after reopening. The reset rides the canonical
+  // "storing information from previous renders" adjustment (setState during
+  // render — the react-hooks/set-state-in-effect-clean form the repo's lint
+  // enforces; the carousel's matchMedia listener is the cautionary twin).
+  // The adjustment runs while the sheet is already hidden (open→false), so
+  // no reset is ever visible mid-render. Clearing `query` also drops any
+  // in-flight typeahead response: the debounce effect's cleanup flips its
+  // `cancelled` flag, so a late response can never repopulate results.
+  const [prevOpen, setPrevOpen] = React.useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    if (!open) {
+      setQuery("");
+      setResults([]);
+    }
+  }
+
+  // S79-3: focus returns to the opener on close — the drawer's modal
+  // contract (the focused input otherwise unmounts with the sheet and
+  // focus drops to <body>).
+  React.useEffect(() => {
+    if (!open) {
+      openerRef.current?.focus();
+      openerRef.current = null;
+      return;
+    }
+    openerRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    inputRef.current?.focus();
+  }, [open]);
+
+  // S79-4: Escape closes; Tab wraps INSIDE the overlay (the drawer's
+  // S8-7 wrap handler — the shell's `inert` keeps background content out
+  // of the tab order, but Chromium drops focus to browser chrome at the
+  // last control instead of wrapping).
   React.useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const scope = overlayRef.current;
+      if (!scope) return;
+      const focusables = scope.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (!first || !last) return;
+      const current = document.activeElement;
+      const inside = current instanceof HTMLElement && scope.contains(current);
+      if (e.shiftKey) {
+        if (!inside || current === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (!inside || current === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
-
-  React.useEffect(() => {
-    if (open) inputRef.current?.focus();
-  }, [open]);
 
   // Debounced typeahead against /api/search (the S77-4 fields: name,
   // shortDescription, tags AND the long description — the reference's
@@ -92,6 +152,7 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
 
   return (
     <div
+      ref={overlayRef}
       role="dialog"
       aria-modal="true"
       aria-label="Search products"
@@ -108,13 +169,13 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search products..."
             aria-label="Search products"
-            className="flex-1 bg-transparent font-display text-lg leading-[1.1] lg:text-2xl text-foreground placeholder:text-muted-foreground focus:outline-none"
+            className="flex-1 bg-transparent font-display text-lg leading-[1.1] lg:text-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           <button
             type="button"
             onClick={onClose}
             aria-label="Close search"
-            className="inline-flex h-9 w-9 items-center justify-center text-muted-foreground transition-opacity hover:opacity-60"
+            className="inline-flex h-9 w-9 items-center justify-center text-muted-foreground transition-opacity hover:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="h-5 w-5" />
           </button>
@@ -137,7 +198,7 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
                       <span className="block truncate text-xs text-muted-foreground">{r.description}</span>
                     ) : null}
                   </span>
-                  <span className="text-sm font-light">{formatMoney(r.price)}</span>
+                  <span className="text-sm font-light font-display">{formatMoney(r.price)}</span>
                 </Link>
               </li>
             ))}

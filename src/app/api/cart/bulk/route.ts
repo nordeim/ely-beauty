@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { getOrCreateCart, getCartSummary } from "@/lib/cart";
 import { dedupeBulkWanted, planBulkUpsertQuantity, splitBulkKey } from "@/lib/cart-bulk";
 import { db } from "@/lib/db";
+import { parseJsonBody } from "@/lib/json-body";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { cartBulkSchema, firstError } from "@/lib/validation";
 
@@ -30,12 +31,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Too many requests. Please slow down." }, { status: 429, headers: { "Retry-After": String(limit.retryAfterSec ?? 60) } });
     }
 
-    let body: unknown = null;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
-    }
+    // S79-7: the shared bounded seam (content-type gate + 32KB read cap).
+    const body = await parseJsonBody(request);
+    if (body === null) return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
     const parsed = cartBulkSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: firstError(parsed.error) }, { status: 400 });

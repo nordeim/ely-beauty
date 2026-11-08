@@ -4,21 +4,22 @@ import { getCurrentUser } from "@/lib/auth";
 import { clampPurchaseQuantity } from "@/lib/cart-quantity";
 import { findCartId, getOrCreateCart, getCartSummary } from "@/lib/cart";
 import { db } from "@/lib/db";
+import { parseJsonBody } from "@/lib/json-body";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { cartLinePatchSchema, cartMutateSchema, firstError } from "@/lib/validation";
 
-/** Parse a JSON body — malformed payloads are a client error (400), not a 500. */
-async function parseJsonBody(request: NextRequest): Promise<unknown> {
-  try {
-    return await request.json();
-  } catch {
-    return null;
-  }
-}
+// S79-7: the shared bounded JSON body seam (content-type gate + 32KB read
+// cap + the null contract this route already renders as 400).
 
 /** POST /api/cart — add a product (or bump quantity of an existing line). */
 export async function POST(request: NextRequest) {
   try {
+    // S79-7: the limiter runs BEFORE the parse — oversized/garbage bodies
+    // are metered like any other request instead of bypassing the budget.
+    const ipLimit = rateLimit(`cart:${clientIp(request.headers)}`, 60, 60_000);
+    if (!ipLimit.ok) {
+      return NextResponse.json({ error: "Too many requests. Please slow down." }, { status: 429, headers: { "Retry-After": String(ipLimit.retryAfterSec ?? 60) } });
+    }
     const body = await parseJsonBody(request);
     if (body === null) return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
     const parsed = cartMutateSchema.safeParse(body);
@@ -26,14 +27,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: firstError(parsed.error) }, { status: 400 });
     }
     const { productId, quantity, variant } = parsed.data;
-
-    // Guest-reachable row creation — metered like the other unauthenticated
-    // writes, or a scripted client that ignores cookies mints a Cart row per
-    // request (DB-growth spam).
-    const ipLimit = rateLimit(`cart:${clientIp(request.headers)}`, 60, 60_000);
-    if (!ipLimit.ok) {
-      return NextResponse.json({ error: "Too many requests. Please slow down." }, { status: 429, headers: { "Retry-After": String(ipLimit.retryAfterSec ?? 60) } });
-    }
 
     const product = await db.product.findUnique({ where: { id: productId } });
     if (!product || !product.isActive) {

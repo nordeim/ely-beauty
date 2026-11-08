@@ -296,3 +296,21 @@ Stage Summary:
   scrolls); parity includes failure copy and input floors, not just happy-path geometry; theme
   radius scales are relative (the reference's rounded-md = 2px vs v4's 6px — pin measured
   pixels); comments quoting retired class names are prose-scan landmines (now pinned).
+
+---
+
+Task ID: 73
+Agent: run-79 executor (the overlay focus-management, fresh-sheet & body-hardening cycle)
+Task: The full remediation cycle on the surviving workspace (git pull at 1b46d3a): docs review → gates re-validation (613/613 unit, 79/79 e2e, clean build — docs matched reality) → deep audit 79-a (read-only subagent, web-application + code-review-checklist methodology, skills/ excluded: 12/12 anchors PASS, 0 CRITICAL/HIGH, 2 MEDIUM, 5 LOW, 6 INFO) → live-reference re-measurement (agent-browser, both viewports, logged in; the mobile-menu priority surface byte-exact ±1px; TWO new search-surface deltas measured: the serif price + the reset-on-reopen) → the Session 79 plan (S79-1..S79-10, validated against the codebase) → TDD execution (RED 12 → GREEN; 613 → 634 unit, 79 → 82 e2e) → 25 screenshots off the dev server → the docs sweep (AGENTS/CLAUDE/README/PAD v2.7/SKILL v2.7.0/session_14/this worklog/REMEDIATION_PLAN Session 79) → commit + SSH-wrapper push to main.
+
+Work Log:
+- The aref] "selector bug" was RETRACTED mid-cycle: byte-level verification proved the drawer's wrap selector was always `a[href]` — the corruption was the bash display pipeline eating `[h` (the run-78 artifact class). The pin stays as a regression guard; the lesson is encoded in the SKILL trap log.
+- The S79-7 limiter-first reorder surfaced a latent 27-session-old TEST flaw: the api-boundaries xff helper put per-test IPs in the spoofable LEFTMOST hop — all requests shared ONE 198.51.100.1 budget bucket, masked by the old parse-before-limit order. Fixed: per-test IPs now ride the RIGHTMOST (trusted) hop.
+- The bounded parseJsonBody seam (src/lib/json-body.ts): content-type gate, 32KB declared/streamed cap with mid-read cancel, null-for-malformed keeping the routes' byte-identical 400 envelope; all 9 JSON routes migrated, zero request.json() calls remain (source-pinned).
+- The overlay is a full modal citizen now: openerRef focus restoration, Tab-wrap handler, focus-visible rings, aria-expanded/haspopup on the header button, the render-time prev-open reset (lint-clean form), font-display on the row price.
+
+Stage Summary:
+- All gates green: lint · typecheck · typecheck:tests · 634/634 unit · clean build · 82/82 e2e.
+- Every fixed surface pinned: the serif price (e2e computed-style), the fresh sheet + focus restoration (e2e), the seam contract (8-case truth table), the source contracts (7 layout-token pins).
+- Dev-server screenshots: 25/25 regenerated and validated.
+- Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.

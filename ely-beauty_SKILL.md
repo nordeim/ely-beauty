@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.6.0
+version: 2.7.0
 last_updated: 2026-11-08
-project_state: "613 unit tests · 79 e2e tests · lint/typecheck/typecheck:tests/build green · RUN-78 (session 12): the search-overlay reachability & micro-parity cycle — audit 78-a: 9/9 anchors PASS, 0 CRITICAL/HIGH code defects (3 MEDIUM: the overlay list's missing scroll container, the over-broad scroll-lock comment, CLAUDE.md's stale e2e count); the live re-measurement measured FOUR new deltas on the otherwise byte-exact search surface: the list's scroll container (mt-6 max-h-[60vh] overflow-y-auto — the clone's uncapped list left the 8th row unreachable on sub-816px windows), the 1-char search floor (the reference returns 8 rows for "e"), the rows' 2px corners (its rounded-md under the shadcn scale), and the no-results copy. Fixed TDD-first (599 → 613 unit, 77 → 79 e2e) plus the invisible a11y superset (role=dialog + aria-modal + the shell's inert widened to the overlay). PRECEDING RUN-77 (session 10): the search-overlay parity & dependency-hygiene cycle — the audit's 9/9 anchors PASSed with 0 critical code defects; the live re-measurement found ONE delta family (the search surface: the reference opens a FULL-SCREEN overlay `fixed inset-0 z-[70] bg-background/95 backdrop-blur-xs` with a max-w-2xl column + a Cormorant text-lg/lg:text-2xl input from BOTH the header icon and the mobile panel's SEARCH row, single-column 80px rows with name + shortDescription + font-light price, description-inclusive matching, authored-order results — the clone shipped a header-anchored dropdown + an in-panel swap with category labels and rating ordering). Fixed TDD-first (576 → 599 unit, 77 e2e): the shared search-overlay.tsx component (store-provider state, StoreChrome render site), the /api/search field/order/payload contract, the seed's db-path seam (datasourceUrl), next 16.4.0 → 16.4.5 (3 critical CVEs closed; lockfile root-name fix), the push-target cluster (wrapper DEFAULT_REMOTE + runbook + CLAUDE.md all say ely-beauty), the twitter-card metadata fallback, and the docs-truth sweep (CLAUDE.md 599/77 + 19-product + push target, REMEDIATION_PLAN 21→19, the SKILL H1 retitle). Every fixed surface re-measured byte-exact against the live reference (overlay 1440×900 + col x:384 w:672 + input 24px Cormorant + rows 624×80 @84px rhythm; mobile input 18px/20px @y:104 ±1px; 4 description-matched rows in the authored order)."
+project_state: "634 unit tests · 82 e2e tests · lint/typecheck/typecheck:tests/build green · RUN-79 (session 14): the overlay focus-management, fresh-sheet & body-hardening cycle — audit 79-a: 12/12 anchors PASS, 0 CRITICAL/HIGH code defects (2 MEDIUM: the overlay never restored focus on close, unbounded request.json() reads with the limiter after the parse); the live re-measurement re-verified every pinned surface byte-exact (the mobile panel ±1px, the pills, the detail anatomy) and measured TWO new deltas on the search surface: the row price rides the DISPLAY SERIF (the reference’s computed Cormorant 14px/300 — the clone rode Inter) and the reference RESETS the overlay on close/reopen (the clone persisted the query/results). Fixed TDD-first (613 → 634 unit, 79 → 82 e2e): font-display on the price, the render-time prev-open reset (lint’s set-state-in-effect-clean form), openerRef focus restoration + the drawer’s Tab-wrap handler + focus-visible rings on the overlay, aria-expanded/haspopup on the header button, and the bounded parseJsonBody seam (content-type gate + 32KB cap + limiter-first on all 9 JSON routes; the aref] “selector bug” was retracted as a bash-display artifact — byte-level verification showed a[href] was always correct). PRECEDING RUN-78 (session 12): the search-overlay reachability & micro-parity cycle — audit 78-a: 9/9 anchors PASS, 0 CRITICAL/HIGH code defects (3 MEDIUM: the overlay list's missing scroll container, the over-broad scroll-lock comment, CLAUDE.md's stale e2e count); the live re-measurement measured FOUR new deltas on the otherwise byte-exact search surface: the list's scroll container (mt-6 max-h-[60vh] overflow-y-auto — the clone's uncapped list left the 8th row unreachable on sub-816px windows), the 1-char search floor (the reference returns 8 rows for "e"), the rows' 2px corners (its rounded-md under the shadcn scale), and the no-results copy. Fixed TDD-first (599 → 613 unit, 77 → 79 e2e) plus the invisible a11y superset (role=dialog + aria-modal + the shell's inert widened to the overlay). PRECEDING RUN-77 (session 10): the search-overlay parity & dependency-hygiene cycle — the audit's 9/9 anchors PASSed with 0 critical code defects; the live re-measurement found ONE delta family (the search surface: the reference opens a FULL-SCREEN overlay `fixed inset-0 z-[70] bg-background/95 backdrop-blur-xs` with a max-w-2xl column + a Cormorant text-lg/lg:text-2xl input from BOTH the header icon and the mobile panel's SEARCH row, single-column 80px rows with name + shortDescription + font-light price, description-inclusive matching, authored-order results — the clone shipped a header-anchored dropdown + an in-panel swap with category labels and rating ordering). Fixed TDD-first (576 → 599 unit, 77 e2e): the shared search-overlay.tsx component (store-provider state, StoreChrome render site), the /api/search field/order/payload contract, the seed's db-path seam (datasourceUrl), next 16.4.0 → 16.4.5 (3 critical CVEs closed; lockfile root-name fix), the push-target cluster (wrapper DEFAULT_REMOTE + runbook + CLAUDE.md all say ely-beauty), the twitter-card metadata fallback, and the docs-truth sweep (CLAUDE.md 599/77 + 19-product + push target, REMEDIATION_PLAN 21→19, the SKILL H1 retitle). Every fixed surface re-measured byte-exact against the live reference (overlay 1440×900 + col x:384 w:672 + input 24px Cormorant + rows 624×80 @84px rhythm; mobile input 18px/20px @y:104 ±1px; 4 description-matched rows in the authored order)."
 tags:
   - nextjs16
   - react19
@@ -4505,6 +4505,72 @@ docs sweep.
 Key files: `scripts/capture-screenshots.mjs` · `docs/session_132.md` ·
 `research/parity-grid.mjs` (git-ignored) · `research/a11y-audit.mjs`
 (git-ignored) · `research/agent-browser-crosscheck.sh` (git-ignored)
+
+- **Session 79 (run 79, session 13 of the ely-beauty repo): the
+  overlay focus-management, fresh-sheet & body-hardening cycle.**
+  Gates on the pulled tree 613/613 · 79/79 · clean build — all
+  green (docs matched reality). Deep audit 79-a (read-only,
+  skills/ excluded): **12/12 standing anchors PASS, 0
+  CRITICAL/HIGH code defects** — 2 MEDIUM (the search overlay never
+  restored focus on close — the focused input unmounts with the sheet
+  and focus drops to <body>, unlike the CartDrawer's openerRef
+  contract; and every JSON API route parsed `await request.json()`
+  UNBOUNDED with the rate limiter engaging only AFTER a successful
+  parse — oversized/garbage payloads were never metered and buffered
+  whole into memory, 9 route files / 10 parse sites) + 5 LOW (no
+  Tab-wrap on the overlay; the close button/input lacked the drawer's
+  focus-visible treatments; the header search button carried neither
+  aria-expanded nor aria-haspopup; AGENTS.md's kitchen-catalog
+  fragment + stale rate-limit grid) + 6 INFO. The live re-measurement
+  (both sites, both viewports, logged in) re-verified every pinned
+  surface byte-exact — the operator's mobile-menu priority included
+  (panel y:64 h:213, header 277/278, links 14px/1.4px @36px rhythm,
+  SEARCH row) — and measured TWO new deltas on the search surface:
+  **D-1** the row price rides the DISPLAY SERIF (the reference's
+  computed "Cormorant Garamond", serif 14px/300 right-aligned on both
+  viewports; the clone kept text-sm font-light but rode Inter — the
+  ฿-vs-$ currency stays the standing S77 deviation) and **D-2** the
+  reference RESETS the overlay on close/reopen (query "" + 0 rows +
+  focus on the input; the clone persisted the previous query/results
+  because the never-unmounted component never reset — its comment
+  even claimed "re-mounts fresh", describing the reference, not the
+  component). Fixed TDD-first (RED 12 → GREEN; 613 → 634 unit,
+  79 → 82 e2e): `font-display` on the price span; the reset rides
+  the render-time prev-open adjustment (the react-hooks/set-state-in-
+  effect-clean form lint enforces — setState during render, React's
+  "storing information from previous renders"); openerRef capture +
+  restore on close; the drawer's Tab-wrap keydown handler scoped to
+  the overlay; focus-visible rings on the close button + input;
+  aria-expanded/aria-haspopup="dialog" on the header button; and the
+  bounded `parseJsonBody` seam (`src/lib/json-body.ts`: content-type
+  gate, declared-length fast-fail, streamed-read cancel past 32KB,
+  null-for-malformed keeping the routes' exact 400 envelope) with the
+  per-route limiters moved BEFORE the parse on all 9 JSON routes.
+  **A finding retracted live**: the drawer's wrap selector READ as
+  `aref]` through the bash output pipeline — byte-level verification
+  (`'aref]' in src` → False) proved the file always carried
+  `a[href]`; the "corruption" was the `[h`-eating display artifact the
+  run-78 log had already recorded. The layout-tokens pin stays as a
+  regression guard. **A latent TEST flaw surfaced and fixed**: the
+  api-boundaries `post()` helper put the per-test IP in the LEFTMOST
+  (spoofable) xff hop — every request funneled into ONE shared
+  198.51.100.1 bucket, masked by the old parse-before-limit order
+  (invalid bodies never reached the limiter); with the limiter first,
+  garbage IS metered, so the helper now puts the per-test IP in the
+  RIGHTMOST (trusted) hop the clientIp contract actually reads.
+  **Encoded traps**: (1) Verify source bytes with the Read tool or a
+  Python probe — the bash display pipeline eats `[h`-shaped
+  fragments and mangles selectors; a hand-transcribed "repro" of a
+  mangled string proves nothing about the file. (2) Parity includes
+  state lifecycles, not just geometry — the reference's reset-on-
+  reopen was invisible until close/reopen was actually exercised.
+  (3) `react-hooks/set-state-in-effect` is right: prop-change resets
+  belong in the render-time adjustment pattern, not effects. (4)
+  Reordering a limiter before a parse changes which requests consume
+  budget — audit every test that shares an IP bucket when you do it.
+  (5) The reference's footer SHOP column links legacy slugs
+  (skincare/body_care) its own Category API doesn't know — the
+  clone's working-links superset is the deliberate deviation.
 
 - **Session 78 (run 78, session 12 of the ely-beauty repo): the
   search-overlay reachability & micro-parity cycle.** Gates on the

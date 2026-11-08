@@ -10,6 +10,7 @@ import { computeOrderMoney, shippingMethodForCity } from "@/lib/order-money";
 import { orderAccessToken, replayAuthorized, resolveReplay, ReplayDeniedError } from "@/lib/order-access";
 import { CheckoutError, placeOrderTx, type PlaceOrderArgs } from "@/lib/order-placement";
 import { isUniqueViolation, uniqueTargetField } from "@/lib/prisma-errors";
+import { parseJsonBody } from "@/lib/json-body";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { getSettings } from "@/lib/settings";
 import { getStripe } from "@/lib/stripe";
@@ -67,13 +68,20 @@ function respond(orderNumber: string): NextResponse {
  */
 export async function POST(request: NextRequest) {
   try {
-    // Malformed payloads are a client error (400), not a 500.
-    let body: unknown = null;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+    // S79-7: the per-client budget runs BEFORE the parse (x-forwarded-for
+    // when behind a proxy, shared bucket for direct connections — generous:
+    // blocks scripted spam, not shoppers) so garbage/oversize bodies are
+    // metered too; the bounded seam caps the read at 32KB (malformed
+    // payloads stay a 400, not a 500).
+    const limit = rateLimit(`checkout:${clientIp(request.headers)}`, 20, 60_000);
+    if (!limit.ok) {
+      return NextResponse.json(
+        { error: "Too many checkout attempts. Please try again shortly." },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfterSec ?? 60) } },
+      );
     }
+    const body = await parseJsonBody(request);
+    if (body === null) return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
     const parsed = checkoutBodySchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: firstError(parsed.error) }, { status: 400 });
@@ -90,16 +98,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Card payments are unavailable right now. Please choose Cash on Delivery or try again later." },
         { status: 400 },
-      );
-    }
-
-    // Per-client budget (x-forwarded-for when behind a proxy, shared bucket
-    // for direct connections). Generous: blocks scripted spam, not shoppers.
-    const limit = rateLimit(`checkout:${clientIp(request.headers)}`, 20, 60_000);
-    if (!limit.ok) {
-      return NextResponse.json(
-        { error: "Too many checkout attempts. Please try again shortly." },
-        { status: 429, headers: { "Retry-After": String(limit.retryAfterSec ?? 60) } },
       );
     }
 

@@ -76,7 +76,15 @@ function post(pathname: string, body: string, ip: string, extraHeaders: Record<s
     body,
     headers: {
       "content-type": "application/json",
-      "x-forwarded-for": `${ip}, 198.51.100.1`,
+      // S79-7: the per-test IP rides the RIGHTMOST hop (the position the
+      // nearest trusted proxy appends — the clientIp contract); the fixed
+      // hop is the spoofable leftmost. The old `${ip}, 198.51.100.1` form
+      // funneled every request into ONE shared bucket (198.51.100.1),
+      // masked by the pre-S79 parse-before-limit order: invalid bodies
+      // never reached the limiter, so the shared bucket never drained.
+      // With the limiter first, garbage IS metered — the helper now gives
+      // each test an isolated budget the way it always intended to.
+      "x-forwarded-for": `198.51.100.1, ${ip}`,
       ...extraHeaders,
     },
   }) as NextRequest;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getCurrentUser } from "@/lib/auth";
+import { parseJsonBody } from "@/lib/json-body";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { findCartId, getCartSummary } from "@/lib/cart";
 import { applyCouponCode } from "@/lib/coupons";
@@ -18,26 +19,24 @@ export type CouponApplyResponse =
  * label + description for inline display.
  */
 export async function POST(request: NextRequest) {
-  // Malformed payloads are a client error (400), not a 500 — the L3 pattern
-  // split applies to EVERY JSON route (this one was missed in sessions 2-3).
-  let body: unknown = null;
-  try {
-    body = await request.json();
-  } catch {
+  // S79-7: the limiter runs BEFORE the parse — garbage/oversize bodies are
+  // metered, and the bounded seam caps the read at 32KB (malformed payloads
+  // stay a 400, not a 500 — the L3 pattern split).
+  const limit = rateLimit(`coupon:${clientIp(request.headers)}`, 30, 60_000);
+  if (!limit.ok) {
+    return NextResponse.json<CouponApplyResponse>(
+      { ok: false, error: "Too many attempts. Please try again shortly." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSec ?? 60) } },
+    );
+  }
+  const body = await parseJsonBody(request);
+  if (body === null) {
     return NextResponse.json<CouponApplyResponse>({ ok: false, error: "Invalid JSON body." }, { status: 400 });
   }
   try {
     const parsed = couponApplySchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json<CouponApplyResponse>({ ok: false, error: firstError(parsed.error) });
-    }
-
-    const limit = rateLimit(`coupon:${clientIp(request.headers)}`, 30, 60_000);
-    if (!limit.ok) {
-      return NextResponse.json<CouponApplyResponse>(
-        { ok: false, error: "Too many attempts. Please try again shortly." },
-        { status: 429, headers: { "Retry-After": String(limit.retryAfterSec ?? 60) } },
-      );
     }
 
     const user = await getCurrentUser();

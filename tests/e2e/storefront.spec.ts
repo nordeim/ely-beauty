@@ -419,3 +419,60 @@ test.describe("storefront — the S76 measured card + variant anatomy (desktop g
     expect(thumbBox?.height).toBeCloseTo(80, 0);
   });
 });
+
+test.describe("storefront — the S79 overlay serif-price, fresh-sheet & focus cycle", () => {
+  test("the overlay's row price renders in the display serif (the reference's Cormorant)", async ({ page }) => {
+    await gotoHydrated(page, "/shop");
+    await page.getByRole("button", { name: "Search products" }).click();
+    const overlay = page.getByTestId("search-overlay");
+    await expect(overlay).toBeVisible();
+
+    const input = overlay.getByRole("searchbox", { name: "Search products" });
+    await input.fill("silk");
+    const rows = overlay.locator("ul > li");
+    await expect(rows).toHaveCount(4, { timeout: 10_000 });
+
+    // S79-1 (D-1, measured live on both viewports): the reference renders
+    // the row price in the display serif — computed "Cormorant Garamond",
+    // serif, 14px/300. The clone rode the body font (Inter).
+    const price = rows.first().locator("a > span").last();
+    const fontFamily = await price.evaluate((el) => getComputedStyle(el).fontFamily);
+    expect(fontFamily).toContain("Cormorant");
+  });
+
+  test("reopening the overlay shows a fresh sheet (the reference's reset, S79-2)", async ({ page }) => {
+    await gotoHydrated(page, "/shop");
+    await page.getByRole("button", { name: "Search products" }).click();
+    const overlay = page.getByTestId("search-overlay");
+    await expect(overlay).toBeVisible();
+
+    const input = overlay.getByRole("searchbox", { name: "Search products" });
+    await input.fill("silk");
+    await expect(overlay.locator("ul > li")).toHaveCount(4, { timeout: 10_000 });
+
+    // Close, then reopen — the reference RESETS (query "" + zero rows).
+    await overlay.getByRole("button", { name: "Close search" }).click();
+    await expect(overlay).toBeHidden();
+    await page.getByRole("button", { name: "Search products" }).click();
+    await expect(overlay).toBeVisible();
+    await expect(overlay.getByRole("searchbox", { name: "Search products" })).toHaveValue("");
+    await expect(overlay.locator("ul > li")).toHaveCount(0);
+
+    // S79-3: focus returns to the opener on close.
+    await overlay.getByRole("button", { name: "Close search" }).click();
+    await expect(overlay).toBeHidden();
+    const focused = await page.evaluate(() => document.activeElement?.getAttribute("aria-label"));
+    expect(focused).toBe("Search products");
+  });
+
+  test("the header's search button announces its dialog state (S79-6)", async ({ page }) => {
+    await gotoHydrated(page, "/shop");
+    const opener = page.getByRole("button", { name: "Search products" });
+    await expect(opener).toHaveAttribute("aria-haspopup", "dialog");
+    await expect(opener).toHaveAttribute("aria-expanded", "false");
+    await opener.click();
+    await expect(opener).toHaveAttribute("aria-expanded", "true");
+    await page.getByTestId("search-overlay").getByRole("button", { name: "Close search" }).click();
+    await expect(opener).toHaveAttribute("aria-expanded", "false");
+  });
+});

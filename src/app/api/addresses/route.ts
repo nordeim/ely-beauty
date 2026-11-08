@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { AddressCapError, AddressGoneError, MAX_ADDRESSES_PER_USER, assertAddressCap, promoteAddressInTx, reassignDefaultAfterDeleteInTx } from "@/lib/addresses";
 import { getCurrentUser } from "@/lib/auth";
+import { parseJsonBody } from "@/lib/json-body";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { addressDefaultSchema, addressSchema, firstError } from "@/lib/validation";
@@ -26,14 +27,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Malformed payloads are a client error (400), not a 500 — same pattern as
-    // the cart/checkout/wishlist routes.
-    let body: unknown = null;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
-    }
+    // S79-7: the shared bounded seam (content-type gate + 32KB read cap) —
+    // same pattern as the cart/checkout/wishlist routes.
+    const body = await parseJsonBody(request);
+    if (body === null) return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
     const parsed = addressSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: firstError(parsed.error) }, { status: 400 });
@@ -114,12 +111,9 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    let body: unknown = null;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
-    }
+    // S79-7: the shared bounded seam.
+    const body = await parseJsonBody(request);
+    if (body === null) return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
     const parsed = addressDefaultSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: firstError(parsed.error) }, { status: 400 });

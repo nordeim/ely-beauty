@@ -1,4 +1,4 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.6
+# ElyBeauty — Master Project Architecture Document (PAD) v2.7
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
@@ -7,6 +7,38 @@
 **Audience:** Senior Engineers, Tech Leads, DevOps, and Onboarding Engineers
 **Rule:** Every architectural decision in this document traces to a specific rationale. Nothing is here "because it's popular."
 
+
+#### Revision Block — v2.7 (Run 79 — the overlay focus-management, fresh-sheet & body-hardening cycle)
+
+- `[SR]` **The overlay's row price rides the display serif**
+  (`text-sm font-light font-display`): the reference's computed
+  Cormorant Garamond 14px/300, right-aligned, measured live on BOTH
+  viewports (the ฿-vs-$ currency stays the standing S77 deviation).
+- `[SR]` **The overlay RESETS on close/reopen** (the reference's fresh
+  sheet: query "" + zero rows): the reset rides the render-time
+  prev-open adjustment — the `react-hooks/set-state-in-effect`-clean
+  form — and clearing the query drops in-flight typeahead responses
+  through the debounce cleanup's cancelled flag.
+- `[SR]` **The overlay is a full modal citizen now**: opener capture +
+  focus restoration on close (the CartDrawer's openerRef contract),
+  the drawer's Tab-wrap handler scoped to the overlay, focus-visible
+  rings on the close button + input, and `aria-expanded` +
+  `aria-haspopup="dialog"` on the header's search button.
+- `[SR]` **JSON bodies parse through the bounded shared seam**
+  (`parseJsonBody`, `src/lib/json-body.ts`): non-`application/json`
+  content-types are refused, bodies over 32 KB are refused or
+  cancelled mid-read (streamed), malformed JSON returns null (the
+  routes' existing 400 envelope), and every per-route limiter runs
+  BEFORE the parse so garbage is metered. No route calls
+  `request.json()` directly (source-pinned).
+- `[SR]` **Test infra**: the api-boundaries request helper now puts the
+  per-test IP in the RIGHTMOST xff hop (the trusted position clientIp
+  reads) — the old leftmost placement funneled all requests into one
+  shared bucket, masked by the pre-S79 parse-before-limit order.
+- Tests: 613 → 634 unit (+21: the overlay pins ×6, the
+  layout-token S79 pins ×7, the json-body truth table ×8), 79 →
+  82 e2e (+3: the serif-price computed-style pin, the fresh-sheet +
+  focus-restoration pin, the header-button dialog-state pin).
 
 #### Revision Block — v2.6 (Run 78 — the search-overlay reachability & micro-parity cycle)
 
@@ -168,7 +200,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, select, sheet, label, tabs, radio) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^3.25 | Single validation boundary (ADR-005) |
-| Unit tests | Vitest | ^3.2 | Node-env suite (613 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins — see §8.1) |
+| Unit tests | Vitest | ^3.2 | Node-env suite (634 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins — see §8.1) |
 | E2E tests | Playwright | ^1.64 | 79 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
@@ -418,7 +450,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 613 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 634 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -672,7 +704,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
 | `prisma/schema.prisma` / `seed.ts` | 19 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 613 unit · 79 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins) |
+| `tests/unit/*` · `tests/e2e/*` | 634 unit · 82 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---

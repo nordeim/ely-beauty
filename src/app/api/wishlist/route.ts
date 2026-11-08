@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { parseJsonBody } from "@/lib/json-body";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { assertWishlistCap, WishlistCapError, createWishlistItemInTx, getOrCreateWishlist } from "@/lib/wishlist";
 import { wishlistToggleSchema } from "@/lib/validation";
@@ -10,24 +11,20 @@ import { wishlistToggleSchema } from "@/lib/validation";
 /** POST /api/wishlist — toggle a product in the caller's wishlist. */
 export async function POST(request: NextRequest) {
   try {
-    let body: unknown = null;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+    // S79-7: the limiter runs BEFORE the parse — garbage/oversize bodies
+    // are metered (guest-reachable row creation; the cart POST pattern),
+    // and the bounded seam caps the read at 32KB.
+    const ipLimit = rateLimit(`wishlist:${clientIp(request.headers)}`, 60, 60_000);
+    if (!ipLimit.ok) {
+      return NextResponse.json({ error: "Too many requests. Please slow down." }, { status: 429, headers: { "Retry-After": String(ipLimit.retryAfterSec ?? 60) } });
     }
+    const body = await parseJsonBody(request);
+    if (body === null) return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
     const parsed = wishlistToggleSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: "Missing productId." }, { status: 400 });
     }
     const { productId } = parsed.data;
-
-    // Guest-reachable row creation — metered like the cart POST (a scripted
-    // client that ignores cookies would mint a Wishlist row per request).
-    const ipLimit = rateLimit(`wishlist:${clientIp(request.headers)}`, 60, 60_000);
-    if (!ipLimit.ok) {
-      return NextResponse.json({ error: "Too many requests. Please slow down." }, { status: 429, headers: { "Retry-After": String(ipLimit.retryAfterSec ?? 60) } });
-    }
 
     const product = await db.product.findUnique({ where: { id: productId }, select: { id: true, isActive: true } });
     if (!product || !product.isActive) {

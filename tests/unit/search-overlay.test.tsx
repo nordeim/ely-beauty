@@ -280,3 +280,114 @@ describe("SearchOverlay — the S78 reachability + micro-parity (D-1..D-4 + a11y
     expect(screen.getByRole("dialog", { name: "Search products" })).toHaveAttribute("aria-modal", "true");
   });
 });
+
+describe("SearchOverlay — the S79 fresh-sheet, focus & serif-price cycle", () => {
+  it("the price rides the display serif (the reference's Cormorant font-heading, 14px/300)", async () => {
+    stubSearch();
+    renderOverlay();
+    const input = screen.getByRole("searchbox", { name: "Search products" });
+    fireEvent.change(input, { target: { value: "silk" } });
+    await waitFor(() => {
+      expect(screen.getByText("৳288")).toBeInTheDocument();
+    });
+    // S79-1 (D-1, measured live on both viewports): the reference renders
+    // the row price in the display serif — computed "Cormorant Garamond",
+    // serif 14px/300, right-aligned (its class carries font-heading
+    // font-light). The clone kept the size/weight but rode the body font.
+    const price = screen.getByText("৳288");
+    expect(price.className).toContain("font-display");
+    expect(price.className).toContain("font-light");
+  });
+
+  it("closing resets the sheet — the reference's fresh reopen (D-2)", async () => {
+    stubSearch();
+    const { rerender } = renderOverlay();
+    const input = screen.getByRole("searchbox", { name: "Search products" });
+    fireEvent.change(input, { target: { value: "silk" } });
+    await waitFor(() => {
+      expect(screen.getByRole("link", { name: /Pure Satin Silk Pillowcase/ })).toBeInTheDocument();
+    });
+
+    // Close (the sheet renders null but the component stays mounted — the
+    // store-chrome harness never unmounts it), then reopen.
+    rerender(<SearchOverlay open={false} onClose={() => {}} />);
+    rerender(<SearchOverlay open onClose={() => {}} />);
+
+    // S79-2 (D-2, measured live): the reference RESETS on close/reopen —
+    // query "" and zero rows after reopening. The clone used to persist the
+    // previous query + results (the never-unmounted component never reset).
+    const freshInput = screen.getByRole("searchbox", { name: "Search products" });
+    expect(freshInput).toHaveValue("");
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    expect(screen.queryByText(/No products found/)).not.toBeInTheDocument();
+  });
+
+  it("focus returns to the opener on close (the drawer's modal contract, S79-3)", () => {
+    stubSearch();
+    function Harness() {
+      const [open, setOpen] = React.useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            open-search
+          </button>
+          <SearchOverlay open={open} onClose={() => setOpen(false)} />
+        </>
+      );
+    }
+    render(<Harness />);
+    const opener = screen.getByRole("button", { name: "open-search" });
+    opener.focus();
+    expect(document.activeElement).toBe(opener);
+
+    fireEvent.click(opener);
+    const input = screen.getByRole("searchbox", { name: "Search products" });
+    expect(document.activeElement).toBe(input);
+
+    // Escape closes → focus lands back on the opener (previously it dropped
+    // to <body>: the focused input unmounts with the sheet).
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByTestId("search-overlay")).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(opener);
+  });
+
+  it("Tab wraps inside the overlay at the last control (the drawer's wrap contract, S79-4)", async () => {
+    stubSearch();
+    renderOverlay();
+    const input = screen.getByRole("searchbox", { name: "Search products" });
+    fireEvent.change(input, { target: { value: "silk" } });
+    const lastLink = await waitFor(() => {
+      const link = screen.getAllByRole("link").at(-1);
+      expect(link).toBeInTheDocument();
+      return link as HTMLElement;
+    });
+    lastLink.focus();
+    expect(document.activeElement).toBe(lastLink);
+
+    // jsdom performs no native Tab focus moves — only the handler's explicit
+    // wrap is observable. Tab from the LAST result link must land on the
+    // FIRST focusable (the input).
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(document.activeElement).toBe(input);
+  });
+
+  it("the close button carries the drawer's focus-visible ring (S79-4)", () => {
+    stubSearch();
+    renderOverlay();
+    const close = screen.getByRole("button", { name: "Close search" });
+    expect(close.className).toContain("focus-visible:ring-2");
+    expect(close.className).toContain("focus-visible:ring-ring");
+  });
+
+  it("the input keeps a visible focus treatment (no naked outline suppression, S79-4)", () => {
+    stubSearch();
+    renderOverlay();
+    const input = screen.getByRole("searchbox", { name: "Search products" });
+    // focus:outline-none without a replacement indicator is a WCAG 2.4.7
+    // hole on a primary surface — the input must pair the suppression with
+    // a visible ring.
+    if (input.className.includes("focus:outline-none")) {
+      expect(input.className).toMatch(/focus-visible:ring|focus:ring/);
+    }
+  });
+});

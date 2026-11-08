@@ -42,7 +42,7 @@ export function Header({
   // the mobile panel's SEARCH row toggle the SAME full-screen overlay (the
   // reference's single search surface; the overlay itself renders from
   // StoreChrome so it sits above every chrome layer at z-[70]).
-  const { setMobileNavOpen, mobileNavOpen, cartDrawerOpen, setCartDrawerOpen, setSearchOverlayOpen } = useStore();
+  const { setMobileNavOpen, mobileNavOpen, cartDrawerOpen, setCartDrawerOpen, setSearchOverlayOpen, searchOverlayOpen } = useStore();
   const pathname = usePathname();
 
   // Over-hero styling applies on the home route only (the hero image sits
@@ -110,6 +110,8 @@ export function Header({
               "inline-flex h-11 w-11 items-center justify-center transition-opacity hover:opacity-60",
             )}
             aria-label="Search products"
+            aria-haspopup="dialog"
+            aria-expanded={searchOverlayOpen}
             onClick={() => setSearchOverlayOpen(true)}
           >
             <Search className="h-5 w-5" />

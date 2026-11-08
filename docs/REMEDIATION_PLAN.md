@@ -10809,3 +10809,242 @@ measured:**
   the search row + the reachability guard), PAD v2.6,
   ely-beauty_SKILL.md v2.6.0 (project_state + the Session 78 entry),
   docs/session_12.md, worklog.
+
+## Session 79 — The Overlay Focus-Management, Fresh-Sheet & Body-Hardening Cycle
+
+> **Status:** PLANNED → EXECUTING (this cycle)
+> **Date:** 2026-11-08
+> **Inputs:** deep audit 79-a (read-only subagent, 12/12 standing anchors
+> PASS, 0 CRITICAL/HIGH code defects) + the operator's fresh-eyes pass
+> (the `aref]` latent bug) + the live-reference re-measurement
+> (agent-browser, both sites, 390×844 + 1440×900, logged in) + `npm audit`
+> (12 advisories — the documented accepted ledger, unchanged).
+
+### Findings feeding this cycle
+
+**Audit 79-a (2 MEDIUM / 5 LOW / 6 INFO):**
+
+- **A-1 (MEDIUM)**: the search overlay focuses its input on open but never
+  restores focus on close — the focused element unmounts and focus drops to
+  `<body>`, unlike the CartDrawer (the repo's own modal standard: capture
+  opener, restore on close).
+- **A-2 (MEDIUM, systemic, pre-existing)**: every JSON API route parses
+  `await request.json()` unbounded, with the rate limiter engaging only
+  AFTER a successful parse + Zod pass — oversized/garbage payloads are
+  never metered and are buffered whole into memory (9 route files, 11
+  parse sites).
+- **A-3 (LOW, a11y)**: the overlay lacks the drawer's Tab-wrap handler;
+- **A-4 (LOW, a11y)**: the overlay's close button lacks the drawer's
+  `focus-visible` ring and the input suppresses its outline with no
+  replacement;
+- **A-5 (LOW, a11y)**: the header's search button carries neither
+  `aria-expanded` nor `aria-haspopup` (its menu/cart neighbors carry the
+  pair);
+- **A-6 (LOW, docs-truth)**: AGENTS.md:115 still carries the pre-re-skin
+  kitchen-catalog fragment ("Damascus-first … 8 products … all 16");
+- **A-7 (LOW, docs-truth)**: AGENTS.md:92's rate-limit grid says "14
+  metered sites" and omits the stripe-intent site (actual: 15).
+
+**Operator's fresh-eyes find (RETRACTED — a display artifact, the
+run-78 lesson repeating): the CartDrawer's Tab-wrap selector looked
+corrupt** through the bash output pipeline (`aref]` — a mangled `a[href]`,
+the `[h` eaten as an ANSI sequence; a hand-transcribed jsdom probe threw
+as expected for the mangled string but never read the file). Byte-level
+verification (`'aref]' in src` → False, `'a[href]' in src` → True,
+git-clean) confirms the file has ALWAYS carried the correct `a[href]`
+selector — the S8-7 wrap works. The S79-5 source pin stays as a
+REGRESSION GUARD (it pins the correct state); the environment lesson is
+re-encoded: verify source bytes with the Read tool or a Python probe,
+never trust a selector string displayed through the bash pipeline.
+
+**Live-reference re-measurement (every S74..S78 pinned surface
+re-verified: the mobile panel y:64 h:213/278-header byte-exact ±1px with
+4×14px/1.4px links @36px rhythm and the transparent fixed bar; the shop
+pills 5×34px 0-radius with 16px thumbs + the solid active; the detail
+anatomy; the overlay geometry incl. the 60vh cap, 2px rows, 1-char floor,
+no-results copy). TWO new deltas measured on the search surface:**
+
+- **D-1: the row price's FONT FAMILY.** The reference renders the price
+  in the display serif — computed `"Cormorant Garamond", serif` 14px/300,
+  right-aligned, on BOTH viewports (its class carries `font-heading
+  font-light`). The clone renders `text-sm font-light` in the body font
+  (Inter). The ৳-vs-$ currency stays the documented standing deviation
+  (S77: "the reference's `$370.00` is its own quirk").
+- **D-2: the fresh sheet on reopen.** The reference RESETS the overlay on
+  close/reopen (measured live: query `""`, 0 rows, focus on the input
+  after reopening). The clone persists the previous query + results —
+  `SearchOverlay` never unmounts and never resets; the comment at
+  `search-overlay.tsx:46-48` ("re-mounts fresh") describes the reference,
+  not the component.
+
+**INFO (recorded, no action):** the reference's footer SHOP column links
+to legacy category slugs (`skincare`, `body_care`, `sets`) its own
+Category entity API does not know (only beautytools / brush_combs /
+Bestseller / sets exist) — the clone's footer links to the REAL working
+categories, the deliberate functional superset (kept); LIKE wildcards
+unescaped (documented accepted parity); the transient no-results copy
+during the debounce window (reference behaves identically).
+
+### ToDo (TDD-first: RED tests → GREEN implementations)
+
+- [x] **S79-1 (D-1)**: the overlay's price span gains `font-display` —
+      the reference's computed Cormorant 14px/300, keeping `text-sm
+      font-light` and the right-aligned flow. RED: the "price rides
+      font-light" unit pin extended to require `font-display`; an e2e
+      computed-style assertion (font-family contains "Cormorant").
+- [x] **S79-2 (D-2)**: the overlay resets `query` + `results` when it
+      closes (the reference's fresh sheet on reopen; the reset rides the
+      open→false transition while the sheet is hidden, and clearing
+      `query` drops any in-flight typeahead response through the debounce
+      cleanup's `cancelled` flag). The stale "re-mounts fresh" comment
+      states the real contract. RED: unit case — type → results → close →
+      reopen → empty input, zero rows.
+- [x] **S79-3 (A-1)**: the overlay captures its opener
+      (`document.activeElement` at the open flip, like the drawer's
+      `openerRef`) and restores focus on close. RED: unit case — focus
+      the trigger, open, close → focus back on the trigger.
+- [x] **S79-4 (A-3 + A-4)**: the overlay gains the drawer's Tab-wrap
+      keydown handler (scoped to the overlay element) and the
+      focus-visible treatments (close button `focus-visible:ring-2
+      focus-visible:ring-ring`; input gains a visible focus treatment).
+      RED: unit pins on the classes + a wrap-behavior case.
+- [x] **S79-5 (the aref] phantom — retracted, guard kept)**: the
+      drawer's focusables selector was verified CORRECT at byte level
+      (`a[href]`; the `aref]` reading was a bash-display artifact — the
+      same `[h`-eating mangle the run-78 log recorded). No code change;
+      the layout-tokens source pin (`aref]` forbidden, `a[href]` required)
+      stays as the regression guard so a future editor cannot paste the
+      mangled form back in.
+- [x] **S79-6 (A-5)**: the header's search button gains
+      `aria-expanded={searchOverlayOpen}` + `aria-haspopup="dialog"` (the
+      state is already in the store). RED: source pin + the existing e2e
+      role assertions extended.
+- [x] **S79-7 (A-2)**: bounded JSON body reads — a shared
+      `readJsonBody(request)` seam (rejects a missing/wrong
+      `content-length`-declared or streamed size over the 32 KB cap with
+      the same 400 family; keeps the exact "Invalid JSON body." shape for
+      malformed payloads) + the per-route rate limiters move BEFORE the
+      parse on all 9 route files (11 sites) so garbage is metered.
+      RED: new `tests/unit/json-body.test.ts` (cap, content-type,
+      malformed, passthrough) + every existing route pin stays green.
+- [x] **S79-8 (A-6 + A-7)**: docs-truth — the AGENTS.md kitchen-catalog
+      fragment rewritten for the ElyBeauty 19-product authored order; the
+      rate-limit grid corrected to the 15 real sites (incl.
+      stripe-intent 10/10min); the "session-2..77" range line → 78.
+- [x] **S79-9 (docs sweep)**: this execution log, docs/session_14.md,
+      worklog, AGENTS.md (the S79 contract lines), PAD revision block,
+      ely-beauty_SKILL.md version bump, README/CLAUDE count updates.
+- [x] **S79-10 (evidence)**: every fixed surface re-measured against the
+      live reference; screenshots regenerated off the dev server; full
+      gates; commit + push via the SSH wrapper.
+
+### Test strategy (RED first)
+
+- `tests/unit/search-overlay.test.tsx` (EXTEND ×6): the price's
+  `font-display`; the reset-on-close; the focus restoration; the Tab
+  wrap; the close button's ring; the input's focus treatment.
+- `tests/unit/store-chrome.test.tsx` or the closest existing harness
+  (EXTEND): the repaired wrap selector (the `aref]` throw pinned as a
+  regression guard).
+- `tests/unit/layout-tokens.test.ts` (EXTEND): S79 source pins (the
+  price line, the header button's aria pair, the repaired selector).
+- `tests/unit/json-body.test.ts` (NEW): the helper contract truth table.
+- `tests/e2e/storefront.spec.ts` (EXTEND): the price's computed
+  font-family; the reopen-reset; the opener focus restoration.
+
+### Validation against the codebase (pre-execution)
+
+- `search-overlay.tsx:140` — the price span to gain `font-display`;
+  `:41-42` the state; `:46-48` the stale comment; `:61-63` the focus
+  effect (opener capture + restore + reset-on-close ride this seam);
+  `:104-120` the input/close-button classes; `:93-99` the container (the
+  Tab-wrap scope).
+- `store-chrome.tsx:177-178` — the corrupted `aref]` selector; `:157-167`
+  the opener pattern to mirror; `:96-110` where SearchOverlay renders.
+- `header.tsx:107-116` — the search button (the store already exposes
+  `searchOverlayOpen` via `useStore()`).
+- The 9 JSON route files (addresses ×2, cart, cart/bulk, checkout,
+  contact, coupon/apply, newsletter, stripe/payment-intent, wishlist) —
+  each parse site + its limiter position.
+- `AGENTS.md:92,115,141` — the docs-truth lines.
+
+### Execution log (run 79)
+
+- **TDD discipline held**: the RED batch (21 new pins: the overlay
+  unit cases ×6, the layout-token S79 source pins ×7, the
+  json-body truth table ×8) ran 12-failing before implementation
+  (the S79-5 aref] guard and one negative case were green by design);
+  every fix flipped its pins green. The full suites: **634/634 unit**
+  (61 files; +21) · **82/82 e2e** (+3) · lint · typecheck ·
+  typecheck:tests · clean build.
+- **S79-1 (D-1)**: the price span gained `font-display` — the
+  reference's computed Cormorant Garamond 14px/300 (measured live on
+  both viewports; e2e pins the computed font-family contains
+  "Cormorant"). The ฿-vs-$ currency stays the standing S77
+  deviation.
+- **S79-2 (D-2)**: the fresh sheet — the reset rides the render-time
+  prev-open adjustment (React's "storing information from previous
+  renders"; the FIRST draft put it in an effect and the repo's
+  `react-hooks/set-state-in-effect` lint correctly rejected it — the
+  carousel trap note generalizes). Clearing `query` drops in-flight
+  typeahead responses through the debounce cleanup's `cancelled`
+  flag. The stale "re-mounts fresh" comment now states the real
+  contract. E2E pins close → reopen → empty input + zero rows.
+- **S79-3 (A-1)**: `openerRef` capture at the open flip + restore on
+  close — the CartDrawer's modal contract, now on both chrome
+  modals. E2E pins the focus landing back on the header button.
+- **S79-4 (A-3 + A-4)**: the overlay gained the drawer's Tab-wrap
+  keydown handler (scoped to `overlayRef`), `focus-visible:ring-2
+  focus-visible:ring-ring` on the close button, and a paired
+  focus-visible ring on the input (the outline suppression is no
+  longer naked).
+- **S79-5 (the aref] phantom — RETRACTED)**: byte-level verification
+  (`'aref]' in src` → False; `'a[href]' in src` → True; git-clean)
+  proved the drawer's wrap selector was ALWAYS correct — the
+  "corruption" was the bash display pipeline eating `[h` (the same
+  artifact class the run-78 log recorded). No code change; the source
+  pin stays as the regression guard. **Environment lesson encoded:
+  verify source bytes with the Read tool or a Python probe, never a
+  string displayed through the bash pipeline.**
+- **S79-6 (A-5)**: the header's search button carries
+  `aria-expanded={searchOverlayOpen}` + `aria-haspopup="dialog"` —
+  e2e pins the false → true → false cycle.
+- **S79-7 (A-2)**: the bounded `parseJsonBody` seam
+  (`src/lib/json-body.ts`): non-`application/json` content-types are
+  refused (all first-party clients + tests already send it — swept
+  before enforcing), a declared content-length over 32 KB fast-fails,
+  a streamed body past the cap is cancelled mid-read, malformed JSON
+  returns null (the routes' byte-identical 400 envelope). All 9 JSON
+  route files migrated; **no route calls `request.json()` directly**
+  (source-pinned). The per-route limiters moved BEFORE the parse
+  (checkout, contact, coupon, newsletter, wishlist, cart-POST,
+  stripe-intent — cart-PATCH/bulk/addresses were already first) so
+  garbage is metered. **A latent TEST flaw surfaced**: the
+  api-boundaries `post()` helper placed the per-test IP in the
+  LEFTMOST (spoofable) xff hop — every request funneled into ONE
+  shared 198.51.100.1 bucket, masked by the old parse-before-limit
+  order (invalid bodies never reached the limiter). The helper now
+  places the per-test IP in the RIGHTMOST (trusted) hop the clientIp
+  contract reads — per-test budget isolation as always intended.
+- **S79-8 (A-6 + A-7)**: AGENTS.md docs-truth — the kitchen-catalog
+  fragment rewritten for the ElyBeauty 19-product bonnet-first
+  authored order; the rate-limit grid corrected to the 15 real sites
+  (incl. stripe-intent 10/10min); the "session-2..77" range → 79.
+- **Gates (all observed green)**: lint · typecheck ·
+  typecheck:tests · **634/634 unit** · clean build · **82/82
+  e2e**.
+- **Evidence**: 25 screenshots regenerated off the DEV server
+  (`npm run dev` + `node scripts/capture-screenshots.mjs` in one
+  invocation — all 25 ✓, dimensions/sizes validated); the
+  clone-side measurement harness (`scripts/measure-parity.mjs`)
+  re-ran against the standalone build: the mobile panel byte-exact
+  (±1px: y:64 h:213 vs the reference's 64/214, links 14px/1.4px
+  @36px rhythm y:124/160/196/232 vs 125/161/197/233), the overlay
+  price now Cormorant 14px/300 (e2e-computed), the fresh-sheet +
+  focus-restoration behaviors e2e-pinned; the reference side
+  re-measured live before the fixes (both viewports, logged in).
+- **Docs sweep**: this log, docs/session_14.md, worklog (Task 73),
+  AGENTS.md (S79 contract lines + the Zod-boundary seam note +
+  docs-truth), CLAUDE.md (634/82 counts), README (counts), PAD v2.7,
+  ely-beauty_SKILL.md v2.7.0 (project_state + the Session 79
+  Appendix B entry).
