@@ -4,7 +4,7 @@ import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { findCartId, getCartSummary, readCartToken } from "@/lib/cart";
 import { applyCouponCode } from "@/lib/coupons";
-import { computeOrderMoney } from "@/lib/order-money";
+import { computeOrderMoney, shippingMethodForCity } from "@/lib/order-money";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { getSettings } from "@/lib/settings";
 import { getStripe, isStripeServerConfigured } from "@/lib/stripe";
@@ -18,11 +18,13 @@ import { checkoutSchema, firstError } from "@/lib/validation";
 export const dynamic = "force-dynamic";
 
 // The mint body is the checkout input's placement subset (the same schema —
-// single source — minus the fields the placement itself owns).
+// single source — minus the fields the placement itself owns). S73-1: no
+// shippingMethod — the tier is server-derived from the address city at
+// mint time too, so the intent amount always matches the placement's
+// in-tx derivation.
 const mintBodySchema = checkoutSchema.pick({
   email: true,
   customerName: true,
-  shippingMethod: true,
   couponCode: true,
   idempotencyKey: true,
   address: true,
@@ -110,10 +112,14 @@ export async function POST(request: NextRequest) {
   }
 
   const settings = await getSettings();
+  // S73-1: the tier is derived from the ADDRESS CITY — the same derivation
+  // the placement re-runs in-tx (a client-sent method can never skew the
+  // intent amount away from the order it places).
+  const shippingMethod = shippingMethodForCity(snapshot.address.city);
   const money = computeOrderMoney({
     subtotal: summary.subtotal,
     discount,
-    shippingMethod: snapshot.shippingMethod,
+    shippingMethod,
     freeShippingThresholdCents: settings.freeShippingThresholdCents,
     standardShippingCents: settings.standardShippingCents,
     expressShippingCents: settings.expressShippingCents,

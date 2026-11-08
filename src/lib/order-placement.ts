@@ -8,7 +8,7 @@ import {
   couponRedemptionFilter,
   isCouponRedeemable,
 } from "@/lib/coupons";
-import { computeOrderMoney } from "@/lib/order-money";
+import { computeOrderMoney, shippingMethodForCity } from "@/lib/order-money";
 import { StripeAmountMismatchError } from "@/lib/stripe-payment";
 import { checkoutSchema } from "@/lib/validation";
 
@@ -40,7 +40,10 @@ export type PlaceOrderArgs = {
   customerName: string;
   lines: CartLine[];
   couponCode: string | null;
-  shippingMethod: "standard" | "express";
+  // S73-1: NO shippingMethod here — the tier is derived IN-TX from
+  // `args.address.city` via `shippingMethodForCity` (Dhaka → standard,
+  // outside → express). The run-72 regression trusted the caller's field;
+  // there is nothing left to trust.
   paymentMethod: string;
   cardLast4: string | null;
   shippingAddressJson: string;
@@ -142,6 +145,12 @@ export async function placeOrderTx(
     // Σ(unitPrice × qty) or skew tax/shipping.
     const subtotal = orderItems.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
 
+    // S73-1: the shipping TIER is derived from the address city INSIDE the
+    // transaction — the AGENTS.md "server re-derives it in-tx" invariant,
+    // finally implemented. (Run-72 trusted `args.shippingMethod`, so a
+    // crafted request paid the Dhaka tier on a Chattogram address.)
+    const shippingMethod = shippingMethodForCity(args.address.city);
+
     let discount = 0;
     let couponFreeShipping = false;
     if (args.couponCode) {
@@ -185,7 +194,7 @@ export async function placeOrderTx(
     const money = computeOrderMoney({
       subtotal,
       discount,
-      shippingMethod: args.shippingMethod,
+      shippingMethod,
       freeShippingThresholdCents: args.settings.freeShippingThresholdCents,
       standardShippingCents: args.settings.standardShippingCents,
       expressShippingCents: args.settings.expressShippingCents,
@@ -218,7 +227,7 @@ export async function placeOrderTx(
         discount,
         total: money.total,
         couponCode: args.couponCode,
-        shippingMethod: args.shippingMethod,
+        shippingMethod,
         shippingAddress: args.shippingAddressJson,
         notes: args.notes,
         paymentMethod: args.paymentMethod,

@@ -69,8 +69,7 @@ function paymentLabel(method: string, cardLast4: string | null, paymentStatus: s
   switch (method) {
     case "card":
       return `${cardLast4 ? `Card ending in ${cardLast4}` : "Card"}${status}`;
-    case "paypal":
-      return "PayPal";
+    // S73-8: paypal retired — PAYMENT_METHODS is card|cod only.
     case "cod":
       return "Cash on delivery";
     default:

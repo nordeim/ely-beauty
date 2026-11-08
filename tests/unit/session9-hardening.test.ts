@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { AddressGoneError, promoteAddressInTx } from "@/lib/addresses";
-import { dedupeBulkWanted, planBulkUpsertQuantity } from "@/lib/cart-bulk";
+import { dedupeBulkWanted, planBulkUpsertQuantity, splitBulkKey } from "@/lib/cart-bulk";
 import { buildRevenueChart } from "@/lib/analytics";
 import { applyOrderStatusTransition } from "@/lib/order-status";
 
@@ -233,5 +233,36 @@ describe("planBulkUpsertQuantity (S9-8)", () => {
 
   it("keeps the 99 ceiling even when stock allows more", () => {
     expect(planBulkUpsertQuantity(95, 10, 1000)).toBe(99);
+  });
+});
+
+// S73-2 — the composite-key split must take the substring after the FIRST
+// pipe: a variant label is free text (≤60 chars) and may itself contain
+// "|" (e.g. an admin-authored "Rose|Quartz"). The old `split("|")[1]`
+// silently truncated such labels to "Rose" — mislabeled cart lines and a
+// potential cross-variant quantity collision in the planner.
+describe("splitBulkKey (S73-2)", () => {
+  it("splits a plain key into product + variant", () => {
+    expect(splitBulkKey("p1|Pink")).toEqual({ productId: "p1", variant: "Pink" });
+  });
+
+  it("treats a key without a pipe as a variant-less line", () => {
+    expect(splitBulkKey("p1")).toEqual({ productId: "p1", variant: "" });
+  });
+
+  it("keeps pipes inside the variant label (split at the FIRST pipe only)", () => {
+    expect(splitBulkKey("p1|Rose|Quartz")).toEqual({ productId: "p1", variant: "Rose|Quartz" });
+  });
+
+  it("round-trips every dedupeBulkWanted key", () => {
+    const wanted = dedupeBulkWanted([
+      { productId: "a", quantity: 1, variant: "Rose|Quartz" },
+      { productId: "b", quantity: 1, variant: "Pink / 0.5mm" },
+      { productId: "c", quantity: 1 },
+    ]);
+    for (const key of wanted.keys()) {
+      const { productId, variant } = splitBulkKey(key);
+      expect(`${productId}|${variant}`).toBe(key);
+    }
   });
 });

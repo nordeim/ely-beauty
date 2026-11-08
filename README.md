@@ -1,6 +1,6 @@
 # ElyBeauty
 
-![Next.js](https://img.shields.io/badge/Next.js-16-black) ![React](https://img.shields.io/badge/React-19-149ECA) ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6) ![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4_CSS--first-38BDF8) ![Prisma](https://img.shields.io/badge/Prisma-6_+_SQLite-2D3748) ![Stripe](https://img.shields.io/badge/Stripe-payments-635FF5) ![Tests](https://img.shields.io/badge/tests-512_unit_·_69_e2e-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue) ![Currency](https://img.shields.io/badge/currency-BDT_৳-e11d48)
+![Next.js](https://img.shields.io/badge/Next.js-16-black) ![React](https://img.shields.io/badge/React-19-149ECA) ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6) ![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4_CSS--first-38BDF8) ![Prisma](https://img.shields.io/badge/Prisma-6_+_SQLite-2D3748) ![Stripe](https://img.shields.io/badge/Stripe-payments-635FF5) ![Tests](https://img.shields.io/badge/tests-536_unit_·_69_e2e-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue) ![Currency](https://img.shields.io/badge/currency-BDT_৳-e11d48)
 
 A production-grade premium-skincare e-commerce storefront + admin back office — a visual-and-functional **superset** of the Base44 reference app at [`ely-beauty.base44.app`](https://ely-beauty.base44.app/). High-fashion editorial design (Cormorant Garamond + Inter, warm ivory + taupe, sharp corners), a Bangladesh-market commerce model (৳ BDT, city-tiered shipping, Cash on Delivery), **product variants (colors/sizes)**, and a full admin console, on Next.js 16 · React 19 · TypeScript strict · Tailwind CSS v4 · Prisma 6 + SQLite. Re-skinned in run-72 from the battle-tested HomeNest Kitchen scaffold (70+ remediation sessions; see `docs/reference-investigation.md` for the live-reference dossier).
 
@@ -37,7 +37,7 @@ Demo accounts (seeded):
 | **Commerce** | Guest carts (token-cookie, merged on login **and at sign-in**) · "Your Bag" mini drawer + full cart page · **server-computed cart badge survives full reloads** · coupons (`WELCOME10`, `SAVE20`, `FREESHIP`) with expiry + **atomic redemption caps** · first-class `free_shipping` coupon type · free-shipping threshold hint (coupon-aware) · **product variants carried end-to-end** (cart line identity → checkout summary → order snapshot) · **city-tiered shipping** (Dhaka ৳70 / outside ৳130, derived from the City field; "Enter city to calculate" before input) · single-page checkout (CONTACT → SHIPPING ADDRESS → PAYMENT METHOD → Order Notes + live ORDER SUMMARY) · **Cash on Delivery** (the reference's method; **real Stripe card payments when configured** — Payment Element (PCI SAQ-A), server-minted PaymentIntent, webhook-driven placement, the admin refund ledger) · **idempotent order placement** (retries reuse the same key — no double orders) · server-side total re-derivation **inside the order transaction** + atomic stock checks · transactional cart adds (no lost increments, shared 99/stock clamp, scoped race-safe line writes) · **bounded wishlist** (100-item cap enforced transactionally) with **one-request Add All to Cart** and **server-rendered filled hearts** on the detail page |
 | **Orders** | **`ELY-XXXXXXXX` crypto-random order numbers** (no sequence to enumerate) · **token-gated order-success receipt** · order tracking gated by **number + purchase email** (anti-enumeration, rate-limited) with a 4-step status timeline · per-order event history · admin cancellation restores stock · optional order notes |
 | **Accounts** | Register/login (scrypt hashes, DB-backed sessions, HMAC-signed cookie) · profile editing · address book (bounded at 20, first address auto-defaults, delete-default auto-promotes, friendly 409 at the cap inside the write transaction) · **order history first** (the reference's account anatomy) |
-| **Admin** (`/admin`, role-gated) | Dashboard (KPIs + 14-day revenue chart folded from bounded SQL day buckets) · products CRUD (+ colors/sizes) · categories CRUD · coupons CRUD · carousel manager · orders manager (guarded transactional status transitions + carrier tracking) · analytics · store settings (incl. the Dhaka/outside shipping tiers + WhatsApp number) |
+| **Admin** (`/admin`, role-gated) | Dashboard (KPIs + 14-day revenue chart folded from bounded SQL day buckets) · products CRUD (+ colors/sizes editors, S73-12) · categories CRUD · coupons CRUD · carousel manager · orders manager (guarded transactional status transitions + carrier tracking) · analytics · store settings (incl. the Dhaka/outside shipping tiers + WhatsApp number) |
 | **Content** | About ("Beauty, Redefined"), Contact (working form), 5 legal pages, 404 · SEO metadata, `sitemap.xml` (public routes only, `/shop`), `robots.txt`, **noindex on every private surface** · **schema.org JSON-LD** (Product blocks with BDT pricing, Organization + WebSite with SearchAction) · canonical URLs · OpenGraph/Twitter share cards · web manifest + favicon · branded error boundaries |
 
 ## Architecture
@@ -52,7 +52,7 @@ Demo accounts (seeded):
 | UI primitives | Radix UI + CVA + lucide-react | latest | Accessible dialogs, selects, sheets, toasts |
 | Charts | Recharts | ^3 | Admin revenue/analytics |
 | Validation | Zod | ^3.25 | Every external input boundary |
-| Tests | Vitest · Playwright | ^3.2 · ^1.64 | 512 unit · 69 e2e |
+| Tests | Vitest · Playwright | ^3.2 · ^1.64 | 536 unit · 69 e2e |
 
 ```mermaid
 flowchart TB
@@ -122,14 +122,14 @@ flowchart TB
 ## Testing
 
 ```bash
-npm run test            # 512 unit tests (Vitest, node env; the component tests run under jsdom)
+npm run test            # 536 unit tests (Vitest, node env; the component tests run under jsdom)
 npm run typecheck:tests # the unit/e2e/seed sources are type-checked too
 npm run build           # required before e2e (suite starts the standalone server)
 npm run test:e2e        # 69 e2e tests (Playwright; server auto-started on :3100)
 npx playwright test tests/e2e/mobile-navigation.spec.ts   # single spec
 ```
 
-- **Unit** covers the ৳ money math (whole-taka + poisha rendering), the `DATABASE_URL` resolution contract, coupon rules and lifecycle gates, scrypt hashing, Zod schemas (root-relative image URLs, price bounds, bulk cart with variants, the BD address model), order-total derivation **and the city-tier shipping mapping**, the **ELY- order-number format**, the variant-aware cart planners (merge + bulk composite keys), the CSP builder, rate limiting + `clientIp`, auth/tracking/order-status/order-access gates, review-aggregate transactional growth, sitemap/robots privacy, JSON-LD builders, the seed policy, and the ElyBeauty catalog constants (19 products / authored order / categories / variants).
+- **Unit** covers the ৳ money math (whole-taka + poisha rendering), the `DATABASE_URL` resolution contract, coupon rules and lifecycle gates, scrypt hashing, Zod schemas (root-relative image URLs, price bounds, bulk cart with variants, the BD address model, admin variant editors), order-total derivation **and the city-tier shipping mapping — derived IN-TX from the address city (S73-1, integration-pinned)**, the **variant-label composition** (`composeVariantLabel`, S73-7), the **composite-key merge stock clamp** (`stockMapForCompositeKeys`, S73-2), the **ELY- order-number format**, the variant-aware cart planners (merge + bulk composite keys), the CSP builder, rate limiting + `clientIp`, auth/tracking/order-status/order-access gates, review-aggregate transactional growth, sitemap/robots privacy, JSON-LD builders, the seed policy, and the ElyBeauty catalog constants (19 products / authored order / categories / variants).
 - **E2E** covers the reference anatomy (home/shop/detail/footer), the full guest COD checkout → `ELY-XXXXXXXX` → tracking loop **including the token-gated receipt and guess-denial**, an idempotent checkout replay, the guest-cart merge at login, the **variant carry-through** (select → bag → summary → receipt), the **shipping tiers** (Dhaka ৳70 / outside ৳130 / FREESHIP → FREE), auth success/failure, admin gating, the address-book lifecycle, reviews, wishlist flows, the cart badge freshness, the SEO/platform contracts (JSON-LD with BDT, robots/sitemap, security headers, noindex), the Stripe-configured surfaces' guards, and — most importantly — `mobile-navigation.spec.ts`, the **Tailwind v4 regression guard** for the mobile menu (conditional mount, no-JS-toggled `hidden`, toggle-closes, scroll lock, the in-panel search flow, route-change close on the iPhone-13 viewport).
 - E2E specs wait for hydration (`gotoHydrated`) before interacting; clicking before hydration falls back to native form GET, which is exactly the class of bug the guard exists for.
 
@@ -145,7 +145,7 @@ npx playwright test tests/e2e/mobile-navigation.spec.ts   # single spec
 | `destructive` | `hsl(0 84.2% 60.2%)` | SALE badge, errors |
 | `radius` | `0.25rem` (4px) | Sharp editorial corners |
 
-Typography: **Cormorant Garamond** (300–600) for display headings via `.font-display` (light weight, tight tracking), **Inter** (300–600) for body — both via `next/font`. Micro-labels: `.eyebrow-label` (12px/500, 0.12em tracking, uppercase); text CTAs: `.link-cta` (underlined). Tailwind v4 CSS-first config in `src/app/globals.css` (`@theme inline`; no `tailwind.config.js`).
+Typography: **Cormorant Garamond** (300–600) for display headings via `.font-display` (light weight, tight tracking), **Inter** (300–600) for body — both via `next/font`. Micro-labels: `.eyebrow-label` (12px/500, 0.1em tracking, uppercase — S73-6, measured on the reference); text CTAs: `.link-cta` (underlined). Tailwind v4 CSS-first config in `src/app/globals.css` (`@theme inline`; no `tailwind.config.js`).
 
 ## Screenshots
 

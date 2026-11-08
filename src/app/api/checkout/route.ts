@@ -6,7 +6,7 @@ import { findCartId, getCartSummary, readCartToken } from "@/lib/cart";
 import { applyCouponCode } from "@/lib/coupons";
 import { db } from "@/lib/db";
 import { generateOrderNumber } from "@/lib/order-number";
-import { computeOrderMoney } from "@/lib/order-money";
+import { computeOrderMoney, shippingMethodForCity } from "@/lib/order-money";
 import { orderAccessToken, replayAuthorized, resolveReplay, ReplayDeniedError } from "@/lib/order-access";
 import { CheckoutError, placeOrderTx, type PlaceOrderArgs } from "@/lib/order-placement";
 import { isUniqueViolation, uniqueTargetField } from "@/lib/prisma-errors";
@@ -19,17 +19,12 @@ import {
 } from "@/lib/stripe-payment";
 import { checkoutSchema, firstError } from "@/lib/validation";
 
-// checkoutSchema + the last-4 card digits (the client never sends full card
-// numbers to the server — only the final four for the receipt) + the Stripe
-// path's CONFIRMED PaymentIntent id (card data never touches this app: the
-// Payment Element owns it; the id is the only thing that crosses).
+// checkoutSchema + the Stripe path's CONFIRMED PaymentIntent id (card data
+// never touches this app: the Payment Element owns it; the id is the only
+// thing that crosses). S73-8 retired the scaffold's demo-card last-4 field —
+// a card payment now requires a VERIFIED intent, and the receipt digits are
+// read from the intent itself, never from the body.
 const checkoutBodySchema = checkoutSchema.extend({
-  cardLast4: z
-    .string()
-    .trim()
-    .regex(/^\d{4}$/, "Card number must end in 4 digits")
-    .optional()
-    .or(z.literal("")),
   stripePaymentIntentId: z
     .string()
     .trim()
@@ -84,11 +79,16 @@ export async function POST(request: NextRequest) {
     const data = parsed.data;
     const stripeIntentId = data.stripePaymentIntentId || null;
 
-    // The demo card path requires the last-4 receipt digits; the Stripe path
-    // reads them from the VERIFIED intent below (the client's copy is never
-    // trusted for anything money-shaped).
-    if (data.paymentMethod === "card" && !stripeIntentId && !/^\d{4}$/.test(data.cardLast4 ?? "")) {
-      return NextResponse.json({ error: "Card details are required for card payment." }, { status: 400 });
+    // S73-8: card payments require a VERIFIED Stripe PaymentIntent — the
+    // run-72 UI only offers Card through the Payment Element, so a bare
+    // `card` body with any 4-digit last4 is a crafted request, not a shopper.
+    // (The scaffold's demo card path is gone; unpaid "card" orders are ops
+    // noise that can never exist again.)
+    if (data.paymentMethod === "card" && !stripeIntentId) {
+      return NextResponse.json(
+        { error: "Card payments are unavailable right now. Please choose Cash on Delivery or try again later." },
+        { status: 400 },
+      );
     }
 
     // Per-client budget (x-forwarded-for when behind a proxy, shared bucket
@@ -146,6 +146,10 @@ export async function POST(request: NextRequest) {
     }
 
     const settings = await getSettings();
+    // S73-1: the shipping tier for the Stripe amount estimate is derived
+    // from the ADDRESS CITY — the same derivation the placement re-runs
+    // in-tx (the client's field is not part of the schema and never trusted).
+    const estimatedShippingMethod = shippingMethodForCity(data.address.city);
     const shippingAddressJson = JSON.stringify({
       fullName: data.address.fullName,
       phone: data.address.phone,
@@ -178,7 +182,7 @@ export async function POST(request: NextRequest) {
       const estimate = computeOrderMoney({
         subtotal: summary.subtotal,
         discount: couponDiscountCents,
-        shippingMethod: data.shippingMethod,
+        shippingMethod: estimatedShippingMethod,
         freeShippingThresholdCents: settings.freeShippingThresholdCents,
         standardShippingCents: settings.standardShippingCents,
         expressShippingCents: settings.expressShippingCents,
@@ -213,9 +217,8 @@ export async function POST(request: NextRequest) {
       customerName: data.customerName,
       lines: summary.lines,
       couponCode: data.couponCode ? data.couponCode.trim().toUpperCase() : null,
-      shippingMethod: data.shippingMethod,
       paymentMethod: data.paymentMethod,
-      cardLast4: stripeIntentId ? stripeLast4 : data.paymentMethod === "card" ? (data.cardLast4 ?? null) : null,
+      cardLast4: stripeIntentId ? stripeLast4 : null,
       shippingAddressJson,
       notes: data.notes ? data.notes.trim() : null,
       saveAddress: Boolean(user) && data.saveAddress === true,

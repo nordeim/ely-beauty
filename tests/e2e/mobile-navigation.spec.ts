@@ -83,25 +83,35 @@ test.describe("mobile navigation (Tailwind v4 regression guard)", () => {
     await expect(page.getByTestId("mobile-menu")).toBeVisible();
   });
 
-  test("the active route is highlighted with the text-primary color (no pill)", async ({ page }) => {
+  test("the active route carries aria-current with NO color highlight (reference parity)", async ({ page }) => {
     await gotoHydrated(page, "/shop");
     await page.getByTestId("mobile-menu-button").click();
     const panel = page.getByTestId("mobile-menu");
     const activeLink = panel.getByRole("link", { name: "Shop", exact: true });
+    // S73-4: the LIVE reference renders NO active-link treatment — every
+    // panel link is foreground-colored, no aria-current (measured
+    // 2026-11-08: all links rgb(26,26,26)). The clone keeps aria-current
+    // scoped to the exact-path no-query links as the invisible a11y
+    // superset, and drops the run-72 text-primary highlight for parity.
     await expect(activeLink).toHaveAttribute("aria-current", "page");
-    // Run-72: the active treatment is the text-primary color — the reference
-    // dropped the old bg-primary pill.
-    await expect(activeLink).toHaveClass(/text-primary/);
-    await expect(activeLink).not.toHaveClass(/bg-primary/);
+    // No STANDALONE text-primary token (the hover: variant is fine — the
+    // whitespace-delimited pattern matches the run-72 active class but not
+    // "hover:text-primary").
+    await expect(activeLink).not.toHaveClass(/(?:^|\s)text-primary(?:\s|$)/);
 
-    // CSS-color assertion: the active link renders in the primary color, a
-    // different computed color from an idle link on the same panel.
+    // CSS-color assertion: the active link renders in the SAME color as an
+    // idle link on the panel (uniform foreground — the reference anatomy).
     const idleLink = panel.getByRole("link", { name: "About", exact: true });
     const [activeColor, idleColor] = await Promise.all([
       activeLink.evaluate((el) => getComputedStyle(el).color),
       idleLink.evaluate((el) => getComputedStyle(el).color),
     ]);
-    expect(activeColor).not.toBe(idleColor);
+    expect(activeColor).toBe(idleColor);
+
+    // The query-string links (Beauty Tools / Brush & Combs) never claim
+    // current on /shop — the exact-path scoping (the I-1 fix).
+    await expect(panel.getByRole("link", { name: "Beauty Tools", exact: true })).not.toHaveAttribute("aria-current");
+    await expect(panel.getByRole("link", { name: "Brush & Combs", exact: true })).not.toHaveAttribute("aria-current");
   });
 
   test("panel works on the reference's core routes (about)", async ({ page }) => {

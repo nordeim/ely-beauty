@@ -68,7 +68,7 @@ function emptyCategory(): CategoryFormValues {
     slug: "",
     description: "",
     icon: "package",
-    iconGradient: "from-orange-400 to-orange-600",
+    iconGradient: "from-stone-400 to-stone-600",
     sortOrder: "0",
     isActive: true,
   };

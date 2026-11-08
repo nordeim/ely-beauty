@@ -29,12 +29,16 @@ export function dedupeBulkWanted(
   return wanted;
 }
 
-/** Split a dedupeBulkWanted key back into its (productId, variant) pair. */
+/**
+ * Split a dedupeBulkWanted key back into its (productId, variant) pair.
+ * Splits at the FIRST pipe only: a variant label is free text (≤60 chars)
+ * and may itself contain "|" (an admin-authored "Rose|Quartz" must survive
+ * the round-trip — S73-2).
+ */
 export function splitBulkKey(key: string): { productId: string; variant: string } {
-  const parts = key.split("|");
-  const productId = parts[0] ?? "";
-  const variant = parts[1] ?? "";
-  return { productId, variant };
+  const idx = key.indexOf("|");
+  if (idx === -1) return { productId: key, variant: "" };
+  return { productId: key.slice(0, idx), variant: key.slice(idx + 1) };
 }
 
 /**

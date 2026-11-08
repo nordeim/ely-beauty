@@ -82,6 +82,9 @@ export async function upsertProductAction(data: ProductUpsertInput): Promise<Adm
     sku: input.sku,
     stock: input.stock,
     images: JSON.stringify(input.images),
+    // S73-12: variants are admin-editable (JSON columns, run-72 shape).
+    colors: JSON.stringify(input.colorOptions ?? []),
+    sizes: JSON.stringify(input.sizes ?? []),
     tags: JSON.stringify(input.tags ?? []),
     specs: JSON.stringify(input.specs ?? []),
     badge: input.badge || null,

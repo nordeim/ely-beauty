@@ -9,8 +9,10 @@ import { MAX_CART_QUANTITY } from "@/lib/cart-quantity";
 // ---------------------------------------------------------------------------
 
 export const ORDER_STATUSES = ["pending", "processing", "shipped", "delivered", "cancelled"] as const;
-export const SHIPPING_METHODS = ["standard", "express"] as const;
-export const PAYMENT_METHODS = ["card", "paypal", "cod"] as const;
+// S73-1: the shipping-method vocabulary moved to `shippingMethodForCity`
+// (src/lib/order-money.ts) — the tier is derived from the address city, so
+// the checkout schema no longer accepts (or exports) a client-sent method.
+export const PAYMENT_METHODS = ["card", "cod"] as const;
 export const ROLES = ["customer", "admin"] as const;
 
 export const emailSchema = z
@@ -117,7 +119,10 @@ export const couponApplySchema = z.object({
 export const checkoutSchema = z.object({
   email: emailSchema,
   customerName: z.string().trim().min(2, "Full name is required").max(80),
-  shippingMethod: z.enum(SHIPPING_METHODS),
+  // S73-1: NO shippingMethod here — the tier is SERVER-DERIVED from the
+  // address city (shippingMethodForCity) inside the placement transaction.
+  // A client-sent value is stripped by zod and can never influence the
+  // charged tier. (Run-72 regression: the body field was trusted verbatim.)
   paymentMethod: z.enum(PAYMENT_METHODS),
   couponCode: z.string().trim().max(40).optional().or(z.literal("")),
   saveAddress: z.boolean().optional(),
@@ -211,6 +216,20 @@ export const productInputSchema = z.object({
   images: z
     .array(imageUrlSchema)
     .min(1, "At least one image is required"),
+  // ElyBeauty variants (run-72; admin-editable since S73-12 — the docs
+  // always claimed "products CRUD (+ colors/sizes)"). Bounds chosen so any
+  // composed "Color / Size" label (src/lib/variants.ts, S73-7) stays inside
+  // the cart's 60-char variant bound: 28 + 3 + 28 = 59.
+  colorOptions: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1, "Color name is required").max(28, "Color names must be 28 characters or fewer"),
+        hex: z.string().trim().regex(/^#[0-9a-fA-F]{6}$/, "Hex color must look like #AABBCC"),
+      }),
+    )
+    .max(12, "At most 12 colors")
+    .default([]),
+  sizes: z.array(z.string().trim().min(1, "Size labels cannot be blank").max(28, "Size labels must be 28 characters or fewer")).max(12, "At most 12 sizes").default([]),
   tags: z.array(z.string().trim().min(1).max(40)).max(12).default([]),
   specs: z
     .array(z.object({ label: z.string().trim().min(1).max(80), value: z.string().trim().min(1).max(80) }))

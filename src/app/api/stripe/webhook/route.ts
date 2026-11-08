@@ -4,7 +4,7 @@ import { getCartSummary } from "@/lib/cart";
 import { applyCouponCode } from "@/lib/coupons";
 import { db } from "@/lib/db";
 import { generateOrderNumber } from "@/lib/order-number";
-import { computeOrderMoney } from "@/lib/order-money";
+import { computeOrderMoney, shippingMethodForCity } from "@/lib/order-money";
 import { CheckoutError, placeOrderTx, type PlaceOrderArgs } from "@/lib/order-placement";
 import { isUniqueViolation, uniqueTargetField } from "@/lib/prisma-errors";
 import { getSettings } from "@/lib/settings";
@@ -244,10 +244,6 @@ export async function POST(request: NextRequest) {
       typeof meta.customerName === "string" && meta.customerName.trim().length >= 2
         ? meta.customerName.trim()
         : null;
-    const shippingMethod =
-      meta.shippingMethod === "standard" || meta.shippingMethod === "express"
-        ? meta.shippingMethod
-        : null;
     const couponCode =
       typeof meta.couponCode === "string" && meta.couponCode.length > 0 ? meta.couponCode : null;
     const idempotencyKey =
@@ -256,7 +252,7 @@ export async function POST(request: NextRequest) {
         : null;
     const cartToken =
       typeof meta.cartToken === "string" && meta.cartToken.length > 0 ? meta.cartToken : null;
-    if (!shippingSnapshot.success || !email.success || !cartId || !customerName || !shippingMethod) {
+    if (!shippingSnapshot.success || !email.success || !cartId || !customerName) {
       // Not our checkout intent (or metadata drifted) — deterministic: record
       // + the ops refund trail (never a 5xx; a retry could not succeed).
       await recordEvent(evt, STRIPE_FAILURE_REASON.metadataUnusable);
@@ -304,6 +300,10 @@ export async function POST(request: NextRequest) {
     }
 
     const settings = await getSettings();
+    // S73-1: the tier is derived from the ADDRESS SNAPSHOT's city — the same
+    // derivation the mint used and the placement re-runs in-tx. (The intent
+    // metadata no longer carries a client-sent shippingMethod.)
+    const shippingMethod = shippingMethodForCity(shippingSnapshot.data.city);
     const money = computeOrderMoney({
       subtotal: summary.subtotal,
       discount,
@@ -344,7 +344,6 @@ export async function POST(request: NextRequest) {
       lines: summary.lines,
       couponCode,
       notes: null,
-      shippingMethod,
       paymentMethod: "card",
       cardLast4: null,
       shippingAddressJson: JSON.stringify({

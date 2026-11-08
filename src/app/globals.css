@@ -93,12 +93,15 @@
   }
 }
 
-/* The reference's micro-label: Inter 12px/500, 1.2px tracking, uppercase.
+/* The reference's micro-label: Inter 12px/500, 1.2px tracking, uppercase
+ * (S73-6: 1.2px @ 12px = 0.1em — measured live on the reference's nav,
+ * hero CTA, and panel links; the 0.12em the utility shipped was a pinning
+ * miss against the same comment's own "1.2px" claim).
  * Declared with @utility (NOT @layer utilities) so `@apply` can reference
  * it from .link-cta — the v4 rule: custom classes in @layer utilities are
  * NOT apply-able candidates (trap-log class). */
 @utility eyebrow-label {
-  @apply text-xs font-medium uppercase tracking-[0.12em];
+  @apply text-xs font-medium uppercase tracking-[0.1em];
 }
 
 /* The reference's underlined text CTAs (SHOP THE COLLECTION, DISCOVER SETS). */

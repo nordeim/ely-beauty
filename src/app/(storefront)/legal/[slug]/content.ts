@@ -107,21 +107,21 @@ export const legalContent: Record<LegalSlug, LegalDoc> = {
       {
         heading: "Products, Pricing & Availability",
         body: [
-          "We work hard to display products, colors, and specifications accurately, but we are human: minor variations between photography and the physical product can occur, and handmade items differ slightly piece to piece. Product pages describe the item you should generally expect.",
-          "Prices are listed in US dollars and can change at any time before an order is confirmed. If a product is mispriced or becomes unavailable after you order, we will contact you to confirm or cancel that portion of the order, and we will refund any amount charged for items we cannot ship.",
+          "We work hard to display products, colors, and specifications accurately, but screens vary: minor differences between photography and the physical product can occur, and natural materials differ slightly piece to piece. Product pages describe the item you should generally expect.",
+          "Prices are listed in Bangladeshi Taka (৳) and can change at any time before an order is confirmed. If a product is mispriced or becomes unavailable after you order, we will contact you to confirm or cancel that portion of the order, and we will refund any amount paid for items we cannot ship.",
         ],
       },
       {
         heading: "Orders & Payment",
         body: [
-          "Your order is an offer to buy; it is accepted when we send the order confirmation. Payment is charged at checkout through our payment processor. We accept the payment methods shown at checkout and never store your full card number on our systems.",
-          "Sales tax is calculated based on the shipping address and applicable rates. Shipping costs and free-shipping thresholds are shown before you complete checkout. You are responsible for providing a complete, accurate shipping address; we cannot reship orders lost due to address errors.",
+          "Your order is an offer to buy; it is accepted when we send the order confirmation. Payment is collected on delivery (Cash on Delivery) for orders inside Bangladesh; when a card option is shown at checkout, payment is charged securely through our payment processor and we never store your full card number on our systems.",
+          "Shipping is calculated by delivery area — inside Dhaka and outside Dhaka tiers, shown before you complete checkout — and free-shipping offers apply as described on the site. You are responsible for providing a complete, accurate delivery address and phone number; we cannot reship orders lost due to address errors.",
         ],
       },
       {
         heading: "Warranties & Product Care",
         body: [
-          "Selected cookware, knives, and appliances include a manufacturer's warranty, described on the product page. Warranties cover manufacturing defects under normal household use; they do not cover misuse, commercial use, unauthorized repairs, or ordinary wear and tear. Care instructions shipped with your product are part of the bargain — following them keeps your warranty intact.",
+          "Selected beauty tools and devices include a manufacturer's warranty, described on the product page. Warranties cover manufacturing defects under normal personal use; they do not cover misuse, commercial use, unauthorized repairs, or ordinary wear and tear. Care instructions shipped with your product are part of the bargain — following them keeps your warranty intact.",
         ],
       },
       {
@@ -143,15 +143,15 @@ export const legalContent: Record<LegalSlug, LegalDoc> = {
       {
         heading: "General Information Only",
         body: [
-          "Product descriptions, images, specifications, care instructions, and recipes published on this site are provided in good faith for general informational purposes. While we strive for accuracy and test the products we sell, we make no representation or warranty of any kind, express or implied, about the completeness, accuracy, or reliability of the information presented.",
-          "Colors can vary between screens and between dye lots of natural materials such as walnut and copper. Handmade and small-batch items are, by nature, individually unique — minor variations in finish, grain, or weight are features of craftsmanship, not defects.",
+          "Product descriptions, images, specifications, usage instructions, and care routines published on this site are provided in good faith for general informational purposes. While we strive for accuracy and test the products we sell, we make no representation or warranty of any kind, express or implied, about the completeness, accuracy, or reliability of the information presented.",
+          "Colors can vary between screens and between production batches of natural materials such as silk, bamboo, and wood. Handmade and small-batch items are, by nature, individually unique — minor variations in finish, grain, or texture are features of craftsmanship, not defects.",
         ],
       },
       {
-        heading: "Safety & Kitchen Use",
+        heading: "Safety & Skincare Use",
         body: [
-          "Kitchen tools involve sharp edges, heat, and electricity. Always read and follow the safety instructions supplied with your product. Nothing on this site constitutes professional, medical, or dietary advice; consult a qualified professional for questions about food safety, allergies, or appliance installation.",
-          "Use cookware and appliances only for their intended purpose. Damage arising from misuse — overheating empty pans, dishwasher-cleaning items marked hand-wash, or modifying electrical products — is not covered by our guarantees or the manufacturer's warranty.",
+          "Beauty tools and devices involve moving parts, textured surfaces, and (for electronic pieces) batteries and motors. Always read and follow the safety instructions supplied with your product. Nothing on this site constitutes professional medical, dermatological, or dietary advice; consult a qualified professional for questions about skin conditions, allergies, or interactions with treatments.",
+          "Use skincare and beauty tools only for their intended purpose. When trying a new product or tool on your skin, patch-test first and stop if irritation occurs. Damage arising from misuse — using tools on broken or irritated skin, deviating from a device's intended use, or modifying electronic products — is not covered by our guarantees or the manufacturer's warranty.",
         ],
       },
       {
@@ -213,8 +213,8 @@ export const legalContent: Record<LegalSlug, LegalDoc> = {
       {
         heading: "30-Day Returns",
         body: [
-          "Unused items in their original packaging may be returned within 30 days of delivery for a full refund to your original payment method. That includes most cookware, bakeware, tools, and storage — if it hasn't been used and it's in resellable condition, it qualifies.",
-          "A few categories are excluded for hygiene and safety reasons: opened food-contact items that cannot be sanitized (such as used cutlery sets), gift cards, and clearance items marked 'final sale' on the product page. Electronics must include all original accessories and packaging.",
+          "Unused items in their original packaging may be returned within 30 days of delivery for a full refund. That includes most skincare tools, brushes, accessories, and devices — if it hasn't been used and it's in resellable condition, it qualifies.",
+          "A few categories are excluded for hygiene and safety reasons: opened skincare and body-care items that cannot be sanitized, opened intimate or spa wear (such as spa socks), gift cards, and clearance items marked 'final sale' on the product page. Electronic devices must include all original accessories and packaging.",
         ],
       },
       {
@@ -227,7 +227,7 @@ export const legalContent: Record<LegalSlug, LegalDoc> = {
       {
         heading: "Refund Timelines",
         body: [
-          "Once your return arrives, we inspect it within 2 business days. Approved refunds are issued to your original payment method within 5–7 business days; your bank may take a few additional days to post the credit. Original shipping fees are non-refundable except when the return is our error or the item arrived defective.",
+          "Once your return arrives, we inspect it within 2 business days. For Cash on Delivery orders, approved refunds are issued within 5–7 business days via mobile financial services (bKash, Nagad) or a bank transfer to an account you nominate; for card orders, the refund returns to your original payment method and your bank may take a few additional days to post the credit. Original shipping fees are non-refundable except when the return is our error or the item arrived defective.",
           "If an item arrives damaged or isn't the one you ordered, tell us within 7 days of delivery with a photo if you can — we'll ship a replacement immediately or refund you in full, including shipping. Your choice.",
         ],
       },

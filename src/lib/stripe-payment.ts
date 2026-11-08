@@ -43,10 +43,13 @@ export type { StripeConfig };
 
 /** The checkout fields the PaymentIntent mint consumes (the placement
  *  input's subset — the intent metadata's payload, and the webhook
- *  backstop's rebuild source). */
+ *  backstop's rebuild source). S73-1: no `shippingMethod` — the tier is
+ *  derived from the address city (the `shipping` metadata JSON carries the
+ *  city; the webhook re-derives the tier from it, never from a client
+ *  field). */
 export type StripeCheckoutSnapshot = Pick<
   z.infer<typeof checkoutSchema>,
-  "email" | "customerName" | "shippingMethod" | "couponCode" | "idempotencyKey" | "address"
+  "email" | "customerName" | "couponCode" | "idempotencyKey" | "address"
 >;
 
 // ---------------------------------------------------------------------------
@@ -139,7 +142,6 @@ export function buildPaymentIntentParams(args: {
       customerName: snapshot.customerName,
       // The snapshot serialization order is the webhook's parse contract.
       shipping: JSON.stringify(snapshot.address),
-      shippingMethod: snapshot.shippingMethod,
       couponCode: snapshot.couponCode ?? "",
       cartToken: cartToken ?? "",
       idempotencyKey: snapshot.idempotencyKey ?? "",

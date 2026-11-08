@@ -12,7 +12,7 @@ ElyBeauty is a production-grade e-commerce storefront + admin back office — a 
 
 Every change must preserve two properties:
 
-1. **Visual parity with the reference** — warm ivory background, taupe primary (`hsl(30 12% 48%)`), Cormorant Garamond display headings via `.font-display`, sharp 4px radii, borderless editorial cards, BDT ৳ whole-taka money, the exact header/mobile-menu/footer anatomy captured in `docs/screenshots/`.
+1. **Visual parity with the reference** — warm ivory background, taupe primary (`hsl(30 12% 48%)`), Cormorant Garamond display headings via `.font-display`, sharp 4px radii, borderless editorial cards, BDT ৳ whole-taka money, the exact header/mobile-menu/footer anatomy captured in `docs/screenshots/`. Since S73-4 the nav renders NO active-link highlight (the live reference renders none — measured on both desktop and panel); since S73-6 the micro-label tracking is 0.1em (the reference's measured 1.2px @12px).
 2. **Superset functionality** — the reference's full feature set (single-page COD checkout, variants, city-tiered shipping, WhatsApp float) plus wishlist, coupons, order tracking, reviews, legal pages, and a complete admin back office. Never remove a working feature to simplify a change.
 
 ## Foundational Principles

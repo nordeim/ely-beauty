@@ -99,9 +99,23 @@ describe("checkoutSchema", () => {
     expect(checkoutSchema.safeParse(valid).success).toBe(true);
   });
 
-  it("rejects unknown shipping/payment methods", () => {
-    expect(checkoutSchema.safeParse({ ...valid, shippingMethod: "drone" }).success).toBe(false);
+  it("ignores a client-sent shippingMethod entirely (the server derives the tier — S73-1)", () => {
+    // The field is no longer part of the schema: whatever the client sends
+    // is STRIPPED by zod (unknown key), never trusted. A crafted
+    // "drone"/"standard" value cannot influence the charged tier.
+    const parsed = checkoutSchema.safeParse({ ...valid, shippingMethod: "drone" });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect("shippingMethod" in parsed.data).toBe(false);
+    }
+    const bare = checkoutSchema.safeParse(valid);
+    expect(bare.success).toBe(true);
+  });
+
+  it("rejects unknown payment methods (paypal retired — S73-8)", () => {
     expect(checkoutSchema.safeParse({ ...valid, paymentMethod: "crypto" }).success).toBe(false);
+    expect(checkoutSchema.safeParse({ ...valid, paymentMethod: "paypal" }).success).toBe(false);
+    expect(checkoutSchema.safeParse({ ...valid, paymentMethod: "cod" }).success).toBe(true);
   });
 
   it("accepts an optional idempotency key (16..64 chars)", () => {
@@ -376,5 +390,76 @@ describe("couponInputSchema free_shipping (session-20 S20-6)", () => {
 
   it("rejects an unknown type", () => {
     expect(couponInputSchema.safeParse({ code: "ODD", type: "mystery", value: 1 }).success).toBe(false);
+  });
+});
+
+// S73-12 — the admin product form's variant fields (colors/sizes). The
+// run-72 docs claimed "products CRUD (+ colors/sizes)" but the schema had
+// no such fields — variants were seed-only. These pins make the claim true.
+describe("productInputSchema.variants (S73-12)", () => {
+  const base = {
+    name: "Test Serum Tool",
+    slug: "test-serum-tool",
+    description: "A very good test tool for the variant schema pins.",
+    categoryId: "cat_beauty-tools",
+    price: 1999,
+    sku: "BT-TEST-01",
+    stock: 10,
+    images: ["/images/tool-1.jpg"],
+  };
+
+  it("defaults colors and sizes to empty arrays (variant-less products stay valid)", () => {
+    const parsed = productInputSchema.safeParse(base);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.colorOptions).toEqual([]);
+      expect(parsed.data.sizes).toEqual([]);
+    }
+  });
+
+  it("accepts bounded color swatches and size labels", () => {
+    const parsed = productInputSchema.safeParse({
+      ...base,
+      colorOptions: [{ name: "Pink", hex: "#CB9D9D" }],
+      sizes: ["0.5mm", "1.0mm"],
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("rejects malformed hex colors", () => {
+    const parsed = productInputSchema.safeParse({
+      ...base,
+      colorOptions: [{ name: "Pink", hex: "CB9D9D" }],
+    });
+    expect(parsed.success).toBe(false);
+  });
+
+  it("rejects blank and over-long labels", () => {
+    expect(
+      productInputSchema.safeParse({ ...base, colorOptions: [{ name: "", hex: "#CB9D9D" }] }).success,
+    ).toBe(false);
+    expect(productInputSchema.safeParse({ ...base, sizes: [""] }).success).toBe(false);
+    expect(productInputSchema.safeParse({ ...base, sizes: ["x".repeat(29)] }).success).toBe(false);
+  });
+
+  it("bounds the arrays at 12 entries (dialog-scale inputs)", () => {
+    const thirteen = Array.from({ length: 13 }, (_, i) => `Size ${i}`);
+    expect(productInputSchema.safeParse({ ...base, sizes: thirteen }).success).toBe(false);
+  });
+
+  it("keeps any composed Color / Size label inside the cart variant bound (60 chars)", () => {
+    // 28 + " / " + 28 = 59 ≤ 60 — the bounds are chosen so the composed
+    // variant label (S73-7) can never overflow cartMutateSchema.variant.
+    const parsed = productInputSchema.safeParse({
+      ...base,
+      colorOptions: [{ name: "x".repeat(28), hex: "#CB9D9D" }],
+      sizes: ["y".repeat(28)],
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      const c = parsed.data.colorOptions[0]?.name ?? "";
+      const s = parsed.data.sizes[0] ?? "";
+      expect(`${c} / ${s}`.length).toBeLessThanOrEqual(60);
+    }
   });
 });

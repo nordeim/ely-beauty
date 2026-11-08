@@ -9,7 +9,7 @@ import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { Prisma } from "@prisma/client";
 import { db } from "./db";
-import { computeMergedQuantities } from "./cart-merge";
+import { computeMergedQuantities, stockMapForCompositeKeys } from "./cart-merge";
 
 export const CART_COOKIE = "homenest_cart";
 const CART_TTL_S = 60 * 60 * 24 * 60; // 60 days
@@ -92,13 +92,18 @@ export async function getOrCreateCart(userId: string | null): Promise<string> {
           // S6-6): a merged line can never exceed what checkout would accept.
           // Run-72: the merge plan keys on (productId, variant) — the same
           // product in two colors merges per variant, and each variant line
-          // clamps to the product's stock independently.
+          // clamps to the product's stock independently. S73-2: the stock map
+          // is keyed by the SAME composite keys (the plain-keyed map made the
+          // clamp dead code — the planner's get() never hit).
           const planIds = [...new Set([...ownItems, ...guest.items].map((i) => i.productId))];
           const stockRows = await db.product.findMany({
             where: { id: { in: planIds } },
             select: { id: true, stock: true },
           });
-          const stockById = new Map(stockRows.map((p) => [p.id, p.stock]));
+          const stockById = stockMapForCompositeKeys(
+            [...ownItems, ...guest.items].map((i) => ({ productId: i.productId, variant: i.variant ?? "" })),
+            stockRows,
+          );
           const plan = computeMergedQuantities(
             ownItems.map((i) => ({ productId: `${i.productId}|${i.variant ?? ""}`, quantity: i.quantity })),
             guest.items.map((i) => ({ productId: `${i.productId}|${i.variant ?? ""}`, quantity: i.quantity })),
@@ -108,9 +113,11 @@ export async function getOrCreateCart(userId: string | null): Promise<string> {
           const newToken = randomBytes(24).toString("base64url");
           const mergedId = await db.$transaction(async (tx) => {
             for (const [planKey, quantity] of plan) {
-              const parts = planKey.split("|");
-              const productId = parts[0] ?? "";
-              const variant = parts[1] ?? "";
+              // Split at the FIRST pipe — a variant label may itself contain
+              // "|" (S73-2, same fix as splitBulkKey).
+              const pipeAt = planKey.indexOf("|");
+              const productId = planKey.slice(0, pipeAt);
+              const variant = planKey.slice(pipeAt + 1);
               if (!productId) continue;
               await tx.cartItem.upsert({
                 where: { cartId_productId_variant: { cartId: own.id, productId, variant } },

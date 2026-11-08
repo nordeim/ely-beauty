@@ -62,7 +62,7 @@ export function MobileNav({ isAuthenticated, isAdmin }: { isAuthenticated: boole
             <button
               type="button"
               onClick={() => setMobileNavSearch(true)}
-              className="flex items-center gap-3 text-sm uppercase tracking-[0.12em] text-foreground transition-colors hover:text-primary"
+              className="flex items-center gap-3 text-sm uppercase tracking-[0.1em] text-foreground transition-colors hover:text-primary"
             >
               <Search className="h-4 w-4" aria-hidden />
               Search
@@ -88,15 +88,20 @@ export function MobileNav({ isAuthenticated, isAdmin }: { isAuthenticated: boole
 
 function MobileNavLink({ href, label, className }: { href: string; label: string; className?: string }) {
   const pathname = usePathname();
+  // S73-4 (reference parity + I-1): the LIVE reference renders NO active
+  // treatment on the panel links (measured 2026-11-08 — every link
+  // rgb(26,26,26), no aria-current). The clone keeps aria-current as the
+  // INVISIBLE a11y superset, scoped to exact-path no-query links only —
+  // the three /shop-derived links can never all claim "current" on /shop,
+  // and the color stays uniform foreground (no text-primary highlight).
   const base = href.split("?")[0] ?? href;
-  const isActive = base === "/shop" ? pathname === "/shop" : href === "/" ? pathname === "/" : pathname.startsWith(base);
+  const isCurrent = !href.includes("?") && pathname === base;
   return (
     <Link
       href={href}
-      aria-current={isActive ? "page" : undefined}
+      aria-current={isCurrent ? "page" : undefined}
       className={cn(
-        "block text-sm uppercase tracking-[0.12em] text-foreground transition-colors hover:text-primary",
-        isActive && "text-primary",
+        "block text-sm uppercase tracking-[0.1em] text-foreground transition-colors hover:text-primary",
         className,
       )}
     >

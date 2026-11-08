@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { computeMergedQuantities } from "@/lib/cart-merge";
+import { computeMergedQuantities, stockMapForCompositeKeys } from "@/lib/cart-merge";
 
 describe("computeMergedQuantities", () => {
   it("sums per-product quantities across the user cart and the guest cart", () => {
@@ -95,5 +95,61 @@ describe("computeMergedQuantities", () => {
   it("clamps user-only lines to stock too (merge re-baselines the whole cart)", () => {
     const merged = computeMergedQuantities([{ productId: "a", quantity: 9 }], [], new Map([["a", 4]]));
     expect(merged.get("a")).toBe(4);
+  });
+});
+
+// S73-2 — the login merge's stock clamp was dead code after run-72's
+// composite-key change: the planner received `${productId}|${variant}` keys
+// while the stock map was keyed by plain productId, so `stockById.get(key)`
+// never hit and no line ever clamped (the S6-6 invariant silently disabled).
+// The seam below builds the stock map with the SAME composite keys the
+// planner uses — pure, and unit-pinned together with the planner it feeds.
+describe("stockMapForCompositeKeys (S73-2)", () => {
+  it("keys the map by the same composite keys the merge planner uses", () => {
+    const map = stockMapForCompositeKeys(
+      [
+        { productId: "p1", variant: "Pink" },
+        { productId: "p1", variant: "" },
+        { productId: "p2", variant: null },
+      ],
+      [
+        { id: "p1", stock: 3 },
+        { id: "p2", stock: 7 },
+      ],
+    );
+    expect(map.get("p1|Pink")).toBe(3);
+    expect(map.get("p1|")).toBe(3);
+    expect(map.get("p2|")).toBe(7);
+    expect(map.has("p3|")).toBe(false);
+  });
+
+  it("preserves pipes inside a variant label (the split takes the first pipe)", () => {
+    const map = stockMapForCompositeKeys(
+      [{ productId: "p1", variant: "Rose|Quartz" }],
+      [{ id: "p1", stock: 5 }],
+    );
+    expect(map.get("p1|Rose|Quartz")).toBe(5);
+  });
+
+  it("feeds the planner: every variant line of a product clamps to that product's stock", () => {
+    const stock = stockMapForCompositeKeys(
+      [
+        { productId: "p1", variant: "Pink" },
+        { productId: "p1", variant: "Navy" },
+      ],
+      [{ id: "p1", stock: 2 }],
+    );
+    const merged = computeMergedQuantities(
+      [{ productId: "p1|Pink", quantity: 1 }],
+      [{ productId: "p1|Navy", quantity: 4 }],
+      stock,
+    );
+    expect(merged.get("p1|Pink")).toBe(1);
+    expect(merged.get("p1|Navy")).toBe(2);
+  });
+
+  it("an empty stock list yields an empty map (unknown stock = no opinion)", () => {
+    const map = stockMapForCompositeKeys([{ productId: "p1", variant: "" }], []);
+    expect(map.size).toBe(0);
   });
 });

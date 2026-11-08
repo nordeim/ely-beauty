@@ -46,7 +46,8 @@ const EMPTY_FORM: AddressFormValues = {
   city: "",
   state: "",
   postalCode: "",
-  country: "United States",
+  // S73-9: Bangladesh-only store — the dialog defaults to the home market
+  country: "Bangladesh",
 };
 
 export function AddressDialog() {

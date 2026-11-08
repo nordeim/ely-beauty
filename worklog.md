@@ -1632,3 +1632,39 @@ Stage Summary:
 - Encoded results: the @apply/@layer-utilities v4 trap (AGENTS trap 6); the agent-browser lessons this run (absolute screenshot paths; scoped-snapshot refs for the ambiguous Search label; the always-mounted drawer's closed-state "Loading" text is not a fetch failure).
 - Deferred/documented: generated imagery (not the reference's CDN photos); the disabled Google button (no OAuth secrets); the reference's broken template-remnant category links not cloned; one verification order on the live reference (ELY-MW774C50, ৳358 — operator-deletable).
 - Next action: the standard verification cycle for the next run (the reference is LIVE again — re-baseline parity against it when it changes).
+
+---
+Task ID: 73-a
+Agent: deep audit 73-a (read-only subagent, run-73 cycle)
+Task: Read-only deep audit 73-a — the 9 standing code anchors + the run-72 re-skin delta (173 files) + the standing conflict-marker gate on the 1ac21eb tree (the first audit after the ElyBeauty re-skin).
+
+Work Log:
+- Methodology: skills/web-application/SKILL.md + the 12-category code-review-checklist standard + AGENTS.md invariants; skills/ excluded from all checking per the operator contract.
+- Tree: HEAD 1ac21eb on main, working tree clean. The delta under audit: commit 42e9d95 (173 files, the re-skin) + 40b90a9 (docs).
+- The 9 anchors verified from scratch with file:line evidence: db-path (PASS), money (PASS with the M-1 caveat), validation boundary (PASS), checkout transaction authority (PASS with the M-1 caveat), auth/session (PASS), order-access gating (PASS), mobile-nav/Tailwind v4 (PASS), SEO/sitemap/robots (PASS), CSP nonce/hydration (PASS).
+- Findings: 3 MEDIUM (M-1 client-trusted shipping tier — the documented "server re-derives in-tx" invariant was NOT implemented; M-2 the login merge's stock clamp dead on composite keys; M-3 kitchenware legal copy + the USD claim), 5 LOW (L-1 the panel drops the size on both-dimension products; L-2 the composite split truncates pipe-bearing variants; L-3 paypal accepted + the bare-card path; L-4 the hydration-unsafe window.location.search read; L-5 the US country default), 4 INFORMATIONAL (I-1 three-links-active; I-2 residual sweep; I-3 stale comments; I-4 the AGENTS.md shipping claim false). Conflict-marker gate CLEAN.
+- Every finding carried file:line evidence and a PRE-EXISTING vs ACTIONABLE (run-72) split; no files modified.
+
+Stage Summary:
+- 9/9 anchors PASS; 0 CRITICAL/HIGH; 3 MEDIUM / 5 LOW / 4 INFO, nearly all run-72 re-skin regressions — the findings list that became the Session 73 remediation plan (S73-1..S73-12).
+
+---
+Task ID: 73
+Agent: Super Z (main agent + 73-a read-only audit subagent)
+Task: Run-73 cycle for github.com/nordeim/ely-beauty — workspace refresh, docs review, gates re-validation, deep audit 73-a, live-reference parity re-baseline, TDD remediation (S73-1..S73-12), screenshots, docs alignment, commit + SSH push to main.
+
+Work Log:
+- git pull to 1ac21eb (the operator's session-log commit); docs re-read (AGENTS/CLAUDE/README/PAD v2.0/SKILL v2.0.0/session_1/REMEDIATION_PLAN/worklog); skills/ excluded per contract.
+- Environment: DATABASE_URL shadow converged (same inode); .env/.env.example/db contract verified; all 9 env vars documented.
+- Gates on the pulled tree: lint ✓ · typecheck ✓ · typecheck:tests ✓ · 512/512 unit ✓ · build ✓ · 69/69 e2e ✓.
+- Deep audit 73-a (Task 73-a above): 9/9 anchors PASS, 3M/5L/4I — the Session 73 findings list.
+- Live-reference parity re-baseline (agent-browser, the reference ONLINE): home/shop/product/footer/mobile-menu strong (VLM side-by-side); three measured deltas (P-1 no active-nav highlight on the reference; P-2 shop count geometry; P-3 0.1em micro-label tracking); the decisive S73-7 validation (the reference's massager renders BOTH selector rows and records both selections — the seed is reference-faithful; a plan error corrected before execution).
+- Remediation plan appended (S73-1..S73-11 + the in-flight S73-12), validated against the codebase, executed TDD-first: RED tests first (variants/cart-merge/session9/validation/place-order-integration/mobile-nav e2e), then GREEN implementations across 33 src/test files.
+- Final gates: lint ✓ · typecheck ✓ · typecheck:tests ✓ · 536/536 unit (+24 pins) · build ✓ · 69/69 e2e (the re-pinned mobile-nav contract).
+- agent-browser live verification of the remediated build: shop header/nav/mobile-panel byte-parity with the reference measurements; the composed "Black / Beige" variant label carried end-to-end to the cart line.
+- 25/25 screenshots regenerated (single cold pass); the changed surfaces VLM-verified; the legal pages live-scanned (zero kitchenware/USD remnants).
+- Docs sweep: REMEDIATION_PLAN Session 73, AGENTS.md (the shipping invariant now true + the mobile-menu contract + the 0.1em note), CLAUDE.md (the parity contract), README (536 counts, the S73 rows), PAD v2.1 (rows 85-90 + the stale rows 1/6 corrected), ely-beauty_SKILL.md v2.1.0 (project_state + the Appendix B Session 73 entry with the cycle's four encoded traps), docs/session_2.md, worklog (this entry).
+- Commit + push to main through the SSH wrapper (fast-forward, no new branches; remote verified).
+
+Stage Summary:
+- Run 73 complete: the FIRST findings-bearing cycle since the re-skin — 3 MEDIUM (money-integrity shipping, dead merge clamp, kitchenware legal copy) + 5 LOW + 4 INFO all fixed TDD-first, three live-measured parity deltas closed, and one docs-vs-code gap (admin variant editing) made true. The suite grew 512 → 536 unit; e2e re-pinned at 69/69. The four new traps encoded in the SKILL: a live reference can contradict the clone's own documented parity pins (re-measure, don't trust); zod-strips-unknown is the removal-safety contract (pin the strip); the whitespace-delimited token pattern for not.toHaveClass against hover: variants; interface-field removal = compile-time blast radius enumeration.

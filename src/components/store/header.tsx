@@ -14,11 +14,16 @@ import { MobileNav } from "./mobile-nav";
 import { useStore } from "./store-provider";
 
 // The reference's nav map (verified live): four uppercase micro-labels.
+// S73-4: the LIVE reference renders NO active-link treatment (measured
+// 2026-11-08: every nav link is plain foreground, no aria-current, on every
+// route) — so the clone renders none either. This also removes the old
+// `window.location.search` read during render, which was hydration-unsafe
+// (server/client first-paint mismatch on /shop?category=… landings).
 const NAV_LINKS = [
-  { href: "/shop", label: "Shop", match: "/shop" },
-  { href: "/shop?category=beauty-tools", label: "Beauty Tools", match: "/shop?category=beauty-tools" },
-  { href: "/shop?category=brush-combs", label: "Brush & Combs", match: "/shop?category=brush-combs" },
-  { href: "/about", label: "About", match: "/about" },
+  { href: "/shop", label: "Shop" },
+  { href: "/shop?category=beauty-tools", label: "Beauty Tools" },
+  { href: "/shop?category=brush-combs", label: "Brush & Combs" },
+  { href: "/about", label: "About" },
 ];
 
 type SearchResult = { id: string; name: string; image: string; price: number; category: string };
@@ -45,12 +50,6 @@ export function Header({
   // CLOSED (run-72 fix: an open push-down panel needs the solid bar, or its
   // white-on-transparent labels sit on the ivory panel below the fold line).
   const overHero = pathname === "/" && !mobileNavOpen;
-
-  const isActive = (match: string) => {
-    if (match.startsWith("/shop?")) return pathname === "/shop" && typeof window !== "undefined" && window.location.search === `?${match.split("?")[1]}`;
-    if (match === "/shop") return pathname === "/shop" && (typeof window === "undefined" || !window.location.search);
-    return pathname.startsWith(match);
-  };
 
   return (
     <>
@@ -84,12 +83,9 @@ export function Header({
               <Link
                 key={link.href}
                 href={link.href}
-                aria-current={isActive(link.match) ? "page" : undefined}
                 className={cn(
                   "eyebrow-label transition-colors",
-                  isActive(link.match) ? "text-primary" : "hover:text-primary",
-                  overHero && isActive(link.match) && "text-white underline underline-offset-8",
-                  overHero && !isActive(link.match) && "hover:text-white/70",
+                  overHero ? "hover:text-white/70" : "hover:text-primary",
                 )}
               >
                 {link.label}

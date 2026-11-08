@@ -15,13 +15,9 @@ import type { ProductCardData } from "@/lib/products";
 export function ProductCard({
   product,
   priority = false,
-  inWishlist: _inWishlist = false,
 }: {
   product: ProductCardData;
   priority?: boolean;
-  /** Retained for call-site compatibility; the editorial card renders the
-   *  heart on the product detail page instead (reference parity). */
-  inWishlist?: boolean;
 }) {
   const discount = discountPercent(product.price, product.compareAtPrice);
   const onSale = discount !== null;

@@ -102,18 +102,19 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
     "inline-flex h-10 min-w-10 items-center justify-center border border-border bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary";
 
   return (
-    <div className="container-page flex flex-col gap-8 py-10 sm:py-14">
+    // S73-5: the reference's shop header geometry — py-12 lg:py-20, the
+    // title text-4xl lg:text-6xl, and the product count stacked BELOW the
+    // title (left-aligned), not right-aligned opposite it.
+    <div className="container-page flex flex-col gap-8 py-12 lg:py-20">
       {/* Title + count — the reference's editorial heading. */}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-4xl font-light tracking-tight sm:text-5xl">All Products</h1>
-          {q && (
-            <p className="mt-2 text-sm text-muted-foreground">
-              Showing results for &ldquo;{q}&rdquo;
-            </p>
-          )}
-        </div>
-        <p className="text-sm text-muted-foreground" aria-live="polite">
+      <div>
+        <h1 className="mb-4 font-display text-4xl font-light tracking-tight lg:text-6xl">All Products</h1>
+        {q && (
+          <p className="mb-4 text-sm text-muted-foreground">
+            Showing results for &ldquo;{q}&rdquo;
+          </p>
+        )}
+        <p className="mb-12 text-sm text-muted-foreground" aria-live="polite">
           {total} product{total === 1 ? "" : "s"}
         </p>
       </div>

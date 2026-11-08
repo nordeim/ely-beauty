@@ -9636,3 +9636,126 @@ may delete it).
   category slugs (working filters).
 - One verification order exists on the LIVE reference account
   (ELY-MW774C50, "Clone Verification", ৳358) — operator-deletable.
+
+---
+
+## Session 73 — Run 73: Post-re-skin audit + parity polish (2026-11-08)
+
+The first verification cycle after the run-72 re-skin. Gates on the pulled
+tree (1ac21eb): lint ✓ · typecheck ✓ · typecheck:tests ✓ · 512/512 unit ✓ ·
+build ✓ zero errors · 69/69 e2e ✓. Deep audit 73-a (read-only subagent, the
+web-application + code-review-checklist methodology, skills/ excluded):
+**9/9 standing code anchors PASS** (db-path, money, validation, checkout
+transaction, auth/session, order-access, mobile-nav/Tailwind v4, SEO,
+CSP nonce) — the re-skin preserved every hardened invariant mechanically —
+with **3 MEDIUM / 5 LOW / 4 INFORMATIONAL** findings, almost all run-72
+re-skin regressions or incomplete sweeps. Live-reference parity re-baselined
+against `ely-beauty.base44.app` (online, logged-out surfaces + DOM computed
+styles + VLM side-by-side): home/shop/product/footer/mobile-menu parity
+strong; **three measurable deltas** found (P-1 active-nav highlight the
+reference does not render, P-2 shop count placement, P-3 micro-label
+tracking 0.12em vs the reference's 0.1em — the globals.css comment itself
+documents "1.2px tracking" while the utility ships 0.12em/1.44px).
+
+### ToDo (executed TDD-first this session)
+
+- [x] **S73-1 (M-1, money integrity)** City-tier shipping is client-trusted:
+      `shippingMethodForCity` had NO server-side caller — the checkout route,
+      the Stripe mint, and the webhook all trusted the body/metadata field,
+      contradicting the AGENTS.md "server re-derives it in-tx" invariant.
+      Fix: the placement derives the tier IN-TX from `args.address.city`
+      (`PlaceOrderArgs.shippingMethod` removed); the checkout route derives
+      it for the Stripe estimate; the mint derives it for the intent amount;
+      the webhook derives it from the shipping snapshot; `checkoutSchema`
+      drops the field; the client stops sending it (local derivation stays
+      for display only).
+- [x] **S73-2 (M-2 + L-2, cart integrity)** The login cart-merge's stock
+      clamp was dead code — the plan keys are `${productId}|${variant}` but
+      the stock map was keyed by plain `productId`, so the S6-6 clamp never
+      fired (and the inline split truncated variants containing `|`).
+      Fix: a pure `stockMapForCompositeKeys` seam keys the stock map by the
+      same composite keys the planner uses (unit-pinned with a
+      variant-with-`|` case); `splitBulkKey` + the merge split take the
+      substring after the FIRST `|`.
+- [x] **S73-3 (M-3, public content)** All five legal pages carried kitchenware
+      copy and a "prices are listed in US dollars" claim on a ৳ BDT store.
+      Fix: the flagged paragraphs rewritten for skincare/beauty tools, BDT
+      pricing, city-tiered shipping, COD-dominant payments (refunds via
+      mobile financial services/bank transfer), and beauty-safety language
+      (patch tests, devices) replacing the kitchen-safety section.
+- [x] **S73-4 (P-1 + L-4 + I-1, nav parity + hydration)** The reference
+      renders NO active-link highlight (desktop or mobile panel — measured
+      live: all links `rgb(26,26,26)`, no `aria-current`); the clone
+      highlighted `text-primary` via a `window.location.search` read during
+      render (hydration-unsafe, audit L-4) and marked all three /shop-derived
+      links active simultaneously (I-1). Fix: desktop nav drops the active
+      treatment entirely (parity + kills the unsafe read); the mobile panel
+      keeps `aria-current` scoped to exact-path no-query links only (the
+      invisible a11y superset) and drops the color highlight; the e2e pin
+      re-pinned to the new contract.
+- [x] **S73-5 (P-2, shop header parity)** The reference stacks "19 products"
+      under the title (h1 `text-4xl lg:text-6xl`, container `py-12 lg:py-20`);
+      the clone right-aligned the count in a `py-10 sm:py-14` block with a
+      smaller h1. Fix: reference geometry + stacking.
+- [x] **S73-6 (P-3, typography parity)** `.eyebrow-label` ships
+      `tracking-[0.12em]` (1.44px @12px) while the reference measures 1.2px
+      (0.1em) on every micro-label (nav, hero CTA, panel links) and the
+      globals.css comment says "1.2px tracking". Fix: the utility + the
+      mobile-panel/desktop nav link tracking move to 0.1em.
+- [x] **S73-7 (L-1, variant integrity)** `PurchasePanel` recorded only the
+      color when a product carries both dimensions (`selectedColor ||
+      selectedSize`), silently dropping the size from the cart-line identity
+      and the order snapshot. Plan-validation against the LIVE reference
+      (decisive check): the reference's massager page renders BOTH a COLOR
+      row and a SIZE row (its data duplicates Pink/Black/Beige across both
+      fields) and its cart line records BOTH selections ("Pink" + "Size:
+      Black") — so the seed is reference-faithful and stays unchanged; the
+      panel composes the variant label `"Color / Size"` when both
+      dimensions are selected, carrying both through the cart line identity
+      and `OrderItem.variantLabel`.
+- [x] **S73-8 (L-3 + I-3, payment surface)** `PAYMENT_METHODS` still
+      accepted `paypal`, and a crafted `card` body with any 4-digit `last4`
+      placed an unpaid "card" order without a Stripe intent. Fix: the enum
+      tightens to `card|cod`; the checkout route requires a verified Stripe
+      intent for card; the dead PayPal receipt branch + the stale
+      "Order numbers are sequential" comment (now crypto-random ELY-) are
+      removed.
+- [x] **S73-9 (L-5, BD model)** The account address dialog defaulted country
+      to "United States" on a Bangladesh-only store. Fix: "Bangladesh".
+- [x] **S73-10 (I-2, residual sweep)** package.json name/description
+      (`homenest-store`/HomeNest → `ely-beauty`/ElyBeauty);
+      `CarouselSlide.ctaLink` schema default `/products` → `/shop`;
+      `Category.iconGradient` default kitchenware orange → neutral stone;
+      account initials fallback "H" → "E"; admin tags placeholder; the
+      coupon sessionStorage key `homenest_coupon` → `ely_coupon`;
+      `ProductCard`'s unused `inWishlist` prop removed. (The three
+      `homenest_*` cookie names stay — deliberate, documented in AGENTS.md:
+      renaming would orphan every active session/cart.)
+- [x] **S73-12 (found during S73-7 validation, docs-vs-code gap)** The
+      AGENTS.md/README claim "products CRUD (+ colors/sizes)" was FALSE —
+      `productInputSchema` had no variant fields, so variants were
+      seed-only and an admin edit could never touch them. Fix (TDD):
+      `colorOptions` [{name ≤28, hex #AABBCC}] + `sizes` [≤28] added to
+      the schema (bounds chosen so any composed "Color / Size" label
+      stays inside the cart's 60-char variant bound — unit-pinned),
+      `upsertProductAction` writes the JSON columns, and the admin dialog
+      gained Colors ("Name:#hex" per line) + Sizes (comma-separated)
+      editors hydrated from the live rows. The cart PAGE now also renders
+      the line's variant label (the drawer already did).
+- [x] **S73-11 (docs + evidence)** Screenshots regenerated; AGENTS.md,
+      CLAUDE.md, README.md, PAD, `ely-beauty_SKILL.md` (v2.1.0),
+      docs/session_2.md, worklog aligned; commit + push via the SSH wrapper.
+
+### Verified non-findings (checked, no action)
+
+- `.env` `DATABASE_URL="file:../db/custom.db"` with `db/` at the repo root —
+  correct; the sandbox process-env shadow is converged (same inode);
+  `tests/unit/db-path.test.ts` pins the contract.
+- vitest (512) + playwright (69) config suites intact and green; the
+  mobile-navigation spec (the Tailwind v4 regression guard) passes 7/7.
+- Sitemap/robots/JSON-LD/noindex/canonical SEO suite verified (e2e
+  seo-platform spec + unit seo-routes/seo-ld pins); public routes only.
+- `.env.example` documents every env var the code reads (9/9).
+- The live reference's footer SHOP column labels (Skincare/Body Care) are
+  template remnants pointing at dead `?category=` filters — the clone keeps
+  its working real-slug links (documented run-72 deviation, unchanged).

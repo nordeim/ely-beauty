@@ -1,7 +1,7 @@
 {
-  "name": "homenest-store",
+  "name": "ely-beauty",
   "version": "1.0.0",
-  "description": "HomeNest Kitchen — production-grade kitchenware storefront + admin (Next.js 16 + React 19 + Prisma/SQLite)",
+  "description": "ElyBeauty — production-grade premium-skincare storefront + admin (Next.js 16 + React 19 + Prisma/SQLite)",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000 2>&1 | tee dev.log",

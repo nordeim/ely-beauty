@@ -66,8 +66,9 @@ function paymentLabel(order: OrderWithDetails): string {
     if (order.paymentStatus === "refunded") return "Card — refunded";
     if (order.paymentStatus === "paid") return `Card — paid${order.cardLast4 ? ` (ending in ${order.cardLast4})` : ""}`;
   }
+  // S73-8: the paypal branch is gone — PAYMENT_METHODS is card|cod only
+  // (a crafted "paypal" checkout can no longer place an order).
   if (order.paymentMethod === "card") return `Card ending in ${order.cardLast4 ?? "0000"}`;
-  if (order.paymentMethod === "paypal") return "PayPal";
   if (order.paymentMethod === "cod") return "Cash on Delivery";
   return order.paymentMethod;
 }
@@ -111,9 +112,10 @@ export default async function OrderSuccessPage({
 
   // ACCESS CONTRACT: the receipt (email, address, spend) renders only for a
   // valid order+token pair — the token is minted by /api/checkout and rides
-  // in the redirect URL. Order numbers are sequential, so any other
-  // combination (missing/bad token, unknown number) renders the SAME shell:
-  // an attacker cannot even observe whether a number exists (anti-enumeration).
+  // in the redirect URL. Order numbers are crypto-random (ELY-XXXXXXXX — no
+  // sequence information to enumerate), so any other combination
+  // (missing/bad token, unknown number) renders the SAME shell: an attacker
+  // cannot even observe whether a number exists (anti-enumeration).
   // Lost the link? /track-order recovers it with number + purchase email.
   if (!order) {
     return (

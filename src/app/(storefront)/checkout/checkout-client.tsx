@@ -258,7 +258,8 @@ export function CheckoutClient({
         body: JSON.stringify({
           email: email.trim(),
           customerName: fullName.trim(),
-          shippingMethod: cityTyped ? shippingMethodForCity(addr.city) : "standard",
+          // S73-1: no shippingMethod in the body — the server derives the
+          // tier from the address city inside the placement transaction.
           paymentMethod,
           couponCode: coupon?.code ?? "",
           notes: notes.trim(),
@@ -306,7 +307,6 @@ export function CheckoutClient({
   const stripeSnapshot: StripeMintSnapshot = {
     email: email.trim(),
     customerName: fullName.trim(),
-    shippingMethod: cityTyped ? shippingMethodForCity(addr.city) : "standard",
     couponCode: coupon?.code ?? "",
     idempotencyKey,
     address: {

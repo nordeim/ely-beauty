@@ -6,7 +6,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { formatMoney } from "@/lib/money";
 import { clampSearchTerm } from "@/lib/validation";
-import { parseImages, parseSpecs, parseTags } from "@/lib/products";
+import { parseColors, parseImages, parseSizes, parseSpecs, parseTags } from "@/lib/products";
 import { cn } from "@/lib/utils";
 
 import {
@@ -42,6 +42,11 @@ function toFormValues(product: Product, categoryId: string): ProductFormValues {
     sku: product.sku,
     stock: String(product.stock),
     imagesText: parseImages(product.images).join("\n"),
+    // S73-12: hydrate the variant editors ("Name:#hex" per line).
+    colorsText: parseColors(product.colors)
+      .map((c) => `${c.name}:${c.hex}`)
+      .join("\n"),
+    sizesText: parseSizes(product.sizes).join(", "),
     tagsText: parseTags(product.tags).join(", "),
     specsText: parseSpecs(product.specs)
       .map((spec) => `${spec.label}: ${spec.value}`)

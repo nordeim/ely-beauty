@@ -12,7 +12,10 @@ import { useToast } from "@/components/ui/toaster";
  * Session-storage handoff key: the cart page stores the applied code here so
  * the checkout wizard can pick it up (see checkout-client.tsx).
  */
-export const COUPON_STORAGE_KEY = "homenest_coupon";
+// S73-10: ely-branded key (the three homenest_* COOKIE names stay —
+// renaming those would orphan every active session/cart; this per-tab
+// sessionStorage cache is safe to rename).
+export const COUPON_STORAGE_KEY = "ely_coupon";
 
 type CouponApplyResponse =
   | { ok: true; code: string; discount: number; label: string; description: string; freeShipping?: true }

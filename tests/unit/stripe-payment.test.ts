@@ -25,7 +25,6 @@ import {
 const SNAPSHOT = {
   email: "guest@test.dev",
   customerName: "Guest Guest",
-  shippingMethod: "standard" as const,
   couponCode: "WELCOME10",
   idempotencyKey: "key-1234567890abcdef",
   address: {
@@ -88,7 +87,9 @@ describe("buildPaymentIntentParams", () => {
     expect(params.metadata.userId).toBe("user_1");
     expect(params.metadata.email).toBe("guest@test.dev");
     expect(params.metadata.customerName).toBe("Guest Guest");
-    expect(params.metadata.shippingMethod).toBe("standard");
+    // S73-1: the metadata carries NO shippingMethod — the webhook derives
+    // the tier from the shipping snapshot's city (never a client field).
+    expect("shippingMethod" in params.metadata).toBe(false);
     expect(params.metadata.couponCode).toBe("WELCOME10");
     expect(params.metadata.cartToken).toBe("tok_1");
     expect(params.metadata.idempotencyKey).toBe("key-1234567890abcdef");

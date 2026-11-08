@@ -42,6 +42,8 @@ export type ProductFormValues = {
   sku: string;
   stock: string;
   imagesText: string;
+  colorsText: string;
+  sizesText: string;
   tagsText: string;
   specsText: string;
   badge: string;
@@ -53,7 +55,7 @@ export type ProductFormValues = {
 export type CategoryOption = { id: string; name: string };
 
 const IMAGE_SUGGESTIONS =
-  "/images/product-damascus-knife-set.png, /images/product-copper-pan.png, /images/product-dutch-oven.png, /images/product-walnut-boards.png, /images/product-mixing-bowls.png, /images/product-glass-storage.png, /images/product-ceramic-dinner-set.png, /images/product-stand-mixer.png";
+  "/images/product-satin-pillowcase.png, /images/product-silk-bonnet.png, /images/product-heatless-curler.png, /images/product-scalp-massager.png, /images/product-gua-sha.png, /images/product-derma-roller.png, /images/product-spa-socks.png, /images/product-crystal-hair-remover.png";
 
 function emptyProduct(categoryId: string): ProductFormValues {
   return {
@@ -68,6 +70,8 @@ function emptyProduct(categoryId: string): ProductFormValues {
     sku: "",
     stock: "25",
     imagesText: "",
+    colorsText: "",
+    sizesText: "",
     tagsText: "",
     specsText: "",
     badge: "",
@@ -160,6 +164,22 @@ export function ProductDialogButton({
       .split(",")
       .map((tag) => tag.trim())
       .filter(Boolean);
+    // S73-12: variant text → structured input. Colors use the
+    // "Name:#hex" line format (one per line); sizes are comma-separated.
+    const colorOptions = form.colorsText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const sep = line.lastIndexOf(":");
+        return sep === -1
+          ? { name: line, hex: "" }
+          : { name: line.slice(0, sep).trim(), hex: line.slice(sep + 1).trim() };
+      });
+    const sizes = form.sizesText
+      .split(",")
+      .map((size) => size.trim())
+      .filter(Boolean);
 
     if (!form.categoryId) {
       setError("Choose a category.");
@@ -180,6 +200,8 @@ export function ProductDialogButton({
         sku: form.sku,
         stock: stockNumber,
         images,
+        colorOptions,
+        sizes,
         tags,
         specs,
         badge: form.badge.trim() === "" ? null : form.badge.trim(),
@@ -361,7 +383,7 @@ export function ProductDialogButton({
               id="product-images"
               value={form.imagesText}
               onChange={(e) => setField("imagesText", e.target.value)}
-              placeholder={"/images/product-dutch-oven.png\n/images/product-dutch-oven-2.png"}
+              placeholder={"/images/product-satin-pillowcase.png\n/images/product-satin-pillowcase-2.png"}
               className="min-h-[72px] font-mono text-xs"
               required
             />
@@ -375,7 +397,7 @@ export function ProductDialogButton({
                 id="product-tags"
                 value={form.tagsText}
                 onChange={(e) => setField("tagsText", e.target.value)}
-                placeholder="kitchen, cookware, gift"
+                placeholder="skincare, beauty, gift"
               />
             </div>
             <div className="space-y-2">
@@ -386,6 +408,30 @@ export function ProductDialogButton({
                 onChange={(e) => setField("badge", e.target.value)}
                 placeholder="Featured, Best Seller, …"
                 maxLength={40}
+              />
+            </div>
+          </div>
+
+          {/* S73-12: variant editors — the run-72 schema made colors/sizes
+              admin-editable; the dialog finally exposes them. */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="product-colors">Colors (one “Name:#hex” per line)</Label>
+              <Textarea
+                id="product-colors"
+                value={form.colorsText}
+                onChange={(e) => setField("colorsText", e.target.value)}
+                placeholder={"Pink:#CB9D9D\nNavy Blue:#1F2A44\nSky Blue:#A5C8E1"}
+                className="min-h-[72px] font-mono text-xs"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="product-sizes">Sizes (comma-separated)</Label>
+              <Input
+                id="product-sizes"
+                value={form.sizesText}
+                onChange={(e) => setField("sizesText", e.target.value)}
+                placeholder="0.5mm, 1.0mm"
               />
             </div>
           </div>

@@ -72,3 +72,34 @@ export function computeMergedQuantities(
 
   return merged;
 }
+
+/**
+ * Build the stock lookup for a COMPOSITE-KEYED merge plan (S73-2).
+ *
+ * Run-72 keyed the merge plan by `${productId}|${variant}` but passed a stock
+ * map keyed by plain `productId` — the planner's `stockById.get(planKey)`
+ * never hit, silently disabling the S6-6 stock clamp (a merged line could
+ * exceed live stock). This seam keys the map with the SAME composite keys
+ * the planner uses, so every variant line of a product clamps to that
+ * product's stock. Variant labels are free text and may themselves contain
+ * "|" — keys are built by concatenation (never re-split), so pipes inside a
+ * label survive intact.
+ */
+export function stockMapForCompositeKeys(
+  lines: ReadonlyArray<{ productId: string; variant: string | null }>,
+  stockRows: ReadonlyArray<{ id: string; stock: number }>,
+): Map<string, number> {
+  const variantsByProduct = new Map<string, Set<string>>();
+  for (const line of lines) {
+    const variants = variantsByProduct.get(line.productId) ?? new Set<string>();
+    variants.add(line.variant ?? "");
+    variantsByProduct.set(line.productId, variants);
+  }
+  const stockByPlanKey = new Map<string, number>();
+  for (const row of stockRows) {
+    for (const variant of variantsByProduct.get(row.id) ?? []) {
+      stockByPlanKey.set(`${row.id}|${variant}`, row.stock);
+    }
+  }
+  return stockByPlanKey;
+}

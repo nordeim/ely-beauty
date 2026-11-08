@@ -40,16 +40,19 @@ const SETTINGS = {
   taxRatePercent: 8,
 };
 
+// S73-1: the city now selects the shipping tier (server-derived in-tx).
+// Dhaka keeps these scaffold-era pins on the STANDARD tier they were
+// written against; the S73-1 describe below exercises both tiers.
 const ADDRESS = {
   label: "Home",
   fullName: "Guest Guest",
   phone: "+1 555 000 0000",
   line1: "1 Main Street",
   line2: "",
-  city: "Testville",
+  city: "Dhaka",
   state: "TS",
   postalCode: "12345",
-  country: "United States",
+  country: "Bangladesh",
 };
 
 type World = {
@@ -157,7 +160,6 @@ function argsFor(w: World, lines: CartLine[], overrides: Partial<PlaceOrderArgs>
     lines,
     couponCode: w.couponCode,
     notes: null,
-    shippingMethod: "standard",
     paymentMethod: "cod",
     cardLast4: null,
     shippingAddressJson: JSON.stringify(ADDRESS),
@@ -466,5 +468,64 @@ describe("placeOrderTx — the Stripe path (PAY-STRIPE-1 retrofit)", () => {
     expect(await db.stripeEvent.count({ where: { eventId: "evt_stripe_dedup_2" } })).toBe(0);
     // The prior order is the ONLY 305; nothing else was written.
     expect(await db.order.count({ where: { number: "ORD-2026-305" } })).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// S73-1 — city-tiered shipping is SERVER-DERIVED from the address.
+//
+// Run-72 regression: `shippingMethodForCity` had NO server-side caller —
+// the checkout route, the Stripe mint, and the webhook all trusted the
+// body/metadata field verbatim, so a crafted request with a Chattogram
+// address and `shippingMethod: "standard"` paid the Dhaka tier (a ৳60
+// undercharge per order on a COD store). The placement now derives the
+// tier IN-TX from `args.address.city` (the AGENTS.md "server re-derives it
+// in-tx" invariant, finally true), and `PlaceOrderArgs.shippingMethod` is
+// GONE — there is nothing left to trust.
+// ---------------------------------------------------------------------------
+describe("placeOrderTx — city-tiered shipping is derived from the address (S73-1)", () => {
+  it("charges the express tier for an outside-Dhaka city", async () => {
+    const w = await seedWorld("shipexp1", { coupon: null });
+    const number = await placeOrderTx(
+      db, "ORD-2026-401",
+      argsFor(w, linesFor(w), { address: { ...ADDRESS, city: "Chattogram" } }),
+    );
+    const order = await db.order.findUnique({ where: { number } });
+    expect(order).not.toBeNull();
+    expect(order!.shippingMethod).toBe("express");
+    expect(order!.shipping).toBe(SETTINGS.expressShippingCents);
+  });
+
+  it("charges the standard tier for Dhaka", async () => {
+    const w = await seedWorld("shipstd1", { coupon: null });
+    const number = await placeOrderTx(
+      db, "ORD-2026-402",
+      argsFor(w, linesFor(w), { address: { ...ADDRESS, city: "Dhaka" } }),
+    );
+    const order = await db.order.findUnique({ where: { number } });
+    expect(order).not.toBeNull();
+    expect(order!.shippingMethod).toBe("standard");
+    expect(order!.shipping).toBe(SETTINGS.standardShippingCents);
+  });
+
+  it("matches Dhaka case-insensitively and tolerates surrounding whitespace", async () => {
+    const w = await seedWorld("shipdhk2", { coupon: null });
+    const number = await placeOrderTx(
+      db, "ORD-2026-403",
+      argsFor(w, linesFor(w), { address: { ...ADDRESS, city: "  dhaka " } }),
+    );
+    const order = await db.order.findUnique({ where: { number } });
+    expect(order!.shippingMethod).toBe("standard");
+  });
+
+  it("an empty city falls back to the standard tier (never a free ride)", async () => {
+    const w = await seedWorld("shipemp3", { coupon: null });
+    const number = await placeOrderTx(
+      db, "ORD-2026-404",
+      argsFor(w, linesFor(w), { address: { ...ADDRESS, city: "" } }),
+    );
+    const order = await db.order.findUnique({ where: { number } });
+    expect(order!.shippingMethod).toBe("standard");
+    expect(order!.shipping).toBe(SETTINGS.standardShippingCents);
   });
 });

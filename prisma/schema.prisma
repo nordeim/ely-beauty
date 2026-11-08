@@ -49,7 +49,7 @@ model Category {
   description  String    @default("") // the tile caption ("Serums, creams & treatments")
   imageUrl     String    @default("") // the tile photo (root-relative store path)
   icon         String    @default("package") // lucide icon component name
-  iconGradient String    @default("from-orange-400 to-orange-600")
+  iconGradient String    @default("from-stone-400 to-stone-600") // S73-10: neutral (kitchenware orange retired)
   sortOrder    Int       @default(0)
   isActive     Boolean   @default(true)
   createdAt    DateTime  @default(now())
@@ -295,7 +295,7 @@ model CarouselSlide {
   subtitle  String  @default("")
   image     String
   ctaText   String  @default("Shop Now")
-  ctaLink   String  @default("/products")
+  ctaLink   String  @default("/shop") // S73-10: the retired /products route must not be a default
   sortOrder Int     @default(0)
   isActive  Boolean @default(true)
 }

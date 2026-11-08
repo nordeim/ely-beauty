@@ -70,7 +70,7 @@ function snapshotString(value: unknown): string {
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).slice(0, 2);
   const letters = parts.map((part) => (part.charAt(0) ?? "").toUpperCase()).join("");
-  return letters || "H";
+  return letters || "E";
 }
 
 function tabHref(tab: TabId, page = 1): string {

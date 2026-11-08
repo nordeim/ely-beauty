@@ -5,6 +5,7 @@ import * as React from "react";
 import { AddToCartButton, AddToWishlistButton } from "@/components/store/add-to-cart-button";
 import { QuantityStepper } from "@/components/store/quantity-stepper";
 import { MAX_CART_QUANTITY } from "@/lib/cart-quantity";
+import { composeVariantLabel } from "@/lib/variants";
 import { cn } from "@/lib/utils";
 
 export type PanelColorOption = { name: string; hex: string };
@@ -36,7 +37,10 @@ export function PurchasePanel({
   const [selectedSize, setSelectedSize] = React.useState(sizes[0] ?? "");
   const outOfStock = stock <= 0;
   const max = Math.max(1, Math.min(stock, MAX_CART_QUANTITY));
-  const variant = selectedColor || selectedSize;
+  // S73-7: compose BOTH dimensions onto the line identity ("Pink / 0.5mm")
+  // — the old `selectedColor || selectedSize` silently dropped the size on
+  // products that carry both (the reference records both; verified live).
+  const variant = composeVariantLabel(selectedColor, selectedSize);
 
   if (outOfStock) {
     return (

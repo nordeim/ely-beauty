@@ -36,11 +36,11 @@ import { cn } from "@/lib/utils";
  */
 
 /** The mint body — the checkout input's placement subset (the same schema
- *  POST /api/stripe/payment-intent parses). */
+ *  POST /api/stripe/payment-intent parses). S73-1: no `shippingMethod` —
+ *  the server derives the tier from the address city at mint time. */
 export type StripeMintSnapshot = {
   email: string;
   customerName: string;
-  shippingMethod: "standard" | "express";
   couponCode: string;
   idempotencyKey: string;
   address: {

@@ -121,6 +121,11 @@ export function CartLines({ initialLines }: { initialLines: CartLine[] }) {
                       {line.name}
                     </Link>
                   </h3>
+                  {/* The line's variant identity (S73-7): the composed
+                      "Color / Size" label rides the same muted style the
+                      drawer uses — a shopper must see which variant a line
+                      buys before checkout. */}
+                  {line.variant ? <p className="mt-0.5 text-xs uppercase tracking-wide text-muted-foreground">{line.variant}</p> : null}
                   <p className="mt-0.5 text-sm text-muted-foreground">{formatMoney(line.unitPrice)} each</p>
                 </div>
                 <button
