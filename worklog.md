@@ -1668,3 +1668,40 @@ Work Log:
 
 Stage Summary:
 - Run 73 complete: the FIRST findings-bearing cycle since the re-skin — 3 MEDIUM (money-integrity shipping, dead merge clamp, kitchenware legal copy) + 5 LOW + 4 INFO all fixed TDD-first, three live-measured parity deltas closed, and one docs-vs-code gap (admin variant editing) made true. The suite grew 512 → 536 unit; e2e re-pinned at 69/69. The four new traps encoded in the SKILL: a live reference can contradict the clone's own documented parity pins (re-measure, don't trust); zod-strips-unknown is the removal-safety contract (pin the strip); the whitespace-delimited token pattern for not.toHaveClass against hover: variants; interface-field removal = compile-time blast radius enumeration.
+---
+Task ID: 74-a
+Agent: deep audit 74-a (read-only subagent, run-74 cycle)
+Task: Read-only deep audit 74-a — the 9 standing code anchors + the run-73 remediation delta (commit 5002bc0) + the session-log commit verification (211c0e2) on the pulled tree.
+
+Work Log:
+- Methodology: skills/web-application/SKILL.md + the 12-category code-review-checklist standard + AGENTS.md invariants; skills/ excluded from all checking per the operator contract.
+- Tree: HEAD 211c0e2 on main, working tree clean. The delta under audit: 5002bc0 (39 src/test/config files, +595/−141) + 211c0e2 (docs/session_3.md only — verified docs-only via git show --stat).
+- The 9 anchors verified from scratch with file:line evidence: db-path PASS, money PASS, validation boundary PASS, checkout transaction authority PASS, auth/session PASS, order-access PASS, mobile-nav/Tailwind v4 PASS, SEO PASS, CSP/hydration PASS.
+- Findings: 1 HIGH (F-1 dormant: the Stripe card path mints USD intents whose amount equals the BDT poisha count — ৳288 → $288.00, ~120× overcharge once keys are set; pre-existing since the run-62 retrofit × run-72 re-skin), 5 LOW (F-2 the US country zod default; F-3 the orange iconGradient zod default; F-4 kitchenware placeholder remnants; F-5 the cart-page variant label style), 4 INFO (F-6 the no-pipe guard; F-7 badge tracking; F-8 the stale AGENTS wishlist bullet; F-9/F-10 stale comment + dead e2e field). Conflict-marker gate CLEAN.
+- Every finding carried file:line evidence and a PRE-EXISTING vs BY-THE-DELTA split; no files modified.
+
+Stage Summary:
+- 9/9 anchors PASS; 0 CRITICAL; 1 HIGH (dormant) + 5 LOW + 4 INFO — the findings list that fed the Session 74 remediation plan (with the parity deltas the parent agent measured live).
+
+---
+Task ID: 74
+Agent: Super Z (main agent + 74-a read-only audit subagent)
+Task: Run-74 cycle for github.com/nordeim/ely-beauty — workspace refresh, docs review, gates re-validation, deep audit 74-a, live-reference surface-by-surface re-measurement, TDD remediation (S74-1..S74-14), screenshots, docs alignment, commit + SSH push to main.
+
+Work Log:
+- git pull to 211c0e2 (the operator's session-log commit); docs re-read (AGENTS/CLAUDE/README/PAD v2.1/SKILL v2.1.0/session_2/session_3/REMEDIATION_PLAN/worklog); skills/ excluded per contract.
+- Environment: DATABASE_URL shadow converged (same inode); .env/.env.example/db contract verified.
+- Gates on the pulled tree: lint ✓ · typecheck ✓ · typecheck:tests ✓ · 536/536 unit ✓ · build ✓ · 69/69 e2e ✓.
+- Deep audit 74-a (Task 74-a above): 9/9 anchors PASS, 1H(dormant)/5L/4I.
+- Live-reference re-measurement (agent-browser computed styles + VLM side-by-side; reference ONLINE): the catalog UNCHANGED (19 published; 6 new entity rows are unpublished ৳0.1 drafts); 14 measured geometry deltas found (hero 78svh vs h-screen, pills rounded vs sharp, panel extras, purchase row vs column, no eyebrow, serif vs micro-label headings, 4:5 vs 1:1 cards, stacked vs split badges, iconed footer, 48 vs 56 float, underline vs border-b CTAs, dull logo, sort combobox vs native select). Every VLM claim confirmed or refuted against the DOM (4 non-findings: the lazy banner, the SPA's unpainted sections, the fixed-header capture artifact, the ৳ glyph misread).
+- Remediation plan (Session 74) appended with the measured-values table, validated against the codebase, executed TDD-first: RED batch (15 failures) → GREEN implementations across 30+ src/test files.
+- S74-11: the Stripe FX gate — STRIPE_BDT_PER_USD + the stripeChargeAmount seam + the amountUsdCents interface + the converted in-tx guard + the converted idempotency key; .env.example + DEPLOYMENT.md documented.
+- Reseed (content-only policy): the massager title refreshed to the reference's authored casing.
+- Final gates: lint ✓ · typecheck ✓ · typecheck:tests ✓ · 550/550 unit (+14 pins) · build ✓ · 70/70 e2e (re-pinned mobile-nav contract; native-select sort pin; the new footer-wishlist pin).
+- The fixed surfaces re-measured GREEN against the live reference (hero h1 720×192 byte-exact; pills 34px/0-radius; panel text byte-exact; purchase column stacked at radius 2px; eyebrow/gallery/badges/footer/float all matching).
+- 25/25 screenshots regenerated (single clean pass).
+- Docs sweep: REMEDIATION_PLAN Session 74 (execution log), AGENTS.md (the S74-2 panel contract + the re-worded wishlist bullet + the FX-gate invariant), CLAUDE.md (the S74 parity paragraph + the FX note), README (550/70 counts + the pill/sort/FX rows + STRIPE_BDT_PER_USD), PAD v2.2 (the revision block + rows 91-93), ely-beauty_SKILL.md v2.2.0 (project_state + the Session 74 entry with five encoded traps), docs/session_4.md, worklog (this entry).
+- Commit + push to main through the SSH wrapper (fast-forward, no new branches; remote verified).
+
+Stage Summary:
+- Run 74 complete: the measured-geometry parity cycle — 14 live-measured visual deltas closed to byte-exact (including one run-73 measurement that itself proved wrong: the pills), the dormant Stripe USD/BDT ~120× overcharge closed with the explicit FX-rate gate, and the audit residuals aligned. The suite grew 536 → 550 unit / 69 → 70 e2e. Five new traps encoded in the SKILL: re-measure pinned geometry every cycle (a prior run's measurement can be wrong); an FX-denominated payment path must re-derive its currency semantics with a re-skin; fixed headers paint where the viewport was in fullPage captures; lazy below-fold images report naturalWidth 0 until scrolled; always confirm VLM visual claims against the DOM.

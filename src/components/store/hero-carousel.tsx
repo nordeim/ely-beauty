@@ -92,7 +92,9 @@ export function HeroCarousel({ slides, autoRotateMs = 6000 }: { slides: Slide[];
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
-      <div className="relative h-[78svh] min-h-[520px] w-full">
+      {/* S74-1 (P-3): the reference hero is full-viewport (h-screen
+          min-h-[600px], measured live 2026-11-08) — not 78svh. */}
+      <div className="relative h-screen min-h-[600px] w-full">
         {slides.map((slide, i) => (
           <div
             key={slide.id}
@@ -116,16 +118,26 @@ export function HeroCarousel({ slides, autoRotateMs = 6000 }: { slides: Slide[];
           </div>
         ))}
 
-        {/* Centered slide text (the reference's editorial treatment). */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 px-6 text-center">
-          <h1 className="font-display text-5xl font-light leading-[1.05] tracking-tight text-white drop-shadow-md sm:text-7xl lg:text-8xl">
-            {activeSlide.title}
-          </h1>
-          <p className="max-w-xl text-sm text-white/85 drop-shadow sm:text-base">{activeSlide.subtitle}</p>
-          <Link href={activeSlide.ctaLink} className="link-cta mt-2 text-white">
-            {activeSlide.ctaText}
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
+        {/* Centered slide text (the reference's editorial treatment). S74-1:
+            the content column is max-w-3xl (768px) — narrow enough that the
+            96px display title wraps to two lines exactly like the reference
+            (measured: ref h1 720×192 two-line, lh 1.0). */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+          {/* The reference combines max-w-3xl WITH px-6 on one element —
+              720px of content width, which is what wraps the 96px title
+              to two lines (measured: their h1 is 720×192). */}
+          <div className="w-full max-w-3xl px-6">
+            <h1 className="font-display text-5xl font-light leading-none tracking-tight text-white drop-shadow-md sm:text-7xl lg:text-8xl sm:leading-none lg:leading-none">
+              {activeSlide.title}
+            </h1>
+            <p className="mx-auto mt-6 max-w-xl text-sm text-white/85 drop-shadow sm:text-base">{activeSlide.subtitle}</p>
+            <div className="mt-10">
+              <Link href={activeSlide.ctaLink} className="link-cta border-white/60 text-white hover:border-white">
+                {activeSlide.ctaText}
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </div>
+          </div>
         </div>
 
         {/* Dots — plain buttons with aria-current (session-6 S6-13): the

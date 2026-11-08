@@ -51,6 +51,9 @@ export default async function CheckoutPage() {
   // real keys the combined Payment & Review island takes over for the card
   // method (the superset activation). Resolved ONCE here; the client mirror
   // (isPublishableKeyConfigured) keeps the two sides in agreement.
+  // S74-11: stripeEnabled is CARD-ENABLED — keys AND the explicit FX rate.
+  // Keys alone would mint a USD intent whose amount equals the poisha
+  // count (a ~120x overcharge), so a missing rate keeps the Card option off.
   const stripe = resolveStripeConfig(process.env);
 
   return (
@@ -65,7 +68,7 @@ export default async function CheckoutPage() {
         freeThresholdCents: settings.freeShippingThresholdCents,
         taxRatePercent: settings.taxRatePercent,
       }}
-      stripeEnabled={stripe.serverConfigured}
+      stripeEnabled={stripe.cardEnabled}
       publishableKey={stripe.publishableKey ?? undefined}
     />
   );

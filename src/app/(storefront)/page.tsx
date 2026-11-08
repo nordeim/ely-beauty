@@ -71,7 +71,12 @@ export default async function HomePage() {
             <h2 id="curated-for-you" className="font-display text-4xl font-light tracking-tight text-foreground sm:text-5xl">
               Curated for You
             </h2>
-            <Link href="/shop" className="link-cta text-foreground">
+            {/* S74-9 (measured): the reference's VIEW ALL — a muted
+                micro-label link with the trailing arrow, hidden below sm. */}
+            <Link
+              href="/shop"
+              className="hidden items-center gap-2 text-xs font-normal uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
+            >
               View All
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
@@ -100,7 +105,7 @@ export default async function HomePage() {
             <h2 className="font-display text-4xl font-light tracking-tight text-white sm:text-6xl">
               Complete Your Ritual
             </h2>
-            <Link href="/shop?category=gift-sets" className="link-cta mt-2 text-white">
+            <Link href="/shop?category=gift-sets" className="link-cta mt-2 border-white/60 text-white hover:border-white">
               Discover Sets
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Facebook, Mail, Phone } from "lucide-react";
+import { Facebook } from "lucide-react";
 
 import { WhatsAppFloat } from "./whatsapp-float";
 
@@ -41,8 +41,8 @@ export function Footer({
           {/* Brand */}
           <div>
             <p className="font-display text-2xl font-medium tracking-tight">
-              <span className="text-[#b08d57]">{settings.storeName.slice(0, 3)}</span>
-              <span className="text-[#c4717d]">{settings.storeName.slice(3)}</span>
+              <span className="text-[#c99a3a]">{settings.storeName.slice(0, 3)}</span>
+              <span className="text-[#d95577]">{settings.storeName.slice(3)}</span>
             </p>
             <p className="mt-4 max-w-xs text-sm leading-6 text-muted-foreground">{settings.tagline}</p>
             <SocialLinks settings={settings} />
@@ -55,7 +55,7 @@ export function Footer({
             <ul className="space-y-2.5">
               {SHOP_LINKS.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                  <Link href={link.href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
                     {link.label}
                   </Link>
                 </li>
@@ -70,7 +70,7 @@ export function Footer({
             <ul className="space-y-2.5">
               {COMPANY_LINKS.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                  <Link href={link.href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
                     {link.label}
                   </Link>
                 </li>
@@ -82,19 +82,25 @@ export function Footer({
             <h4 className="eyebrow-label mb-4 text-foreground">Support</h4>
             <ul className="space-y-2.5 text-sm text-muted-foreground">
               <li>
-                <Link href="/account" className="transition-colors hover:text-primary">
+                <Link href="/account" className="transition-colors hover:text-foreground">
                   My Account
                 </Link>
               </li>
-              <li className="flex items-center gap-2.5">
-                <Mail className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                <a href={`mailto:${settings.contactEmail}`} className="break-all transition-colors hover:text-primary">
+              <li>
+                {/* S74-2: the wishlist entry — the mobile panel link retired
+                    for reference parity, so the footer carries it (every
+                    viewport, below the fold, the standard superset spot). */}
+                <Link href="/wishlist" className="transition-colors hover:text-foreground">
+                  Wishlist
+                </Link>
+              </li>
+              <li>
+                <a href={`mailto:${settings.contactEmail}`} className="break-all transition-colors hover:text-foreground">
                   {settings.contactEmail}
                 </a>
               </li>
-              <li className="flex items-center gap-2.5">
-                <Phone className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                <a href={`tel:${settings.contactPhone}`} className="transition-colors hover:text-primary">
+              <li>
+                <a href={`tel:${settings.contactPhone}`} className="transition-colors hover:text-foreground">
                   {settings.contactPhone}
                 </a>
               </li>

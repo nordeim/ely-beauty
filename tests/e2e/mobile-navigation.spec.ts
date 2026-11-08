@@ -17,9 +17,11 @@ import { gotoHydrated } from "./helpers";
  *
  * Run-72 anatomy: the panel is the reference's ivory push-down with a
  * SEARCH row that swaps the panel content for an input + live results, then
- * Shop / Beauty Tools / Brush & Combs / About, a divider, then Sign In +
- * Wishlist (Admin Dashboard for admins only). The active link is the
- * text-primary color (no bg-primary pill anymore).
+ * Shop / Beauty Tools / Brush & Combs / About. S74-2: the panel ends at
+ * About (the reference's panel carries nothing else — the Sign In/Wishlist/
+ * Admin rows were scaffold heritage); the wishlist entry lives in the
+ * footer's SUPPORT column. The active link carries aria-current with NO
+ * color highlight (the invisible a11y superset, S73-4).
  */
 test.describe("mobile navigation (Tailwind v4 regression guard)", () => {
   test.beforeEach(async ({ page }) => {
@@ -41,11 +43,18 @@ test.describe("mobile navigation (Tailwind v4 regression guard)", () => {
     const hasBareHidden = await panel.evaluate((el) => el.classList.contains("hidden"));
     expect(hasBareHidden).toBe(false);
 
-    // The reference panel: a Search row + the nav links + account rows.
+    // S74-2 (P-1): the reference panel is SEARCH + the four nav links ONLY
+    // (measured live 2026-11-08: the panel text ends at ABOUT — no account,
+    // wishlist, or admin rows). The wishlist entry moved to the footer's
+    // SUPPORT column; account stays on the header icon.
     await expect(panel.getByRole("button", { name: "Search", exact: true })).toBeVisible();
-    for (const label of ["Shop", "Beauty Tools", "Brush & Combs", "About", "Sign In", "Wishlist"]) {
+    for (const label of ["Shop", "Beauty Tools", "Brush & Combs", "About"]) {
       await expect(panel.getByRole("link", { name: label, exact: true })).toBeVisible();
     }
+    // The superset rows are GONE from the panel (reference parity).
+    await expect(panel.getByRole("link", { name: "Sign In", exact: true })).toHaveCount(0);
+    await expect(panel.getByRole("link", { name: "Wishlist", exact: true })).toHaveCount(0);
+    await expect(panel.getByRole("link", { name: "My Account", exact: true })).toHaveCount(0);
     // Guests never see the admin surface.
     await expect(panel.getByRole("link", { name: "Admin Dashboard" })).toHaveCount(0);
   });

@@ -9,6 +9,7 @@ import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { Prisma } from "@prisma/client";
 import { db } from "./db";
+import { splitBulkKey } from "./cart-bulk";
 import { computeMergedQuantities, stockMapForCompositeKeys } from "./cart-merge";
 
 export const CART_COOKIE = "homenest_cart";
@@ -113,11 +114,9 @@ export async function getOrCreateCart(userId: string | null): Promise<string> {
           const newToken = randomBytes(24).toString("base64url");
           const mergedId = await db.$transaction(async (tx) => {
             for (const [planKey, quantity] of plan) {
-              // Split at the FIRST pipe — a variant label may itself contain
-              // "|" (S73-2, same fix as splitBulkKey).
-              const pipeAt = planKey.indexOf("|");
-              const productId = planKey.slice(0, pipeAt);
-              const variant = planKey.slice(pipeAt + 1);
+              // S74-12 (F-6): single-source the composite-key split through
+              // splitBulkKey (first-pipe semantics + the no-pipe guard).
+              const { productId, variant } = splitBulkKey(planKey);
               if (!productId) continue;
               await tx.cartItem.upsert({
                 where: { cartId_productId_variant: { cartId: own.id, productId, variant } },

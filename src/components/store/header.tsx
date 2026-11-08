@@ -64,8 +64,7 @@ export function Header({
           <button
             type="button"
             className={cn(
-              "inline-flex h-11 w-11 items-center justify-center transition-colors lg:hidden",
-              overHero ? "hover:bg-white/10" : "hover:bg-secondary",
+              "inline-flex h-11 w-11 items-center justify-center transition-opacity hover:opacity-60 lg:hidden",
             )}
             aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileNavOpen}
@@ -104,8 +103,7 @@ export function Header({
           <button
             type="button"
             className={cn(
-              "inline-flex h-11 w-11 items-center justify-center transition-colors",
-              overHero ? "hover:bg-white/10" : "hover:bg-secondary",
+              "inline-flex h-11 w-11 items-center justify-center transition-opacity hover:opacity-60",
             )}
             aria-label="Search products"
             onClick={() => setSearchOpen((v) => !v)}
@@ -116,8 +114,7 @@ export function Header({
             href={user ? "/account" : "/login"}
             aria-label={user ? `Account: ${user.name}` : "Account"}
             className={cn(
-              "inline-flex h-11 w-11 items-center justify-center transition-colors",
-              overHero ? "hover:bg-white/10" : "hover:bg-secondary",
+              "inline-flex h-11 w-11 items-center justify-center transition-opacity hover:opacity-60",
             )}
           >
             <User className="h-5 w-5" />
@@ -129,8 +126,7 @@ export function Header({
             aria-expanded={cartDrawerOpen}
             onClick={() => setCartDrawerOpen(!cartDrawerOpen)}
             className={cn(
-              "relative inline-flex h-11 w-11 items-center justify-center transition-colors",
-              overHero ? "hover:bg-white/10" : "hover:bg-secondary",
+              "relative inline-flex h-11 w-11 items-center justify-center transition-opacity hover:opacity-60",
             )}
           >
             <ShoppingBag className="h-5 w-5" />

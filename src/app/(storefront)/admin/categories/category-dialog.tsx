@@ -181,7 +181,7 @@ export function CategoryDialogButton({
                 const name = e.target.value;
                 setForm((prev) => ({ ...prev, name, slug: slugTouched.current ? prev.slug : slugify(name) }));
               }}
-              placeholder="Cookware"
+              placeholder="Serums"
               required
               maxLength={60}
             />
@@ -196,7 +196,7 @@ export function CategoryDialogButton({
                 slugTouched.current = true;
                 setField("slug", e.target.value);
               }}
-              placeholder="cookware"
+              placeholder="serums"
               required
               maxLength={60}
             />

@@ -354,7 +354,7 @@ export const PRODUCTS: SeedProduct[] = [
   },
   {
     slug: "full-silicon-scalp-massager",
-    name: "Full Silicon Scalp Massager",
+    name: "Full silicon scalp massager", // S74-13: the reference authored it lowercase (live-measured 2026-11-08)
     category: "beauty-tools",
     price: 48000,
     sku: "ELY-013",

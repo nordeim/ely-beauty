@@ -71,10 +71,9 @@ export function StoreChrome({
         >
           <Header user={user} cartCount={count} />
         </header>
-        <MobileNav
-          isAuthenticated={Boolean(user)}
-          isAdmin={user?.role === "admin"}
-        />
+        {/* S74-2: the panel takes no identity props — it renders the
+            reference's SEARCH + four nav links only. */}
+        <MobileNav />
         {children}
         {footer}
       </div>

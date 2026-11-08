@@ -22,7 +22,29 @@ export function isRealSecret(value: string | undefined | null): value is string 
 export type StripeConfig = {
   serverConfigured: boolean;
   publishableKey: string | null;
+  /**
+   * S74-11: the operator-provided taka-per-dollar rate
+   * (`STRIPE_BDT_PER_USD`). Stripe cannot charge BDT, so the card path
+   * converts through this rate — WITHOUT it the Card option stays off
+   * even when keys are set (minting a USD intent whose amount equals the
+   * poisha count would overcharge ~120x).
+   */
+  bdtPerUsd: number | null;
+  /** Keys AND a valid rate — the ONLY state that may render the Card option. */
+  cardEnabled: boolean;
 };
+
+/**
+ * Parses `STRIPE_BDT_PER_USD` — a positive finite number or nothing.
+ * Zero, negatives, NaN/Infinity, and junk strings are NOT a rate.
+ */
+export function parseStripeBdtPerUsd(env: Record<string, string | undefined>): number | null {
+  const raw = env.STRIPE_BDT_PER_USD;
+  if (typeof raw !== "string" || raw.trim().length === 0) return null;
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value <= 0) return null;
+  return value;
+}
 
 /**
  * Server-side resolution. Reads the raw env (a plain record — unit-testable);
@@ -32,9 +54,13 @@ export function resolveStripeConfig(env: Record<string, string | undefined>): St
   const secret = env.STRIPE_SECRET_KEY;
   const serverConfigured = isRealSecret(secret);
   const pk = env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+  const publishableKey = serverConfigured && isRealSecret(pk) ? pk.trim() : null;
+  const bdtPerUsd = parseStripeBdtPerUsd(env);
   return {
     serverConfigured,
-    publishableKey: serverConfigured && isRealSecret(pk) ? pk.trim() : null,
+    publishableKey,
+    bdtPerUsd,
+    cardEnabled: serverConfigured && publishableKey !== null && bdtPerUsd !== null,
   };
 }
 

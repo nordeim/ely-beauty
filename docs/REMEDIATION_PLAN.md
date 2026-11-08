@@ -9759,3 +9759,170 @@ documents "1.2px tracking" while the utility ships 0.12em/1.44px).
 - The live reference's footer SHOP column labels (Skincare/Body Care) are
   template remnants pointing at dead `?category=` filters — the clone keeps
   its working real-slug links (documented run-72 deviation, unchanged).
+
+---
+
+## Session 74 — Run 74: The measured-geometry parity cycle (2026-11-08)
+
+The second post-re-skin verification cycle. Workspace refreshed to `211c0e2`;
+all six gates re-run GREEN on the pulled tree (lint · typecheck ·
+typecheck:tests · 536/536 unit · build zero errors · 69/69 e2e). Deep audit
+74-a (read-only): **9/9 anchors PASS**, 1 HIGH (dormant) + 5 LOW + 4 INFO.
+Live-reference re-baseline (agent-browser + VLM + DOM computed-style
+measurements, reference ONLINE, logged in): the catalog is UNCHANGED (19
+published products — the 6 "new" rows are unpublished ৳0.1-junk drafts; all
+titles/prices/variants/authored order match the seed), but **14 measured
+visual-geometry deltas** surfaced — the run-72/73 surfaces were built close
+but not exact, and one run-73 conclusion ("pills match") failed
+re-measurement today (the reference's pills are SHARP 0px-radius, not
+rounded). Per the S73-encoded trap: re-measure, don't trust pins.
+
+### The measured deltas (all values live-measured 2026-11-08)
+
+| # | Surface | Reference (measured) | Clone (measured) |
+|---|---|---|---|
+| P-1 | Mobile panel content | SEARCH + SHOP/BEAUTY TOOLS/BRUSH & COMBS/ABOUT only | + divider + SIGN IN + WISHLIST (+ ADMIN) |
+| P-2 | Shop filter pills | `px-4 py-2 text-xs tracking-widest` — radius **0**, h **34**, active borderless `bg-foreground text-background`, inactive `border hairline-border text-muted-foreground`, img **16px** | `h-10 rounded-full border` — radius full, h 40, both bordered, inactive `text-foreground border-input`, img 20px, tracking 0.08em |
+| P-3 | Hero geometry | `h-screen min-h-[600px]`; content column `max-w-3xl` (h1 wraps 2 lines, lh 1.0) | `h-[78svh] min-h-[520px]`; no column max-width (h1 1 line, lh 1.05) |
+| P-4 | Purchase column | Stacked full-width (544px): stepper → ADD TO CART (**outlined**, transparent + 1px foreground) → BUY IT NOW (**filled** foreground) → heart; radius **2px** | `flex-wrap` row: ADD TO CART (taupe filled, 229px) + BUY IT NOW (outlined, 219px); radius 6px |
+| P-5 | Detail eyebrow | category label above h1 (`text-xs tracking-widest uppercase text-muted-foreground mb-3` — "skincare"/"lip care") | none |
+| P-6 | Description heading | H3 `text-xs tracking-widest uppercase font-medium` "DESCRIPTION"; box `border-t hairline-border pt-8` | H2 `font-display text-xl` "Description" (box border already matches) |
+| P-7 | Card/tile/gallery aspects | Card image **1:1**; category tile **4:3**; gallery main `aspect-[3/4] bg-muted` (no radius/border), thumbs 3:4 + 2px selected border | Card `aspect-[4/5]`; tile `aspect-[4/5]`; gallery `aspect-square rounded-2xl border` |
+| P-8 | Card badges | Bestseller `absolute top-4 left-4 px-3 py-1.5 font-medium tracking-widest text-background`; Sale `absolute top-4 right-4 bg-red-500` | stacked column `absolute left-0 top-4 flex flex-col gap-1.5`, `px-3 py-1 font-semibold tracking-[0.12em] text-white` |
+| P-9 | Footer SUPPORT | plain-text email/phone spans, links `hover:text-foreground` | lucide mail/phone icons (text-primary), `hover:text-primary` |
+| P-10 | WhatsApp float | `w-14 h-14 z-50` (56px) | `h-12 w-12 z-40` (48px) |
+| P-11 | CTAs | prominent: `text-sm tracking-widest uppercase border-b border-white\|foreground/40-60 pb-1` (14px/400); VIEW ALL: muted micro-label, NO underline | `link-cta` 12px/500 `underline underline-offset-4` everywhere |
+| P-12 | Panel details | panel `border-b` (hairline BELOW); links `space-y-4`; toggle hover opacity | panel `border-t` (ABOVE); `gap-5`; toggle `hover:bg-secondary` chip |
+| P-13 | Logo colors | gradient gold ~#C99A3A→#E0B14E, pink ~#E8899A→#D95577 | flat #b08d57 / #c4717d (duller) |
+
+### Audit 74-a findings carried in
+
+- **F-1 (HIGH, dormant)**: the Stripe card path mints PaymentIntents in
+  `usd` with the amount set to the BDT **poisha** count (৳288 → $288.00,
+  ~120× overcharge). Stripe cannot charge BDT; there is no FX seam.
+- F-2 `addressSchema.country` defaults `"United States"` (dialog was fixed
+  S73-9; the schema default was not).
+- F-3 `categoryInputSchema.iconGradient` default still kitchenware orange
+  (schema.prisma + dialog went stone in S73-10; the zod default did not).
+- F-4 kitchenware placeholder remnants (Cookware, Dutch Oven, "fresh looks
+  for your kitchen", 123 Kitchen Lane, "Amount off (USD)").
+- F-5 cart-page variant label `uppercase tracking-wide` diverges from the
+  drawer's plain label (adjacent surfaces, same data).
+- F-6 `cart.ts` merge split lacks the no-pipe guard `splitBulkKey` has.
+- F-8 AGENTS.md wishlist-heart bullet describes the deleted
+  `initialInWishlist`/`ProductCard` API (docs drift).
+- F-9 stale `@@unique([cartId, productId])` comment in the integration
+  harness (schema is 3-column since run-72).
+- F-10 e2e bodies still send the zod-stripped `shippingMethod` (benign;
+  annotate as the deliberate strip pin).
+
+### Catalog drift check (C-1)
+
+Live entity API re-fetch: 25 products, 19 published — the seed matches all
+19 titles, prices, compare-ats, variants, and the authored order. One
+content nit: the massager's live title is "Full silicon scalp massager";
+the seed title-cased it to "Full Silicon Scalp Massager".
+
+### ToDo (TDD-first: RED tests → GREEN implementations)
+
+- [x] **S74-1 (P-3) Hero geometry**: `hero-carousel.tsx` →
+      `h-screen min-h-[600px]`, content column `max-w-3xl`, h1 drops
+      `leading-[1.05]` (lh 1.0 like `text-8xl`'s default). Screenshots
+      re-captured; storefront e2e hero pins re-checked.
+- [x] **S74-2 (P-1 + P-12 + F-8) Mobile panel**: panel renders SEARCH +
+      the 4 nav links ONLY (the account/wishlist/admin rows and divider
+      are gone — the reference panel ends at ABOUT); hairline moves
+      below the panel (`border-b`); links `space-y-4`; the menu toggle's
+      hover becomes `hover:opacity-60` (no chip bg; the 44px hit area
+      stays as the invisible a11y superset). Wishlist discoverability
+      moves to the footer SUPPORT column ("Wishlist" under "My Account")
+      — the panel link was the codebase's ONLY /wishlist entry.
+      `mobile-navigation.spec.ts` re-pinned to the new contract.
+- [x] **S74-3 (P-2) Shop pills**: sharp corners (no `rounded-full`),
+      `py-2` natural height, active = borderless `bg-foreground
+      text-background`, inactive = `border-border
+      text-muted-foreground hover:text-foreground`, category thumb 16px,
+      tracking 0.1em.
+- [x] **S74-4 (P-7) Image aspects**: product-card `aspect-square`;
+      category-card `aspect-[4/3]`; gallery main `aspect-[3/4] bg-muted`
+      (no radius/border); gallery thumbs 3:4 with the 2px selected ring.
+- [x] **S74-5 (P-4) Purchase column**: stacked full-width column —
+      stepper, ADD TO CART (**outlined**: transparent bg + 1px
+      foreground border), BUY IT NOW (**filled** foreground), heart
+      below; buttons `rounded-[2px]`.
+- [x] **S74-6 (P-5 + P-6) Detail page**: category eyebrow above the h1
+      (the product's category name, `eyebrow-label text-muted-foreground
+      mb-3`); DESCRIPTION / HOW TO USE / INGREDIENTS become micro-label
+      headings (`text-xs uppercase tracking-[0.1em] font-medium`).
+- [x] **S74-7 (P-8) Card badges**: Bestseller `top-4 left-4`, Sale
+      `top-4 right-4` (split corners, not a stacked column);
+      `px-3 py-1.5 font-medium tracking-[0.1em]`; Bestseller
+      `text-background`. Unit product-card pins updated.
+- [x] **S74-8 (P-9 + P-10) Footer + float**: SUPPORT column drops the
+      lucide icons (plain spans, `hover:text-foreground` links);
+      WhatsApp float `h-14 w-14 z-50`.
+- [x] **S74-9 (P-11) CTAs**: `.link-cta` restyled to the reference's
+      border-b treatment (`text-sm` 14px, weight 400, `border-b pb-1`,
+      per-surface border color); VIEW ALL becomes the muted micro-label
+      (no underline).
+- [x] **S74-10 (P-13) Logo**: gold → `#c99a3a`, rose → `#d95577` (the
+      reference gradient's anchors).
+- [x] **S74-11 (F-1) Stripe FX gate**: new `STRIPE_BDT_PER_USD` env —
+      without it the Card option does not render even when Stripe keys
+      are set (server-side gate, unit-pinned truth table); with it the
+      PaymentIntent amount derives through the single
+      `stripeChargeAmount(totalPoisha, rate)` seam (mint + webhook verify
+      agree; `Math.round(poisha / rate)`), currency stays `usd`.
+      `.env.example` + `docs/DEPLOYMENT.md` document the gate. Kills the
+      ~120× overcharge footgun without deleting the superset capability.
+- [x] **S74-12 (F-2..F-6, F-9, F-10) Residuals**: `country` default →
+      "Bangladesh"; `iconGradient` default → stone; placeholder sweep
+      (skincare equivalents); cart-page variant label → plain (drawer
+      parity); merge-split no-pipe guard; stale `@@unique` comment;
+      e2e `shippingMethod` annotated as the deliberate strip pin.
+- [x] **S74-13 (C-1) Massager title**: seed → "Full silicon scalp
+      massager" (the live authored casing); `seed-catalog` pin updated;
+      reseed refreshes the name (content-only seed policy).
+- [x] **S74-14 (docs + evidence)**: screenshots regenerated; AGENTS.md
+      (mobile-menu contract, wishlist bullet, Stripe gate), CLAUDE.md,
+      README (counts), PAD v2.2, `ely-beauty_SKILL.md` v2.2.0,
+      docs/session_4.md, worklog; commit + push via the SSH wrapper.
+
+### Execution log
+
+- **TDD discipline held**: the RED batch (stripe-config rate table,
+  stripeChargeAmount + the amountUsdCents interface, validation defaults,
+  seed-catalog authored titles, the mobile-nav re-pin, the footer-wishlist
+  pin, the FX integration cases) ran 15-failing before any implementation;
+  every fix flipped its pins green in sequence.
+- **The measured surfaces re-measured GREEN after the fixes** (agent-browser
+  computed styles, both sites side by side): hero h-screen 900px + h1
+  720×192 two-line wrap (byte-exact with the reference) + 24px/43px text
+  gaps; shop pills 34px/0-radius/borderless-active/hairline-inactive/16px
+  thumbs; native sort select 12px muted sharp; the panel text
+  `SEARCH\nSHOP\nBEAUTY TOOLS\nBRUSH & COMBS\nABOUT` byte-exact with
+  border-b + 16px gaps; the purchase column stacked full-width
+  (outlined ADD TO CART / filled BUY IT NOW, radius 2px, Zap icon); the
+  category eyebrow 12px/1.2px/muted; micro-label DESCRIPTION headings;
+  gallery 3:4; card images 1:1; badges split-corner 6px/12px/500 with
+  text-background; footer SUPPORT plain text + the Wishlist link; the
+  float 56×56 z-50.
+- **Verified non-changes**: the ritual-banner "flat grey" and the
+  reference's "empty grid/footer" VLM claims were capture artifacts
+  (lazy-image below the fold; the SPA's unpainted sections) — the banner
+  loads (naturalWidth 1344) and the footers are structurally identical.
+- **Gates (all observed green)**: lint · typecheck · typecheck:tests ·
+  **550/550 unit** (55 files; +14 pins) · build zero errors · **70/70 e2e**
+  (the re-pinned mobile-nav contract, the native-select sort pin, the
+  footer-wishlist pin; the Stripe FX integration cases in the unit suite).
+- **Reseed**: the massager title refreshed to the authored casing via the
+  content-only seed policy (price/stock/createdAt untouched).
+- **Accepted deviations recorded**: the Bonnet's Bestseller badge (the
+  reference's own tag is the typo "bastseller" — its card renders none;
+  the clone renders the intent, the ৳11-compare precedent); the massager
+  SIZE label shows the selected value (the reference's shows none — ours
+  is the aria-live honest superset); single-image gallery (the reference
+  carries 4–7 CDN photos per product — the documented imagery deviation);
+  the hero's gold ornamental wave is baked into the reference's photo.
+- **Screenshots**: 25/25 regenerated in one clean pass (the login-limiter
+  discipline).

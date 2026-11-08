@@ -3,7 +3,11 @@
 /**
  * MobileNav — the reference's push-down panel below the fixed header: an
  * ivory panel with a SEARCH row (icon + label) that swaps the panel content
- * for a search input + live results, then the four uppercase nav links.
+ * for a search input + live results, then the four uppercase nav links —
+ * and NOTHING else (S74-2: the reference's panel ends at About; the
+ * Sign In/Wishlist/Admin rows were scaffold heritage and are gone — the
+ * wishlist entry lives in the footer's SUPPORT column, account on the
+ * header icon).
  *
  * Tailwind v4 trap-log note (the bug this file is structured around): v4
  * changed the generation order of display utilities, so JS-toggling the
@@ -36,7 +40,7 @@ const NAV_LINKS = [
 
 type SearchResult = { id: string; name: string; image: string; price: number; category: string };
 
-export function MobileNav({ isAuthenticated, isAdmin }: { isAuthenticated: boolean; isAdmin: boolean }) {
+export function MobileNav() {
   const { mobileNavOpen, setMobileNavOpen, mobileNavSearch, setMobileNavSearch } = useStore();
   const pathname = usePathname();
 
@@ -51,14 +55,14 @@ export function MobileNav({ isAuthenticated, isAdmin }: { isAuthenticated: boole
 
   return (
     <div
-      className="animate-in slide-in-from-top-2 fade-in duration-200 border-t border-border bg-background lg:hidden"
+      className="animate-in slide-in-from-top-2 fade-in duration-200 border-b border-border bg-background lg:hidden"
       data-testid="mobile-menu"
     >
       <div className="container-page px-6 py-6 sm:px-6 lg:px-8">
         {mobileNavSearch ? (
           <PanelSearch onExit={() => setMobileNavSearch(false)} />
         ) : (
-          <nav aria-label="Mobile" className="flex flex-col gap-5">
+          <nav aria-label="Mobile" className="flex flex-col gap-4">
             <button
               type="button"
               onClick={() => setMobileNavSearch(true)}
@@ -70,15 +74,6 @@ export function MobileNav({ isAuthenticated, isAdmin }: { isAuthenticated: boole
             {NAV_LINKS.map((link) => (
               <MobileNavLink key={link.href} href={link.href} label={link.label} />
             ))}
-            <div className="my-1 h-px bg-border" />
-            <MobileNavLink
-              href={isAuthenticated ? "/account" : "/login"}
-              label={isAuthenticated ? "My Account" : "Sign In"}
-            />
-            <MobileNavLink href="/wishlist" label="Wishlist" />
-            {isAdmin && (
-              <MobileNavLink href="/admin" label="Admin Dashboard" className="text-primary" />
-            )}
           </nav>
         )}
       </div>

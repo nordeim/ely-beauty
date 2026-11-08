@@ -4,18 +4,22 @@ import * as React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 export type CategoryOption = { slug: string; name: string; imageUrl?: string };
 export type SortOption = { value: string; label: string };
 
 /**
- * ShopControls — the reference's filter row: category PILL buttons (each
- * carrying its round category thumbnail; the active pill is solid
- * near-black) plus the sort combobox at the right. Each change rewrites the
- * ?category/?sort searchParams (resetting ?page) via router.push, so the
- * whole listing stays server-rendered.
+ * ShopControls — the reference's filter row (S74-3, live-measured
+ * 2026-11-08): sharp-cornered category pills (px-4 py-2, ~34px tall — the
+ * ACTIVE pill is a borderless solid near-black with text only; INACTIVE
+ * pills carry a 16px round category thumbnail behind a hairline border in
+ * muted foreground) plus a NATIVE select for sort (text-xs uppercase,
+ * transparent, hairline border). The whole band closes with a hairline
+ * bottom border (pb-6; with the page column's gap-8 the grid sits
+ * 48px below the band — the reference's mb-12 rhythm). Each change rewrites the ?category/?sort
+ * searchParams (resetting ?page) via router.push, so the whole listing
+ * stays server-rendered.
  */
 export function ShopControls({
   q,
@@ -46,55 +50,63 @@ export function ShopControls({
     });
   }
 
-  const pill =
-    "inline-flex h-10 items-center gap-2 rounded-full border border-input bg-background px-4 text-xs font-medium uppercase tracking-[0.08em] text-foreground transition-colors hover:border-foreground";
+  // The reference's pill pair (measured): active = borderless solid
+  // bg-foreground/text-background, text only; inactive = hairline border,
+  // muted foreground, hover to foreground, with the category thumbnail.
+  const pillInactive =
+    "flex items-center gap-2 border border-border bg-transparent px-4 py-2 text-xs uppercase tracking-[0.1em] text-muted-foreground transition-all duration-300 hover:text-foreground";
+  const pillActive =
+    "bg-foreground px-4 py-2 text-xs uppercase tracking-[0.1em] text-background transition-all duration-300";
 
   return (
     <div
       className={cn(
-        "flex w-full flex-wrap items-center gap-2 transition-opacity lg:flex-nowrap",
+        "mb-4 flex w-full flex-wrap items-center justify-between gap-4 border-b border-border pb-6 transition-opacity",
         pending && "opacity-60",
       )}
     >
-      <button
-        type="button"
-        onClick={() => update({ category: "all" })}
-        aria-pressed={category === "" || category === "all"}
-        className={cn(pill, !category && "border-foreground bg-foreground text-white hover:border-foreground")}
-      >
-        All Products
-      </button>
-      {categories.map((c) => {
-        const active = category === c.slug;
-        return (
-          <button
-            key={c.slug}
-            type="button"
-            onClick={() => update({ category: c.slug })}
-            aria-pressed={active}
-            className={cn(pill, active && "border-foreground bg-foreground text-white hover:border-foreground")}
-          >
-            {c.imageUrl ? (
-              <Image src={c.imageUrl} alt="" width={20} height={20} className="h-5 w-5 rounded-full object-cover" />
-            ) : null}
-            {c.name}
-          </button>
-        );
-      })}
-      <div className="ml-auto">
-        <Select value={sort || "newest"} onValueChange={(value) => update({ sort: value })}>
-          <SelectTrigger id="sort-products" aria-label="Sort products" className="h-10 w-40 rounded-full border-input bg-background text-xs font-medium uppercase tracking-[0.08em]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {sortOptions.map((o) => (
-              <SelectItem key={o.value} value={o.value}>
-                {o.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => update({ category: "all" })}
+          aria-pressed={category === "" || category === "all"}
+          className={cn(!category ? pillActive : pillInactive)}
+        >
+          All Products
+        </button>
+        {categories.map((c) => {
+          const active = category === c.slug;
+          return (
+            <button
+              key={c.slug}
+              type="button"
+              onClick={() => update({ category: c.slug })}
+              aria-pressed={active}
+              className={cn(active ? pillActive : pillInactive)}
+            >
+              {c.imageUrl ? (
+                <Image src={c.imageUrl} alt="" width={16} height={16} className="h-4 w-4 rounded-full object-cover" />
+              ) : null}
+              {c.name}
+            </button>
+          );
+        })}
       </div>
+      {/* The reference's sort: a NATIVE select, sharp, transparent, hairline
+          border (measured: 35px tall, radius 0, 12px muted uppercase). */}
+      <select
+        id="sort-products"
+        aria-label="Sort products"
+        value={sort || "newest"}
+        onChange={(e) => update({ sort: e.target.value })}
+        className="border-border bg-transparent px-4 py-2 text-xs uppercase tracking-wider text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+      >
+        {sortOptions.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

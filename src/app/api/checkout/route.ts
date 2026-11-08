@@ -14,7 +14,9 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { getSettings } from "@/lib/settings";
 import { getStripe } from "@/lib/stripe";
 import {
+  parseStripeBdtPerUsd,
   paymentIntentLast4,
+  stripeChargeAmount,
   verifyPaymentIntentForPlacement,
 } from "@/lib/stripe-payment";
 import { checkoutSchema, firstError } from "@/lib/validation";
@@ -169,9 +171,17 @@ export async function POST(request: NextRequest) {
     // the in-tx authority re-checks the final total (StripeAmountMismatch).
     let stripeLast4: string | null = null;
     let paidTotalCents: number | null = null;
+    // S74-11: the operator FX rate — rides through to the in-tx amount
+    // guard (the intent carries USD cents; the guard converts the final
+    // BDT total through the same rate).
+    let bdtPerUsd: number | null = null;
     if (stripeIntentId) {
       const stripe = getStripe();
-      if (!stripe) {
+      // S74-11: the rate must exist — the mint would have 503'd without it,
+      // so reaching here with a live intent id means the operator REMOVED
+      // the rate mid-checkout. Refuse (never verify against a guess).
+      bdtPerUsd = parseStripeBdtPerUsd(process.env);
+      if (!stripe || bdtPerUsd === null) {
         return NextResponse.json(
           { error: "Card payments are unavailable right now. Please try again later." },
           { status: 503 },
@@ -193,7 +203,12 @@ export async function POST(request: NextRequest) {
         const intent = await stripe.paymentIntents.retrieve(stripeIntentId, {
           expand: ["payment_method", "latest_charge"],
         });
-        const verification = verifyPaymentIntentForPlacement(intent, estimate.total);
+        // S74-11: verify against the CONVERTED amount — the same derivation
+        // the mint used (computeOrderMoney, then the operator rate).
+        const verification = verifyPaymentIntentForPlacement(
+          intent,
+          stripeChargeAmount(estimate.total, bdtPerUsd),
+        );
         if (!verification.ok) {
           // The amount branch is the island's re-mint signal (its session
           // resets and a fresh intent is minted at the fresh total).
@@ -233,6 +248,7 @@ export async function POST(request: NextRequest) {
       },
       stripePaymentIntentId: stripeIntentId,
       paidTotalCents,
+      bdtPerUsd,
     };
 
     const orderNumber = await placeOrderWithRetry(args);

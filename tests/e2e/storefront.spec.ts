@@ -96,14 +96,13 @@ test.describe("storefront", () => {
       await expect(page.getByRole("button", { name: pill, exact: true })).toBeVisible();
     }
 
-    // Sort combobox (Radix Select) — "Top Rated" is gone; price-asc re-orders
-    // the grid (the ৳120 applicator set becomes the first card).
-    await page.getByRole("combobox", { name: "Sort products" }).click();
-    for (const option of ["Newest", "Price: Low to High", "Price: High to Low", "Name: A-Z"]) {
-      await expect(page.getByRole("option", { name: option, exact: true })).toBeVisible();
-    }
-    await expect(page.getByRole("option", { name: "Top Rated" })).toHaveCount(0);
-    await page.getByRole("option", { name: "Price: Low to High" }).click();
+    // Sort (S74-3: a NATIVE select, the reference's element) — price-asc
+    // re-orders the grid (the ৳120 applicator set becomes the first card).
+    const sortSelect = page.getByRole("combobox", { name: "Sort products" });
+    await expect(sortSelect).toBeVisible();
+    const optionLabels = await sortSelect.locator("option").allTextContents();
+    expect(optionLabels).toEqual(["Newest", "Price: Low to High", "Price: High to Low", "Name: A-Z"]);
+    await sortSelect.selectOption("price-asc");
     await expect(page).toHaveURL(/sort=price-asc/);
     await expect(
       page.locator("article").first().getByText("Travel Silicone Mask Applicator Set 4 Pcs"),
@@ -194,5 +193,17 @@ test.describe("storefront", () => {
     await page.getByRole("link", { name: "Privacy Policy" }).first().click();
     await expect(page).toHaveURL(/\/legal\/privacy-policy/);
     await expect(page.getByRole("heading", { name: "Privacy Policy" })).toBeVisible();
+  });
+
+  test("the SUPPORT column carries the wishlist entry (S74-2 — the panel link retired)", async ({ page }) => {
+    // The mobile panel ends at About (reference parity); the wishlist page
+    // needs a navigable entry on every viewport — the footer SUPPORT column
+    // is that entry (the detail-page heart toggles membership; this link is
+    // how a shopper VIEWS the list).
+    await gotoHydrated(page, "/");
+    const wishlistLink = page.getByRole("link", { name: "Wishlist" }).first();
+    await expect(wishlistLink).toBeVisible();
+    await wishlistLink.click();
+    await expect(page).toHaveURL(/\/wishlist/);
   });
 });

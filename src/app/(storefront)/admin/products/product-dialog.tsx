@@ -263,7 +263,7 @@ export function ProductDialogButton({
                   const name = e.target.value;
                   setForm((prev) => ({ ...prev, name, slug: slugTouched.current ? prev.slug : slugify(name) }));
                 }}
-                placeholder="Enameled Cast Iron Dutch Oven"
+                placeholder="Pure Satin Silk Pillowcase"
                 required
                 maxLength={120}
               />

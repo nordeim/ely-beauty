@@ -32,7 +32,7 @@ export function CategoryCard({
   return (
     <Link
       href={`/shop?category=${slug}`}
-      className="group relative block aspect-[4/5] overflow-hidden bg-secondary"
+      className="group relative block aspect-[4/3] overflow-hidden bg-secondary"
       aria-label={`${name}${description ? ` — ${description}` : ""}`}
     >
       {imageUrl ? (

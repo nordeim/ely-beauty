@@ -114,14 +114,18 @@ export function PurchasePanel({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-4">
+      {/* S74-5 (P-4, measured): the reference's purchase column is STACKED —
+          the qty stepper, then full-width ADD TO CART as an OUTLINED button
+          (transparent bg, 1px foreground border), then full-width BUY IT NOW
+          as the SOLID foreground button, then the wishlist heart; radius 2px. */}
+      <div className="flex flex-col items-start gap-4">
         <QuantityStepper value={quantity} onChange={setQuantity} max={max} />
         <AddToCartButton
           productId={productId}
           quantity={quantity}
           variant={variant}
           size="lg"
-          className="h-12 flex-1 sm:flex-none sm:px-12"
+          className="h-12 w-full rounded-[2px] border border-foreground bg-transparent text-sm font-medium uppercase tracking-[0.1em] text-foreground shadow-none hover:bg-transparent hover:opacity-70"
         >
           ADD TO CART
         </AddToCartButton>
@@ -131,7 +135,7 @@ export function PurchasePanel({
           variant={variant}
           size="lg"
           buyNow
-          className="h-12 flex-1 border border-foreground bg-transparent text-foreground hover:bg-foreground hover:text-white sm:flex-none sm:px-12"
+          className="h-12 w-full rounded-[2px] bg-foreground text-sm font-medium uppercase tracking-[0.1em] text-background shadow-none hover:bg-foreground/90"
         >
           BUY IT NOW
         </AddToCartButton>
@@ -139,7 +143,7 @@ export function PurchasePanel({
           productId={productId}
           productName={productName}
           initialInWishlist={initialInWishlist}
-          className="h-12 w-12 border border-input bg-transparent shadow-none backdrop-blur-none hover:shadow-none"
+          className="h-12 w-12 rounded-full border border-input bg-transparent shadow-none backdrop-blur-none hover:shadow-none"
         />
       </div>
     </div>

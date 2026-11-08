@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Heart, ShoppingBag } from "lucide-react";
+import { Heart, ShoppingBag, Zap } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toaster";
@@ -76,7 +76,7 @@ export function AddToCartButton({
         className,
       )}
     >
-      <ShoppingBag className="h-4 w-4" aria-hidden />
+      {buyNow ? <Zap className="h-4 w-4" aria-hidden /> : <ShoppingBag className="h-4 w-4" aria-hidden />}
       {pending ? "Adding…" : (children ?? "Add to Cart")}
     </button>
   );

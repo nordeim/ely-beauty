@@ -79,7 +79,7 @@ export default function AboutPage() {
 
       {/* CTA */}
       <section className="container-page pb-20 text-center">
-        <Link href="/shop" className="link-cta text-foreground">
+        <Link href="/shop" className="link-cta border-foreground/40 text-foreground hover:border-foreground">
           Explore Our Products
           <ArrowRight className="h-4 w-4" aria-hidden />
         </Link>

@@ -31,7 +31,7 @@ export function ProductCard({
     <article className="group flex h-full flex-col">
       <Link
         href={`/product/${product.id}`}
-        className="relative block aspect-[4/5] overflow-hidden bg-secondary"
+        className="relative block aspect-square overflow-hidden bg-secondary"
         aria-label={mediaLabel}
       >
         <Image
@@ -42,18 +42,21 @@ export function ProductCard({
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute left-0 top-4 flex flex-col items-start gap-1.5">
-          {product.badge && (
-            <span className="bg-badge-featured px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white">
-              {product.badge}
-            </span>
-          )}
-          {onSale && (
-            <span className="bg-badge-sale px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white">
-              Sale
-            </span>
-          )}
-        </div>
+        {/* S74-7 (P-8, measured): the badge (Bestseller et al.) sits in the
+            card's TOP-LEFT corner, the Sale flag in the TOP-RIGHT — split
+            corners, py-1.5 px-3, weight 500, 0.1em tracking, and the
+            featured badge renders text-BACKGROUND (the reference's ivory-on
+            near-black, not white-on-black). */}
+        {product.badge && (
+          <span className="absolute left-4 top-4 bg-badge-featured px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.1em] text-background">
+            {product.badge}
+          </span>
+        )}
+        {onSale && (
+          <span className="absolute right-4 top-4 bg-badge-sale px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.1em] text-white">
+            Sale
+          </span>
+        )}
         {product.colors.length > 0 && (
           <span className="absolute bottom-3 left-4 flex items-center gap-1.5" aria-hidden>
             {product.colors.slice(0, 4).map((c) => (

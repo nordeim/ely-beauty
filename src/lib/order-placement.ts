@@ -9,7 +9,7 @@ import {
   isCouponRedeemable,
 } from "@/lib/coupons";
 import { computeOrderMoney, shippingMethodForCity } from "@/lib/order-money";
-import { StripeAmountMismatchError } from "@/lib/stripe-payment";
+import { StripeAmountMismatchError, stripeChargeAmount } from "@/lib/stripe-payment";
 import { checkoutSchema } from "@/lib/validation";
 
 /** Error carrying an HTTP status through the order transaction. */
@@ -64,11 +64,16 @@ export type PlaceOrderArgs = {
   /** The CONFIRMED PaymentIntent id anchoring this placement (null = the
    *  demo/manual paths). UNIQUE on Order — the placement idempotency anchor. */
   stripePaymentIntentId: string | null;
-  /** The verified intent amount (integer cents). The in-tx money authority
-   *  re-derives the total; a mismatch throws StripeAmountMismatchError (the
-   *  residual TOCTOU guard — the pre-tx verification already caught most
-   *  drift; this closes the sub-second window). */
+  /** The verified intent amount — USD CENTS (stripeChargeAmount output,
+   *  S74-11). The in-tx money authority re-derives the BDT total, converts
+   *  through `bdtPerUsd`, and a mismatch throws StripeAmountMismatchError
+   *  (the residual TOCTOU guard — the pre-tx verification already caught
+   *  most drift; this closes the sub-second window). */
   paidTotalCents: number | null;
+  /** S74-11: the operator FX rate the intent was minted under — REQUIRED
+   *  when stripePaymentIntentId is set (the in-tx guard converts the
+   *  re-derived BDT total through it before comparing). */
+  bdtPerUsd: number | null;
   /** The webhook's dedup row — when present it commits INSIDE this
    *  transaction (the H4d/L9 rule: a transient failure rolls the placement
    *  AND the dedup row back together, so Stripe's retry re-attempts both;
@@ -206,10 +211,13 @@ export async function placeOrderTx(
     // verified pre-tx against the estimate; THIS total is the authority. A
     // mismatch (price/coupon/settings drift in the sub-second window) must
     // never write an order whose total differs from the captured charge.
+    // S74-11: the intent carries USD cents — convert the in-tx BDT total
+    // through the same operator rate before comparing.
     if (
       args.stripePaymentIntentId !== null &&
       args.paidTotalCents !== null &&
-      money.total !== args.paidTotalCents
+      (args.bdtPerUsd === null ||
+        stripeChargeAmount(money.total, args.bdtPerUsd) !== args.paidTotalCents)
     ) {
       throw new StripeAmountMismatchError();
     }

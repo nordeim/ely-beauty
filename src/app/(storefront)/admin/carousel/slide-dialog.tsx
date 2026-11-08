@@ -162,7 +162,7 @@ export function SlideDialogButton({
               id="slide-subtitle"
               value={form.subtitle}
               onChange={(e) => setField("subtitle", e.target.value)}
-              placeholder="Fresh looks for your kitchen"
+              placeholder="Fresh looks for your ritual"
               maxLength={200}
             />
           </div>

@@ -24,6 +24,19 @@ describe("seed catalog constants (S15-2, run-72)", () => {
     expect(new Set(PRODUCTS.map((p) => p.slug)).size).toBe(19);
   });
 
+  it("carries the reference's authored titles verbatim (S74-13 — the massager casing)", () => {
+    // The live reference's authored title is "Full silicon scalp massager"
+    // (all lowercase after "Full"); the seed had title-cased it. Content
+    // parity: render the reference's authored string.
+    const massager = PRODUCTS.find((p) => p.slug === "full-silicon-scalp-massager");
+    expect(massager?.name).toBe("Full silicon scalp massager");
+    // The authored-order neighbors keep their exact titles too (guard
+    // against any future "cleanup" drift on the visible strings).
+    expect(PRODUCTS.find((p) => p.slug === "exfoliating-body-gloves")?.name).toBe(
+      "Exfoliating Body Gloves | 100% Natural Viscose Fiber",
+    );
+  });
+
   it("opens with the reference's authored order (run-72 live re-baseline)", () => {
     // The reference's /shop "Newest" order, card-for-card, fetched live from
     // its public entity API on 2026-11-08 (docs/reference-investigation.md).

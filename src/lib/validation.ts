@@ -55,7 +55,7 @@ export const addressSchema = z.object({
   // back-fills state from the city when absent.
   state: z.string().trim().max(60).optional().or(z.literal("")),
   postalCode: z.string().trim().max(20).optional().or(z.literal("")),
-  country: z.string().trim().min(2).max(60).default("United States"),
+  country: z.string().trim().min(2).max(60).default("Bangladesh"), // S74-12 (F-2): the BD store default — the dialog + checkout client already pin Bangladesh
 });
 
 /**
@@ -251,7 +251,7 @@ export const categoryInputSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, dashes"),
   description: z.string().trim().max(500).default(""),
   icon: z.string().trim().min(2).max(40).default("package"),
-  iconGradient: z.string().trim().max(80).default("from-orange-400 to-orange-600"),
+  iconGradient: z.string().trim().max(80).default("from-stone-400 to-stone-600"), // S74-12 (F-3): neutral — matches schema.prisma + the dialog (S73-10)
   sortOrder: z.number().int().min(0).max(999).default(0),
   isActive: z.boolean().default(true),
 });

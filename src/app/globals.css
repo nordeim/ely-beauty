@@ -104,9 +104,16 @@
   @apply text-xs font-medium uppercase tracking-[0.1em];
 }
 
-/* The reference's underlined text CTAs (SHOP THE COLLECTION, DISCOVER SETS). */
+/* The reference's prominent text CTAs (SHOP THE COLLECTION, DISCOVER SETS,
+ * EXPLORE OUR PRODUCTS — S74-9, measured 2026-11-08): 14px uppercase
+ * 0.1em-tracking links whose underline is a full-width BOTTOM BORDER
+ * (border-b pb-1) spanning the text AND the trailing arrow — not a
+ * text-decoration underline hugging the glyphs. Call sites pair it with
+ * the surface colors: `text-white border-white/60 hover:border-white` on
+ * dark surfaces, `text-foreground border-foreground/40
+ * hover:border-foreground` on light ones. */
 @utility link-cta {
-  @apply eyebrow-label inline-flex items-center gap-2 text-current underline underline-offset-4 transition-colors hover:text-primary;
+  @apply inline-flex items-center gap-2 border-b pb-1 text-sm font-normal uppercase tracking-[0.1em] transition-colors;
 }
 
 /* Motion hygiene: honor prefers-reduced-motion. */

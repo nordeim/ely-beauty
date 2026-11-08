@@ -243,7 +243,7 @@ export function CouponDialogButton({
             {form.type !== "free_shipping" && (
               <div className="space-y-2">
                 <Label htmlFor="coupon-value">
-                  {form.type === "percent" ? "Percent off (1–100)" : "Amount off (USD)"}
+                  {form.type === "percent" ? "Percent off (1–100)" : "Amount off (৳)"}
                 </Label>
                 <div className="relative">
                   {form.type === "fixed" && (
@@ -266,7 +266,7 @@ export function CouponDialogButton({
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="coupon-min-subtotal">Minimum subtotal (USD)</Label>
+              <Label htmlFor="coupon-min-subtotal">Minimum subtotal (৳)</Label>
               <div className="relative">
                 <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                   $

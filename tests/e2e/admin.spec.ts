@@ -73,7 +73,7 @@ test.describe("admin back office", () => {
       data: {
         email: "cancel-restock@example.com",
         customerName: "Restock Test",
-        shippingMethod: "standard",
+        shippingMethod: "standard", // deliberate S73-1 strip pin: zod discards this client-sent field (the server derives the tier from the city)
         paymentMethod: "cod",
         idempotencyKey: crypto.randomUUID(),
         address: {

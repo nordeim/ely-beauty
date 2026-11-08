@@ -141,7 +141,7 @@ export function AddressDialog() {
               onChange={(e) => setField("line1", e.target.value)}
               maxLength={120}
               autoComplete="address-line1"
-              placeholder="123 Kitchen Lane"
+              placeholder="12 Gulshan Avenue"
               required
             />
           </div>

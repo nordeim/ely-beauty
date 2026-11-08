@@ -10,6 +10,7 @@ import {
   parseStripeWebhookEvent,
   paymentIntentLast4,
   StripeAmountMismatchError,
+  stripeChargeAmount,
   stripeEventIntentId,
   stripeIdempotencyKey,
   stripeRefundIdempotencyKey,
@@ -71,16 +72,39 @@ describe("checkoutSnapshotHash + stripeIdempotencyKey", () => {
 // PaymentIntent params
 // ---------------------------------------------------------------------------
 
+describe("stripeChargeAmount — the S74-11 FX seam (poisha → USD cents)", () => {
+  it("converts the BDT total through the operator rate (৳288 @ 120 → $2.40)", () => {
+    // ৳288 = 28800 poisha; 28800 / 120 = 240 USD cents = $2.40.
+    expect(stripeChargeAmount(28800, 120)).toBe(240);
+  });
+
+  it("rounds half-up to the nearest cent (never truncates the customer)", () => {
+    // ৳287.995 → 28799.5 poisha / 117.5 = 245.1… → 245 cents.
+    expect(stripeChargeAmount(28799, 117.5)).toBe(245);
+    // ৳1 @ 130 → 100 / 130 = 0.769… → 1 cent (never 0 — Stripe minimums
+    // reject sub-cent amounts with their own clear error).
+    expect(stripeChargeAmount(100, 130)).toBe(1);
+  });
+
+  it("the pre-fix conflation is impossible: 28800 poisha never passes through as 28800 cents", () => {
+    // The seam is the ONLY path from poisha to the intent amount; its
+    // output is always ~total/rate, never total.
+    expect(stripeChargeAmount(28800, 120)).not.toBe(28800);
+  });
+});
+
 describe("buildPaymentIntentParams", () => {
-  it("carries the server-derived amount, USD, automatic payment methods, and the full rebuild metadata", () => {
+  it("carries the server-derived CONVERTED amount, USD, automatic payment methods, and the full rebuild metadata", () => {
     const params = buildPaymentIntentParams({
       snapshot: SNAPSHOT,
-      totalCents: 3129,
+      amountUsdCents: 240,
       cartId: "cart_1",
       userId: "user_1",
       cartToken: "tok_1",
     });
-    expect(params.amount).toBe(3129);
+    // S74-11: the amount field is explicitly USD cents — the poisha/usd
+    // conflation that minted ৳288 as $288 is now a type-level error.
+    expect(params.amount).toBe(240);
     expect(params.currency).toBe("usd");
     expect(params.automatic_payment_methods).toEqual({ enabled: true });
     expect(params.metadata.cartId).toBe("cart_1");
@@ -100,13 +124,22 @@ describe("buildPaymentIntentParams", () => {
   it("guest shapes serialize empty userId/cartToken (the webhook's null branches)", () => {
     const params = buildPaymentIntentParams({
       snapshot: SNAPSHOT,
-      totalCents: 100,
+      amountUsdCents: 100,
       cartId: "cart_1",
       userId: null,
       cartToken: null,
     });
     expect(params.metadata.userId).toBe("");
     expect(params.metadata.cartToken).toBe("");
+  });
+
+  it("the idempotency key inputs use the CONVERTED amount (a rate change mints a fresh intent)", () => {
+    // If the key hashed the POISHA total, an operator bumping the rate
+    // between checkouts would reuse the stale intent at the stale amount
+    // and the verify would loop. The key must move with the amount the
+    // intent actually carries.
+    const hash = checkoutSnapshotHash(SNAPSHOT);
+    expect(stripeIdempotencyKey("cart1", 240, hash)).not.toBe(stripeIdempotencyKey("cart1", 245, hash));
   });
 });
 
@@ -148,6 +181,18 @@ describe("verifyPaymentIntentForPlacement", () => {
 
   it("currency matching is case-insensitive (Stripe sends lowercase)", () => {
     expect(verifyPaymentIntentForPlacement({ status: "succeeded", amount: 3129, currency: "USD" }, 3129)).toEqual({ ok: true });
+  });
+
+  it("S74-11: the expected amount is the CONVERTED total — a poisha-passed-through intent FAILS verify", () => {
+    // ৳288 @ 120 → the intent must carry 240 USD cents. The pre-fix code
+    // minted 28800 (poisha passed through); that intent must never verify.
+    const expected = stripeChargeAmount(28800, 120);
+    expect(expected).toBe(240);
+    const result = verifyPaymentIntentForPlacement({ status: "succeeded", amount: 28800, currency: "usd" }, expected);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason).toBe("amount");
+    }
   });
 });
 

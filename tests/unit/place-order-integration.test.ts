@@ -70,7 +70,7 @@ type World = {
 /**
  * Seed a self-contained world (unique tag suffixes keep the tests
  * independent). p3 exists as the concurrent-tab line's product: the
- * CartItem @@unique([cartId, productId]) means a surviving unordered line
+ * CartItem @@unique([cartId, productId, variant]) means a surviving unordered line
  * must be a DIFFERENT product than the ordered ones.
  */
 async function seedWorld(
@@ -172,6 +172,7 @@ function argsFor(w: World, lines: CartLine[], overrides: Partial<PlaceOrderArgs>
     // no paid amount, no webhook dedup row.
     stripePaymentIntentId: null,
     paidTotalCents: null,
+    bdtPerUsd: null,
     ...overrides,
   };
 }
@@ -282,7 +283,7 @@ describe("placeOrderTx against the real engine (S26-3)", () => {
   });
 
   it("the ATOMIC decrement guard refuses to over-sell — a duplicate-product handoff rolls back (the write-side guard)", async () => {
-    // The cart's @@unique([cartId, productId]) means getCartSummary can never
+    // The cart's @@unique([cartId, productId, variant]) means getCartSummary can never
     // produce two lines for one product — but placeOrderTx is the money
     // authority and must not over-sell even when the handoff is malformed.
     // The duplicate line makes the FIRST guarded decrement the "concurrent
@@ -381,6 +382,7 @@ describe("placeOrderTx — the Stripe path (PAY-STRIPE-1 retrofit)", () => {
         paymentMethod: "card",
         stripePaymentIntentId: "pi_stripe_ok_1",
         paidTotalCents: 3129,
+        bdtPerUsd: 1, // identity rate — the pin below asserts the in-tx converted amount equals 3129
       }),
     );
     expect(number).toBe("ORD-2026-301");
@@ -396,7 +398,7 @@ describe("placeOrderTx — the Stripe path (PAY-STRIPE-1 retrofit)", () => {
     expect(order!.events[0]!.note).toBe("Order placed via card (Stripe)");
     // The intent anchor is UNIQUE — the placement idempotency anchor.
     await expect(
-      placeOrderTx(db, "ORD-2026-302", argsFor(w, linesFor(w), { stripePaymentIntentId: "pi_stripe_ok_1", paidTotalCents: 3129 })),
+      placeOrderTx(db, "ORD-2026-302", argsFor(w, linesFor(w), { stripePaymentIntentId: "pi_stripe_ok_1", paidTotalCents: 3129, bdtPerUsd: 1 })),
     ).rejects.toMatchObject({ code: "P2002" });
   });
 
@@ -408,6 +410,7 @@ describe("placeOrderTx — the Stripe path (PAY-STRIPE-1 retrofit)", () => {
       placeOrderTx(db, "ORD-2026-303", argsFor(w, linesFor(w), {
         stripePaymentIntentId: "pi_stripe_drift_1",
         paidTotalCents: 999_999,
+        bdtPerUsd: 1,
       })),
     ).rejects.toBeInstanceOf(StripeAmountMismatchError);
 
@@ -416,6 +419,33 @@ describe("placeOrderTx — the Stripe path (PAY-STRIPE-1 retrofit)", () => {
     expect((await db.product.findUnique({ where: { id: w.p2Id } }))!.stock).toBe(3);
     const row = await db.coupon.findUnique({ where: { code: w.couponCode! } });
     expect(row!.timesUsed).toBe(0);
+  });
+
+  it("S74-11: a realistic FX rate places when the intent carries the CONVERTED amount — and a poisha-passed-through intent mismatches", async () => {
+    const w = await seedWorld("stripefx", { coupon: { maxRedemptions: null, timesUsed: 0 } });
+
+    // In-tx total is 3129 poisha (৳31.29). At the operator rate 120 the
+    // intent must carry Math.round(3129 / 120) = 26 USD cents.
+    const number = await placeOrderTx(db, "ORD-2026-306", argsFor(w, linesFor(w), {
+      stripePaymentIntentId: "pi_stripe_fx_ok",
+      paidTotalCents: 26,
+      bdtPerUsd: 120,
+    }));
+    const placed = await db.order.findUnique({ where: { number } });
+    expect(placed!.total).toBe(3129); // the ORDER stays in poisha (BDT truth)
+    expect(placed!.stripePaymentIntentId).toBe("pi_stripe_fx_ok");
+
+    // The pre-fix shape — the intent carrying the raw poisha count — must
+    // be rejected by the in-tx guard (the ~120x overcharge can never place).
+    const w2 = await seedWorld("stripefxbad", { coupon: { maxRedemptions: null, timesUsed: 0 } });
+    await expect(
+      placeOrderTx(db, "ORD-2026-307", argsFor(w2, linesFor(w2), {
+        stripePaymentIntentId: "pi_stripe_fx_bad",
+        paidTotalCents: 3129,
+        bdtPerUsd: 120,
+      })),
+    ).rejects.toBeInstanceOf(StripeAmountMismatchError);
+    expect(await db.order.count({ where: { number: "ORD-2026-307" } })).toBe(0);
   });
 
   it("the webhook dedup row commits WITH the placement (the H4d/L9 rule)", async () => {
@@ -427,6 +457,7 @@ describe("placeOrderTx — the Stripe path (PAY-STRIPE-1 retrofit)", () => {
         paymentMethod: "card",
         stripePaymentIntentId: "pi_stripe_dedup_1",
         paidTotalCents: 3129,
+        bdtPerUsd: 1,
         stripeEvent: {
           eventId: "evt_stripe_dedup_1",
           type: "payment_intent.succeeded",
@@ -456,6 +487,7 @@ describe("placeOrderTx — the Stripe path (PAY-STRIPE-1 retrofit)", () => {
       placeOrderTx(db, "ORD-2026-305", argsFor(w, linesFor(w), {
         stripePaymentIntentId: "pi_stripe_dedup_2",
         paidTotalCents: 3129,
+        bdtPerUsd: 1,
         stripeEvent: {
           eventId: "evt_stripe_dedup_2",
           type: "payment_intent.succeeded",

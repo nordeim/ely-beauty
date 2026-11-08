@@ -114,7 +114,9 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
             Showing results for &ldquo;{q}&rdquo;
           </p>
         )}
-        <p className="mb-12 text-sm text-muted-foreground" aria-live="polite">
+        {/* S74-3: the count sits directly above the filter band — the band
+            itself carries the hairline + pb-6/mb-12 rhythm (measured). */}
+        <p className="text-sm text-muted-foreground" aria-live="polite">
           {total} product{total === 1 ? "" : "s"}
         </p>
       </div>
@@ -138,7 +140,7 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
           <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">
             Try adjusting your filters.
           </p>
-          <Link href="/shop" className="link-cta mt-5 text-foreground">
+          <Link href="/shop" className="link-cta mt-5 border-foreground/40 text-foreground hover:border-foreground">
             Clear filters
           </Link>
         </div>

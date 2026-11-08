@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { formatMoney } from "./money";
 import { isUniqueViolation, uniqueTargetField } from "./prisma-errors";
-import { isPublishableKeyConfigured, isRealSecret, resolveStripeConfig } from "./stripe-config";
+import { isPublishableKeyConfigured, isRealSecret, parseStripeBdtPerUsd, resolveStripeConfig } from "./stripe-config";
 import type { StripeConfig } from "./stripe-config";
 import type { checkoutSchema } from "./validation";
 
@@ -38,7 +38,7 @@ import type { checkoutSchema } from "./validation";
 // Re-export the client-safe config seams for server-side callers (client
 // components import @/lib/stripe-config directly — this module is
 // server-only).
-export { isPublishableKeyConfigured, isRealSecret, resolveStripeConfig };
+export { isPublishableKeyConfigured, isRealSecret, parseStripeBdtPerUsd, resolveStripeConfig };
 export type { StripeConfig };
 
 /** The checkout fields the PaymentIntent mint consumes (the placement
@@ -105,6 +105,22 @@ export function stripeRefundIdempotencyKey(paymentIntentId: string): string {
 // PaymentIntent params — server-re-derived money
 // ---------------------------------------------------------------------------
 
+/**
+ * S74-11 (F-1): the poisha → USD-cent conversion seam. Stripe cannot charge
+ * BDT, so the card path converts the server-derived BDT total through the
+ * operator's explicit rate (`STRIPE_BDT_PER_USD`). This is the ONLY path
+ * from poisha to an intent amount — the pre-fix code passed the poisha
+ * count straight into `amount` (a ৳288 order minted $288.00, ~120x).
+ * Rounds to the nearest cent, minimum 1 (Stripe rejects sub-cent amounts
+ * with its own clear error — tiny COD-edge orders surface that honestly).
+ */
+export function stripeChargeAmount(totalPoisha: number, bdtPerUsd: number): number {
+  if (!Number.isFinite(bdtPerUsd) || bdtPerUsd <= 0) {
+    throw new Error(`Invalid STRIPE_BDT_PER_USD rate: ${bdtPerUsd}`);
+  }
+  return Math.max(1, Math.round(totalPoisha / bdtPerUsd));
+}
+
 export type PaymentIntentParams = {
   amount: number;
   currency: "usd";
@@ -115,24 +131,26 @@ export type PaymentIntentParams = {
 };
 
 /**
- * Build the PaymentIntent creation params. `totalCents` is ALWAYS the
- * server-derived total (live cart + coupon + settings through
- * computeOrderMoney) — never a client-sent amount. The metadata carries the
- * full placement input so the webhook backstop can rebuild the order when
- * the customer's browser dies between confirmation and placement.
+ * Build the PaymentIntent creation params. `amountUsdCents` is ALWAYS the
+ * server-derived BDT total converted through `stripeChargeAmount` (live
+ * cart + coupon + settings through computeOrderMoney, then the operator
+ * rate) — never a client-sent amount, and never the raw poisha count. The
+ * metadata carries the full placement input so the webhook backstop can
+ * rebuild the order when the customer's browser dies between confirmation
+ * and placement.
  */
 export function buildPaymentIntentParams(args: {
   snapshot: StripeCheckoutSnapshot;
-  totalCents: number;
+  amountUsdCents: number;
   cartId: string;
   userId: string | null;
   /** The placing client's cart token — binds the webhook-placed order to the
    *  same guest cookie so an idempotent replay still resolves (S6-8). */
   cartToken: string | null;
 }): PaymentIntentParams {
-  const { snapshot, totalCents, cartId, userId, cartToken } = args;
+  const { snapshot, amountUsdCents, cartId, userId, cartToken } = args;
   return {
-    amount: totalCents,
+    amount: amountUsdCents,
     currency: "usd",
     automatic_payment_methods: { enabled: true },
     metadata: {
@@ -171,7 +189,8 @@ export type PlacementVerification =
  */
 export function verifyPaymentIntentForPlacement(
   intent: PlacementIntentView,
-  expectedTotalCents: number,
+  /** S74-11: the CONVERTED total (stripeChargeAmount output) — USD cents. */
+  expectedUsdCents: number,
 ): PlacementVerification {
   if (intent.status !== "succeeded") {
     return {
@@ -180,7 +199,7 @@ export function verifyPaymentIntentForPlacement(
       message: "Your payment could not be completed. Please try again.",
     };
   }
-  if (intent.amount !== expectedTotalCents) {
+  if (intent.amount !== expectedUsdCents) {
     return {
       ok: false,
       reason: "amount",

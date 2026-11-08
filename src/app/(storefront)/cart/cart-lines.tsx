@@ -125,7 +125,7 @@ export function CartLines({ initialLines }: { initialLines: CartLine[] }) {
                       "Color / Size" label rides the same muted style the
                       drawer uses — a shopper must see which variant a line
                       buys before checkout. */}
-                  {line.variant ? <p className="mt-0.5 text-xs uppercase tracking-wide text-muted-foreground">{line.variant}</p> : null}
+                  {line.variant ? <p className="mt-0.5 text-xs text-muted-foreground">{line.variant}</p> : null}
                   <p className="mt-0.5 text-sm text-muted-foreground">{formatMoney(line.unitPrice)} each</p>
                 </div>
                 <button

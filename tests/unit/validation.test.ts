@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   addressSchema,
+  categoryInputSchema,
   clampSearchTerm,
   cartLinePatchSchema,
   cartMutateSchema,
@@ -61,12 +62,24 @@ describe("addressSchema", () => {
   it("applies defaults for optional fields", () => {
     const parsed = addressSchema.parse(valid);
     expect(parsed.label).toBe("Home");
-    expect(parsed.country).toBe("United States");
+    // S74-12 (F-2): the schema default matches the Bangladesh-only store
+    // (the dialog and checkout client already hardcode "Bangladesh" — the
+    // zod default was the last US-shaped residual).
+    expect(parsed.country).toBe("Bangladesh");
     expect(parsed.line2).toBeUndefined();
   });
 
   it("rejects a too-short street", () => {
     expect(addressSchema.safeParse({ ...valid, line1: "12" }).success).toBe(false);
+  });
+});
+
+describe("categoryInputSchema — the S73-10 neutral gradient is single-sourced", () => {
+  it("defaults iconGradient to the stone pair (schema.prisma + the dialog agree)", () => {
+    // S74-12 (F-3): the zod default was the last kitchenware-orange
+    // residual — all three defaults must agree on the neutral pair.
+    const parsed = categoryInputSchema.parse({ name: "Serums", slug: "serums" });
+    expect(parsed.iconGradient).toBe("from-stone-400 to-stone-600");
   });
 });
 

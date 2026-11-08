@@ -11,6 +11,8 @@ import { getStripe, isStripeServerConfigured } from "@/lib/stripe";
 import {
   buildPaymentIntentParams,
   checkoutSnapshotHash,
+  parseStripeBdtPerUsd,
+  stripeChargeAmount,
   stripeIdempotencyKey,
 } from "@/lib/stripe-payment";
 import { checkoutSchema, firstError } from "@/lib/validation";
@@ -55,7 +57,12 @@ type PaymentIntentSession = {
  * order if the customer's browser dies between confirmation and placement.
  */
 export async function POST(request: NextRequest) {
-  if (!isStripeServerConfigured()) {
+  // S74-11 (F-1): the card gate needs keys AND the explicit FX rate —
+  // minting a USD intent whose amount equals the poisha count would
+  // overcharge ~120x, so a missing rate keeps the gate shut server-side
+  // (the checkout page's cardEnabled is the UX mirror of this check).
+  const bdtPerUsd = parseStripeBdtPerUsd(process.env);
+  if (!isStripeServerConfigured() || bdtPerUsd === null) {
     // Customer-safe: no operator vocabulary (the R10-2 rule).
     return NextResponse.json(
       { error: "Card payments are unavailable right now. Please try again later." },
@@ -128,14 +135,19 @@ export async function POST(request: NextRequest) {
   });
 
   const cartToken = await readCartToken();
+  // S74-11: the intent amount is the CONVERTED total — USD cents through
+  // the operator rate, never the raw poisha count. The idempotency key
+  // hashes the same converted amount, so a rate change mints a fresh
+  // intent instead of replaying a stale one at a stale amount.
+  const amountUsdCents = stripeChargeAmount(money.total, bdtPerUsd);
   const params = buildPaymentIntentParams({
     snapshot,
-    totalCents: money.total,
+    amountUsdCents,
     cartId,
     userId: user?.id ?? null,
     cartToken,
   });
-  const idempotencyKey = stripeIdempotencyKey(cartId, money.total, checkoutSnapshotHash(snapshot));
+  const idempotencyKey = stripeIdempotencyKey(cartId, amountUsdCents, checkoutSnapshotHash(snapshot));
 
   try {
     const intent = await stripe.paymentIntents.create(

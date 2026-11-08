@@ -13,8 +13,10 @@ import {
   chargeRefundedReflection,
   classifyStripeEvent,
   classifyWebhookPlacementError,
+  parseStripeBdtPerUsd,
   parseStripeWebhookEvent,
   STRIPE_FAILURE_REASON,
+  stripeChargeAmount,
   stripeEventIntentId,
   StripeAmountMismatchError,
   verifyPaymentIntentForPlacement,
@@ -316,16 +318,22 @@ export async function POST(request: NextRequest) {
     });
 
     // The SAME verification gate as the action path — the intent must have
-    // paid exactly the server-re-derived total, in USD. A mismatch is
-    // deterministic: record + the refund trail (the operator refunds from
-    // the Stripe dashboard using the log line).
-    const verification = verifyPaymentIntentForPlacement(intentView, money.total);
+    // paid exactly the server-re-derived total, CONVERTED to USD cents
+    // through the operator rate (S74-11). A missing rate (operator removed
+    // it after the mint) or a mismatch is deterministic: record + the
+    // refund trail (the operator refunds from the Stripe dashboard using
+    // the log line).
+    const bdtPerUsd = parseStripeBdtPerUsd(process.env);
+    const verification =
+      bdtPerUsd === null
+        ? ({ ok: false, reason: "amount", message: "" } as const)
+        : verifyPaymentIntentForPlacement(intentView, stripeChargeAmount(money.total, bdtPerUsd));
     if (!verification.ok) {
       await recordEvent(evt, STRIPE_FAILURE_REASON.amountMismatch);
       console.error(
         "[stripe-webhook] amount mismatch — refund via dashboard",
         intentView.id,
-        `intent=${intentView.amount} cart=${money.total} reason=${verification.reason}`,
+        `intent=${intentView.amount} bdtTotal=${money.total} rate=${bdtPerUsd ?? "missing"} reason=${verification.reason}`,
       );
       return NextResponse.json({ received: true });
     }
@@ -368,6 +376,7 @@ export async function POST(request: NextRequest) {
       },
       stripePaymentIntentId: intentView.id,
       paidTotalCents: intentView.amount ?? null,
+      bdtPerUsd,
       stripeEvent: {
         eventId: evt.id,
         type: evt.type,

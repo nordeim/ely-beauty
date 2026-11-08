@@ -162,7 +162,7 @@ test.describe("shopping flow", () => {
     const checkoutBody = {
       email: "idempotent@example.com",
       customerName: "Replay Test",
-      shippingMethod: "standard",
+      shippingMethod: "standard", // deliberate S73-1 strip pin: zod discards this client-sent field (the server derives the tier from the city)
       paymentMethod: "cod",
       // Fresh key per run — mirrors the client's crypto.randomUUID() usage.
       idempotencyKey: crypto.randomUUID(),

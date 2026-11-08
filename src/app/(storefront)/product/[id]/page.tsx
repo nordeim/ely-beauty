@@ -147,6 +147,9 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
 
         {/* RIGHT — summary + purchase + description (reference anatomy) */}
         <div className="flex flex-col">
+          {/* S74-6 (P-5, measured): the reference renders the product's
+              category as a micro-label eyebrow above the title. */}
+          <p className="eyebrow-label mb-3 text-muted-foreground">{product.category.name}</p>
           <h1 className="font-display text-3xl font-light leading-tight tracking-tight sm:text-4xl">
             {product.name}
           </h1>
@@ -189,7 +192,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
               right-column content sections. */}
           <div className="mt-10 flex flex-col gap-6 border-t border-border pt-8">
             <section aria-labelledby="description-title">
-              <h2 id="description-title" className="font-display text-xl font-medium">
+              <h2 id="description-title" className="eyebrow-label mb-3 text-foreground">
                 Description
               </h2>
               <div className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
@@ -198,7 +201,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
             </section>
             {product.howToUse && (
               <section aria-labelledby="how-to-use-title">
-                <h2 id="how-to-use-title" className="font-display text-xl font-medium">
+                <h2 id="how-to-use-title" className="eyebrow-label mb-3 text-foreground">
                   How to Use
                 </h2>
                 <div className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
@@ -208,7 +211,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
             )}
             {product.ingredients && (
               <section aria-labelledby="ingredients-title">
-                <h2 id="ingredients-title" className="font-display text-xl font-medium">
+                <h2 id="ingredients-title" className="eyebrow-label mb-3 text-foreground">
                   Ingredients
                 </h2>
                 <div className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">

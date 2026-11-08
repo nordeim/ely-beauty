@@ -51,6 +51,7 @@ automatically by the limiter (`src/lib/rate-limit.ts`).
 | `NEXT_PUBLIC_SITE_URL` | Recommended | Canonical public origin, used for metadata URLs, `sitemap.xml`, `robots.txt`, and JSON-LD (e.g. `https://shop.example.com`). |
 | `NEXT_PUBLIC_DEMO_MODE` | Optional | The login page's demo-credentials quick-fill box. **Production builds hide it by default** (it names the seeded admin account); set `true` to opt in for an evaluation deploy. In development the box is shown unless explicitly `false`. Since session-13 (S13-1) the credentials are passed server-side as props only when enabled — a default production build ships **no credential strings** in the client bundle at all. |
 | `TRUST_CF_CONNECTING_IP` | Optional (default: trust) | Session-13 (S13-7): set `"false"` on **direct deployments** (no Cloudflare edge) so the client-forgeable `cf-connecting-ip` header cannot rotate per-IP rate-limit buckets. Keep the default (or unset) behind Cloudflare. |
+| `STRIPE_BDT_PER_USD` | **Required with the Stripe keys** | The taka-per-dollar FX rate (a positive number, e.g. `120`). Stripe cannot charge BDT, so the card path converts the server-derived ৳ total through this rate (`stripeChargeAmount`). **Without it the Card option stays OFF even with keys set** — keys alone would mint a USD intent whose amount equals the poisha count (a ~120× overcharge). See "The FX rate gate" below. |
 | `STRIPE_SECRET_KEY` | Optional | Session-61 (the Stripe retrofit): the secret key (`sk_live_…`/`sk_test_…`). **Empty = the demo checkout** (clearly labeled, no charges). Set together with the publishable key to activate the real card path: the Payment Element island (PCI SAQ-A — card data never touches this app), a server-minted PaymentIntent (the amount is re-derived server-side from the live cart + coupon + settings), and webhook-driven order placement for interrupted checkouts. |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Optional | The publishable key (`pk_live_…`/`pk_test_…`) for the client island. Must be set for the element to mount; the server/client "configured" checks share one truth table (`src/lib/stripe-config.ts`). |
 | `STRIPE_WEBHOOK_SECRET` | Optional | The signing secret (`whsec_…`) for `POST /api/stripe/webhook` — from the Stripe dashboard's webhook endpoint (add the events `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.refunded`) or `stripe listen --forward-to localhost:3000/api/stripe/webhook` locally. The backstop for interrupted checkouts (payment captured, browser died before placement) — the dedup row commits WITH the placement; a transient failure answers 500 so Stripe retries. |
@@ -166,3 +167,19 @@ The clean-check order in `AGENTS.md` is the deploy gate: every step must exit
 | `EADDRINUSE :3100` during e2e | A previous standalone server is alive (process renames to `next-server`) | `pkill -f next-server` |
 | Stock-assuming e2e pins fail after many suite runs ("In Stock" gone, sold-out 409s on seeded products) | E2E checkouts are traffic that permanently drains the demo DB's traffic-owned stock (the seed policy never refreshes it — S14-4) | `npx tsx scripts/restore-demo-stock.ts` (the e2e webServer runs it automatically on a fresh server start); run it BEFORE suspecting code |
 | The auth e2e fails at its FIRST assertion (profile name `expected "Jordan Rivera"`) | A previously crashed/killed e2e run died mid-flow and left the demo profile name edited — the test restores it only on success (the seed's `update: {}` policy never re-resets the name) | One-line SQLite fix: `UPDATE User SET name = 'Jordan Rivera' WHERE email = 'demo@homenestkitchen.com'` — then re-run; run BEFORE suspecting code |
+
+
+## The FX rate gate (S74-11)
+
+Stripe cannot charge BDT. The card path therefore converts the server-derived
+BDT total (poisha) through the explicit operator rate `STRIPE_BDT_PER_USD`
+via the single `stripeChargeAmount(totalPoisha, rate)` seam
+(`src/lib/stripe-payment.ts`): a ৳288 order at rate 120 mints a $2.40
+PaymentIntent. **Without a valid positive rate the Card option does not
+render even when Stripe keys are set** — keys alone used to mint a USD intent
+whose amount equaled the poisha count (a ~120x overcharge). The gate is
+enforced in three places: the checkout page's `cardEnabled`, the mint route
+(503 without the rate), and the placement's in-tx amount guard (which
+converts through the same rate before comparing). The idempotency key hashes
+the CONVERTED amount, so changing the rate mints a fresh intent instead of
+replaying a stale one. Keep the rate current with your pricing FX.
