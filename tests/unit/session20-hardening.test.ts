@@ -158,6 +158,6 @@ describe("free_shipping coupon type (S20-6 / audit I1)", () => {
   it("still enforces the minimum subtotal", () => {
     const applied = couponDiscount(FREE_SHIP, 2999);
     expect(applied.ok).toBe(false);
-    if (!applied.ok) expect(applied.error).toMatch(/minimum subtotal of \$30\.00/);
+    if (!applied.ok) expect(applied.error).toMatch(/minimum subtotal of ৳30/);
   });
 });

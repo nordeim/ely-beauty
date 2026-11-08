@@ -62,7 +62,7 @@ describe("couponDiscount — fixed coupons", () => {
   it("enforces the minimum subtotal", () => {
     const result = couponDiscount(fixed10, 4999);
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toContain("$50.00");
+    if (!result.ok) expect(result.error).toContain("৳50");
   });
 });
 

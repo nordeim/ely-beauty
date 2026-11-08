@@ -1,8 +1,8 @@
-# HomeNest Kitchen
+# ElyBeauty
 
-![Next.js](https://img.shields.io/badge/Next.js-16-black) ![React](https://img.shields.io/badge/React-19-149ECA) ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6) ![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4_CSS--first-38BDF8) ![Prisma](https://img.shields.io/badge/Prisma-6_+_SQLite-2D3748) ![Stripe](https://img.shields.io/badge/Stripe-payments-635FF5) ![Tests](https://img.shields.io/badge/tests-496_unit_·_68_e2e-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue)
+![Next.js](https://img.shields.io/badge/Next.js-16-black) ![React](https://img.shields.io/badge/React-19-149ECA) ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6) ![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4_CSS--first-38BDF8) ![Prisma](https://img.shields.io/badge/Prisma-6_+_SQLite-2D3748) ![Stripe](https://img.shields.io/badge/Stripe-payments-635FF5) ![Tests](https://img.shields.io/badge/tests-512_unit_·_69_e2e-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue) ![Currency](https://img.shields.io/badge/currency-BDT_৳-e11d48)
 
-A production-grade e-commerce storefront + admin back office — a visual-and-functional **superset** of the Base44 reference app at [`nest-culinary-hub.base44.app`](https://nest-culinary-hub.base44.app/). Premium kitchenware catalog, guest carts, coupons, order tracking, reviews, legal pages, **real Stripe card payments** (Payment Element + webhook backstop — OFF by default, see `.env.example`), and a full admin console, on Next.js 16 · React 19 · TypeScript strict · Tailwind CSS v4 · Prisma 6 + SQLite.
+A production-grade premium-skincare e-commerce storefront + admin back office — a visual-and-functional **superset** of the Base44 reference app at [`ely-beauty.base44.app`](https://ely-beauty.base44.app/). High-fashion editorial design (Cormorant Garamond + Inter, warm ivory + taupe, sharp corners), a Bangladesh-market commerce model (৳ BDT, city-tiered shipping, Cash on Delivery), **product variants (colors/sizes)**, and a full admin console, on Next.js 16 · React 19 · TypeScript strict · Tailwind CSS v4 · Prisma 6 + SQLite. Re-skinned in run-72 from the battle-tested HomeNest Kitchen scaffold (70+ remediation sessions; see `docs/reference-investigation.md` for the live-reference dossier).
 
 ## Quick Start
 
@@ -20,25 +20,25 @@ npm run db:setup
 npm run dev               # http://localhost:3000
 ```
 
-**Verify setup:** `curl localhost:3000/api/health` → `{"status":"ok","db":"up",...}`, and the home page renders the hero carousel with the seeded catalog.
+**Verify setup:** `curl localhost:3000/api/health` → `{"status":"ok","db":"up",...}`, and the home page renders the editorial hero ("The Art of Radiance") with the seeded 19-product catalog.
 
 Demo accounts (seeded):
 
 | Role | Email | Password |
 |---|---|---|
-| Admin | `admin@homenestkitchen.com` | `Admin123!` |
-| Customer | `demo@homenestkitchen.com` | `Demo1234!` |
+| Admin | `admin@elybeauty.com` | `Admin123!` |
+| Customer | `demo@elybeauty.com` | `Demo1234!` |
 
 ## Features
 
 | Area | Highlights |
 |---|---|
-| **Storefront** | Auto-rotating hero carousel · 8 category tiles · featured & new-arrival grids (**default catalog order matches the reference's authored order** — re-aligned session-33 and session-34, currently Damascus-first on /products "Newest", Featured and New Arrivals alike) · search + category/sort filters + pagination · product detail with gallery, specs, reviews (read + submit) and related products · trust badges · newsletter capture |
-| **Commerce** | Guest carts (token-cookie, merged on login **and at sign-in**) · mini cart drawer + cart page · **server-computed cart badge survives full reloads** · coupons (`WELCOME10`, `SAVE20`, `FREESHIP`) with expiry + **atomic redemption caps** (the checkout increment carries an always-on `isActive` guard — a coupon deactivated mid-checkout rolls the order back, session-20) · **first-class `free_shipping` coupon type** (zeroes shipping outright, independent of the spend threshold — pinned through the server-derived receipt) · free-shipping threshold · 3-step checkout (shipping → payment → review) with inline validation · **idempotent order placement** (retries reuse the same key — no double orders) · demo payment (clearly labeled, no real charges — the Stripe-unconfigured default) · **real Stripe card payments when configured** (session-61 retrofit: the Payment Element island (PCI SAQ-A — card data never touches this app), a server-minted PaymentIntent (amount re-derived from the live cart + coupon + settings), webhook-driven order placement for interrupted checkouts, the refund loop with the admin payments ledger — three env vars activate it, the unconfigured demo path stays byte-identical) · server-side total re-derivation **inside the order transaction** + atomic stock checks · transactional cart adds (no lost increments, shared 99/stock clamp, **scoped race-safe line writes**) · **bounded wishlist** (100-item cap enforced transactionally on the API — create-first, post-create count under the write lock, session-16 — AND cap-truncating on the login merge, friendly 409) with **one-request Add All to Cart** (both skip reasons reported) and **server-rendered filled hearts** (heart state + honest Add/Remove labels on every grid, session-11) |
-| **Orders** | `ORD-YYYY-NNN` order numbers · **token-gated order-success receipt** (sequential numbers alone reveal nothing) · order tracking gated by **number + purchase email** (anti-enumeration, rate-limited) with a 4-step status timeline · per-order event history · admin cancellation restores stock |
-| **Accounts** | Register/login (scrypt hashes, DB-backed sessions, HMAC-signed cookie) · profile editing · address book (bounded at 20, **first address auto-defaults + per-card Set-as-default + deleting the default auto-promotes the newest remaining address**, friendly 409 at the cap enforced inside the write transaction, checkout prefill) · order history (paginated) |
-| **Admin** (`/admin`, role-gated) | Dashboard (KPIs + 14-day revenue chart folded from bounded SQL day buckets + recent orders + low stock) · products CRUD · categories CRUD · **coupons CRUD (session-19 — create/edit/deactivate/delete discount codes with percent/fixed values, minimums, expiry and redemption caps; codes normalize to the same uppercase vocabulary the storefront redemption lookup uses)** · carousel slide manager with reorder · orders manager (status workflow with **guarded transactional transitions** + carrier tracking) · analytics (top products, category mix) · store settings |
-| **Content** | About, Contact (working form), 5 legal pages, 404 · SEO metadata, `sitemap.xml` (public routes only), `robots.txt` (admin/account/checkout/api disallowed) · **noindex on every private surface** (cart/account/checkout/track-order/auth/wishlist/admin) · **schema.org JSON-LD** (Product rich-result blocks with price/stock/rating/priceValidUntil, Organization + WebSite with SearchAction) · canonical URLs on every public page · **OpenGraph + Twitter share cards** (branded og-default.png, product-image share cards) · web manifest + SVG favicon · branded error boundaries |
+| **Storefront** | Editorial single-image hero (the carousel engine activates with 2+ slides — admin-managed) · "Shop by Ritual" image category tiles · "Curated for You" newest-6 grid · **default catalog order matches the reference's authored order** (backdated `createdAt`) · `/shop` listing with category filter pills + sort (Newest / Price / Name) + search (`/products` 301-redirects) · product detail with gallery, **COLOR swatch / SIZE variant selectors**, DESCRIPTION / HOW TO USE / INGREDIENTS sections, and "Complete the Ritual" related pieces · floating WhatsApp chat (settings-driven) |
+| **Commerce** | Guest carts (token-cookie, merged on login **and at sign-in**) · "Your Bag" mini drawer + full cart page · **server-computed cart badge survives full reloads** · coupons (`WELCOME10`, `SAVE20`, `FREESHIP`) with expiry + **atomic redemption caps** · first-class `free_shipping` coupon type · free-shipping threshold hint (coupon-aware) · **product variants carried end-to-end** (cart line identity → checkout summary → order snapshot) · **city-tiered shipping** (Dhaka ৳70 / outside ৳130, derived from the City field; "Enter city to calculate" before input) · single-page checkout (CONTACT → SHIPPING ADDRESS → PAYMENT METHOD → Order Notes + live ORDER SUMMARY) · **Cash on Delivery** (the reference's method; **real Stripe card payments when configured** — Payment Element (PCI SAQ-A), server-minted PaymentIntent, webhook-driven placement, the admin refund ledger) · **idempotent order placement** (retries reuse the same key — no double orders) · server-side total re-derivation **inside the order transaction** + atomic stock checks · transactional cart adds (no lost increments, shared 99/stock clamp, scoped race-safe line writes) · **bounded wishlist** (100-item cap enforced transactionally) with **one-request Add All to Cart** and **server-rendered filled hearts** on the detail page |
+| **Orders** | **`ELY-XXXXXXXX` crypto-random order numbers** (no sequence to enumerate) · **token-gated order-success receipt** · order tracking gated by **number + purchase email** (anti-enumeration, rate-limited) with a 4-step status timeline · per-order event history · admin cancellation restores stock · optional order notes |
+| **Accounts** | Register/login (scrypt hashes, DB-backed sessions, HMAC-signed cookie) · profile editing · address book (bounded at 20, first address auto-defaults, delete-default auto-promotes, friendly 409 at the cap inside the write transaction) · **order history first** (the reference's account anatomy) |
+| **Admin** (`/admin`, role-gated) | Dashboard (KPIs + 14-day revenue chart folded from bounded SQL day buckets) · products CRUD (+ colors/sizes) · categories CRUD · coupons CRUD · carousel manager · orders manager (guarded transactional status transitions + carrier tracking) · analytics · store settings (incl. the Dhaka/outside shipping tiers + WhatsApp number) |
+| **Content** | About ("Beauty, Redefined"), Contact (working form), 5 legal pages, 404 · SEO metadata, `sitemap.xml` (public routes only, `/shop`), `robots.txt`, **noindex on every private surface** · **schema.org JSON-LD** (Product blocks with BDT pricing, Organization + WebSite with SearchAction) · canonical URLs · OpenGraph/Twitter share cards · web manifest + favicon · branded error boundaries |
 
 ## Architecture
 
@@ -47,12 +47,12 @@ Demo accounts (seeded):
 | Framework | Next.js (App Router, standalone) | ^16.1 | RSC rendering, Server Actions, route handlers |
 | UI runtime | React | ^19 | Server Components + client islands |
 | Language | TypeScript (strict) | ^5 | `noUncheckedIndexedAccess`, no `any` |
-| Styling | Tailwind CSS (CSS-first `@theme`) | ^4 | Design tokens pinned to the reference |
-| Data | Prisma + SQLite | ^6.11 | 18 models; integer-cent money |
+| Styling | Tailwind CSS (CSS-first `@theme`) | ^4 | Design tokens pinned to the live reference |
+| Data | Prisma + SQLite | ^6.11 | 18 models; integer-cent (poisha) money |
 | UI primitives | Radix UI + CVA + lucide-react | latest | Accessible dialogs, selects, sheets, toasts |
 | Charts | Recharts | ^3 | Admin revenue/analytics |
 | Validation | Zod | ^3.25 | Every external input boundary |
-| Tests | Vitest · Playwright | ^3.2 · ^1.64 | 496 unit · 68 e2e |
+| Tests | Vitest · Playwright | ^3.2 · ^1.64 | 512 unit · 69 e2e |
 
 ```mermaid
 flowchart TB
@@ -83,27 +83,29 @@ flowchart TB
 📂 src/
 ├── 📂 app/
 │   ├── 📂 (storefront)/        # public site + admin (layout = header/footer chrome)
-│   │   ├── page.tsx            # home: carousel, categories, featured, new arrivals
-│   │   ├── 📂 products/ 📂 product/[id]/   # listing + detail (+ gallery, reviews)
+│   │   ├── page.tsx            # home: hero, Shop by Ritual, Curated for You, ritual banner
+│   │   ├── 📂 shop/ 📂 product/[id]/   # listing (+ pill filters) + detail (+ variants)
 │   │   ├── 📂 cart/ 📂 checkout/ 📂 track-order/ 📂 wishlist/ 📂 account/
 │   │   ├── 📂 about/ 📂 contact/ 📂 legal/[slug]/
 │   │   └── 📂 admin/           # dashboard, products, orders, categories,
-│   │                           # carousel, analytics, settings (role-gated)
+│   │                           # coupons, carousel, analytics, settings (role-gated)
 │   ├── 📂 (auth)/              # login, register (per-request render for CSP nonces)
-│   ├── 📂 api/                 # cart, wishlist, checkout, coupon/apply, cart-summary,
-│   │                           # addresses, contact, newsletter, search, health
-│   ├── layout.tsx              # fonts, StoreProvider + Toaster (wraps children)
+│   ├── 📂 api/                 # cart (+bulk), cart-summary, wishlist, checkout,
+│   │                           # coupon/apply, addresses, contact, newsletter,
+│   │                           # search, health, stripe/*
+│   ├── layout.tsx              # fonts (Cormorant Garamond + Inter), StoreProvider + Toaster
 │   ├── globals.css             # Tailwind v4 @theme tokens pinned to the reference
 │   └── not-found.tsx / robots.ts / sitemap.ts
-├── 📂 components/ (store/, ui/) # header, mobile-nav, footer, product-card, drawer...
-├── 📂 lib/                      # db, db-path, auth, cart, wishlist, money, coupons,
-│   │                            # order-money, settings, products, validation, csp
-│   └── 📂 actions/              # server actions: auth, admin, reviews
-└── proxy.ts                     # per-request CSP nonce (Next 16 proxy convention)
+├── 📂 components/ (store/, ui/, checkout/) # header, mobile-nav, footer, product-card,
+│   │                                       # whatsapp-float, drawer, stripe-pay...
+├── 📂 lib/                      # db, db-path, auth, cart (+variants), wishlist, money (৳),
+│   │                            # order-money (+shippingMethodForCity), order-number (ELY-),
+│   │                            # coupons, settings, products, validation, csp, seo
+└── 📂 actions/                  # server actions: auth, admin, reviews
 📂 prisma/                       # schema.prisma (18 models) + seed.ts (idempotent)
-📂 tests/                        # unit/ (Vitest) · e2e/ (Playwright)
+📂 tests/                        # unit/ (Vitest · 500) · e2e/ (Playwright · 69)
 📂 db/                           # custom.db (created by db:push, git-ignored)
-📂 docs/                         # SSH push skill + screenshots/
+📂 docs/                         # reference dossier, implementation plan, screenshots/
 ```
 
 ## Environment Variables
@@ -113,41 +115,43 @@ flowchart TB
 | `DATABASE_URL` | `file:../db/custom.db` | SQLite file; relative URLs resolve against `prisma/schema.prisma` |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | Canonical origin for metadata/sitemap/robots |
 | `AUTH_SECRET` | dev-only fallback | **Set in production** — HMAC key for session cookies (`openssl rand -hex 32`) |
-| `NEXT_PUBLIC_DEMO_MODE` | production: hidden · dev: shown | The login page's demo-credentials quick-fill; production builds hide it by default **and ship no credential strings at all** (server-side prop boundary, session-13), opt in with `"true"` for evaluation deploys |
-| `TRUST_CF_CONNECTING_IP` | `"true"` (trust) | Session-13 S13-7: set `"false"` on direct deployments (no Cloudflare edge) so the client-forgeable `cf-connecting-ip` header can't rotate per-IP rate-limit buckets |
+| `NEXT_PUBLIC_DEMO_MODE` | production: hidden · dev: shown | The login page's demo-credentials quick-fill; production builds hide it by default **and ship no credential strings at all** |
+| `TRUST_CF_CONNECTING_IP` | `"true"` (trust) | Set `"false"` on direct deployments so the client-forgeable `cf-connecting-ip` header can't rotate rate-limit buckets |
+| `STRIPE_SECRET_KEY` / `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` / `STRIPE_WEBHOOK_SECRET` | empty | Activate the Card payment option (default: Cash on Delivery only — byte-identical) |
 
 ## Testing
 
 ```bash
-npm run test            # 496 unit tests (Vitest, node env; the six .tsx component tests — toaster/hero-carousel/quantity-stepper/cart-widgets/product-card/star-rating.test.tsx — run under jsdom)
+npm run test            # 512 unit tests (Vitest, node env; the component tests run under jsdom)
 npm run typecheck:tests # the unit/e2e/seed sources are type-checked too
 npm run build           # required before e2e (suite starts the standalone server)
-npm run test:e2e        # 68 e2e tests (Playwright; server auto-started on :3100)
+npm run test:e2e        # 69 e2e tests (Playwright; server auto-started on :3100)
 npx playwright test tests/e2e/mobile-navigation.spec.ts   # single spec
 ```
 
-- **Unit** covers the money math, the `DATABASE_URL` resolution contract, coupon rules **and lifecycle gates** (incl. the atomic redemption-cap filter), scrypt hashing, Zod schemas (root-relative image URLs, price bounds, bulk cart, address default), order-total derivation, the CSP builder, the route-boundary mappings (health 503 / newsletter+contact+checkout 429s **all carrying `Retry-After`**, the checkout order-number exhaustion), the seed-catalog constants (16 products / Damascus-first, re-aligned session-34 / 3 cookware), the `clampSearchTerm` cap, rate limiting **and `clientIp` derivation plus the two-tier review budget** (`reviewRateLimitKeys` — the per-IP ceiling bounds author rotation; `TRUST_CF_CONNECTING_IP="false"` opt-out for direct deploys), the auth-secret gate, order-access tokens **and the `resolveReplay` ownership gate**, order-status transitions **and the guarded `applyOrderStatusTransition`** **plus the guarded carrier-tracking write** (`applyCarrierTracking`), the review-aggregate growth rule **and its transactional `growReviewAggregate`** **plus the S13-4 single-transaction insert+growth semantics (temp-SQLite integration pin)**, the sitemap/robots privacy contract, the cart quantity clamp, the **cart-merge planner**, the **cart-bulk plan** (`dedupeBulkWanted`/`planBulkUpsertQuantity`), the **checkout cart-clear filter** (`cartClearFilter` — checkout deletes only the ordered lines), the **SEO JSON-LD builders + `jsonLdScript` escaping**, the **seed policy** (reseeds never reset live data) **and the backdated catalog order** (`productSeedCreatedAt` — the reference's authored order is the newest-first order), the **numeric settings fallback** (`settingNumber`), the **server-side demo flag** (`demoModeEnabled` — five-cell truth table), the **store-settings boundary schema** (`settingsPatchSchema` clamps), the **UTC month start** (`utcMonthStart`), the **S14-2 API boundary pins** (`api-boundaries.test.ts` — health ok/degraded-503, newsletter/contact malformed-JSON + invalid-body + 429 mappings, checkout 429 + `Retry-After`), the **S14-1 Toaster timer hygiene** (`toaster.test.tsx` — the suite's first component test: auto-dismiss, manual-close timer cancel, unmount cleanup), `interpolateContactEmail`, `newRequestId`, `sessionSweepDue`, the **P2002 target matcher** (`uniqueTargetField` — field arrays, bare strings, and constraint-name strings), the **wishlist cap and its cap-truncating merge plan** (`planWishlistMerge`), the **race-safe `promoteAddressInTx`**, the **default-delete reassignment** (`reassignDefaultAfterDeleteInTx`), and the **address-cap gate** (`assertAddressCap`), plus the **session-16 additions**: the **authoritative wishlist-cap tx gate** (`createWishlistItemInTx` — create-first ordering, the overflow throw, and the wishlist route's 409 / P2002-in-tx boundary mappings, mocked `db` + `next/headers`), the **hoisted boundary schemas** (`wishlistToggleSchema`, `cartLinePatchSchema` with the PATCH 0-deletes-line floor, `couponApplySchema` with the 40-char cap), and the **hero-carousel component pins** (exactly ONE MediaQueryList construction across mount + auto-rotate re-renders + rerender — the S15-5 regression guard — plus auto-rotation and the reduced-motion freeze, jsdom + fake timers + per-test `vi.resetModules()`), plus the **session-17 additions**: the **guarded category delete** (`deleteCategoryIfEmpty` outcomes incl. the P2003 race branch + `isForeignKeyViolation`), the **`MAX_CART_QUANTITY` single-sourcing pin**, and the **cart DELETE `?all=1` boundary pins**, plus the **session-18 additions**: the **checkout saveAddress extraction** (`saveCheckoutAddressInTx` — the "saved"/"at-cap" contract, the unset-before-create order pin, no-writes-at-cap, and the unknown-error rethrow), and the **friendly cart-quantity ceiling messages** (the three cart schemas reject over-ceiling quantities with store copy, not the Zod default), plus the **session-19 additions**: the **S19-2 scoped unset pin** (the checkout save unsets only `isDefault: true` rows), the **`couponInputSchema` boundary table**, the **pure `couponLabel` truth table**, the **guarded coupon actions** (denial / normalization / clash / P2002 / P2025 / rethrow), and the **S19-1 stepper-default pin** (`quantity-stepper.test.tsx` — a mocked ceiling proves the default `max` binds the shared constant), plus the **session-20 additions**: the **narrow `toggleCouponActiveAction`** (writes ONLY `isActive` — the lost-update contract — P2025 narrowed, unknown rethrown), the **`couponRedemptionFilter` truth table** (the checkout increment's always-on `isActive` guard beside the cap clause), the **free_shipping engine/money/schema pins** (label "Free shipping", discount 0 + `freeShipping: true`, minSubtotal enforced; `couponFreeShipping` forces $0 shipping for both methods independent of the threshold; the schema pins value at 0), plus the **session-22 additions**: the **widened coupon engine** (`couponDiscount` carries the marketing `description` through all three success branches; `applyCouponCode` passes it through) and the **single-lookup route contract** (`POST /api/coupon/apply` resolves a coupon with exactly ONE `db.coupon.findUnique` call — `tests/unit/session22-hardening.test.ts`), plus the **session-23 additions**: the **coupon-aware free-shipping hint** (`tests/unit/cart-widgets.test.tsx` — jsdom component tests through the REAL CouponBox with stubbed fetch: `CartSummaryWidgets` renders the progress nag below the threshold and the unlocked block at it, a percent coupon leaves the threshold states unchanged, an applied `free_shipping` coupon swaps the nag for the coupon-attributed "Free shipping active — {code} applied at checkout" block, and removing restores — the S21-7 resolution), plus the **session-24 wiring pins**: the **review-action two-tier gate** (`tests/unit/review-action-gate.test.ts` — BOTH real-derived tier keys consulted, either failure rejects with the friendly copy and never reaches the lookup/transaction), the **track-order page-limiter** (`tests/unit/track-order-limiter.test.ts` — over-budget lookups never touch the DB and render the same denial shell as an unknown number), and the **real-engine P2002 integration seam** (`tests/unit/checkout-recovery-integration.test.ts` — the temp-SQLite harness proving a genuine idempotency-key collision satisfies the recovery loop's tolerant `uniqueTargetField` matcher against the live field-array shape, with cross-field number/key discrimination), plus the **session-25 real-engine harnesses**: the **coupon-cap integration seam** (`tests/unit/coupon-cap-integration.test.ts` — the checkout's LIVE guarded increment against a REAL db file: at-cap blocks, one-under lands, deactivated blocks, unlimited passes) and the **saveAddress at-cap integration seam** (`tests/unit/save-address-integration.test.ts` — "saved"/"at-cap" inside a REAL transaction, the no-writes-at-cap contract, the single-default promotion), plus the **session-26 money-path harness** (`tests/unit/place-order-integration.test.ts` — the FULL `placeOrderTx` (extracted verbatim into `src/lib/order-placement.ts` with the db client injected) against a REAL temp-SQLite db: server-derived money with the args' cosmetic mirrors carrying garbage, the receipt snapshots, stock reservation incl. the WRITE-side atomic decrement guard (the duplicate-product handoff), the coupon burn + the engine-level atomic rollback, the S12-1 cart-clear scoping, and the S7-8 best-effort address save).
-- **E2E** covers the reference anatomy (home/products/detail/footer), the full guest checkout → `ORD-YYYY-NNN` → tracking loop **including the token-gated receipt and its guess-denial**, an idempotent checkout replay, the guest-cart merge at login **and the first-login claim (visible cross-device)**, the **guest-wishlist merge at registration**, the admin cancel-restocks-stock flow **and the S13-2 aborted-save toast** (an aborted action surfaces a visible error, never silence), auth success/failure, admin gating, the **S14-3 profile-edit + Sign Out wiring** (the name persists server-side, the seed name is restored, sign-out returns the signed-out header), the **address-book cap** (`addresses-cap.spec.ts`) **and the default-address lifecycle** (`addresses-default.spec.ts`: first address auto-defaults → checkout prefills → promote moves the badge), the **review submission flow** (`reviews.spec.ts`), the **wishlist flows** (`wishlist.spec.ts`: hearts toggle with the **filled-state label flip**, page list, one-request Add All), the **cart badge freshness** (`cart-badge.spec.ts`: the server-rendered count survives a full reload and client navigation), the **cart-API lost-line boundary** (PATCH/DELETE on a gone line → friendly 404/200, never a 500), the **contact + newsletter surfaces** (`contact-newsletter.spec.ts`: UI success states + the 400 boundary incl. malformed JSON), the **SEO/platform contracts** (`seo-platform.spec.ts`: JSON-LD on home + product pages, robots/sitemap, manifest + icon, security headers, no `X-Powered-By`, noindex on private surfaces), the **S13-1 production-bundle credential guard** (the login page's HTML + script chunks contain no seeded passwords) **the S13-3 closed-drawer inert guard** (the invisible drawer is unreachable to keyboard and assistive tech) **and the S16-3 open-drawer modal pin** (the `page-shell` carries `inert` while the drawer is open, 25 Tab presses stay inside the dialog, Escape closes and focus returns to the header cart toggle), and — most importantly — `mobile-navigation.spec.ts`, the **Tailwind v4 regression guard** for the mobile menu (open/navigate/close/active-pill/scroll-lock on an iPhone-13 viewport), plus the **admin-coupons spec** (the session-19 CRUD loop: seeded list → create → apply at the cart → deactivate → reject → delete — **S20-1 hardened**: the cart is seeded through the API with a snapshot-restore cleanup instead of an absolute badge pin on the durable admin cart, and the setup self-heals a leftover code from an aborted run; **S21-1 cookie-corrected**: every admin-identity API call sends the session cookie explicitly — the per-test `request` fixture is identity-isolated), and the **free-shipping spec** (`free-shipping-coupon.spec.ts` — FREESHIP zeroes shipping below the spend threshold through the full money path: cart label → checkout mirror → the SERVER-derived receipt's "FREE", with the mirror pins scoped to the actual Shipping rows, **S21-4**; **session-23 S23-2**: its second test pins the coupon-aware cart hint — the "Add $15.01 more" nag pre-apply, the coupon-attributed block with FREESHIP applied, the nag restored on remove).
+- **Unit** covers the ৳ money math (whole-taka + poisha rendering), the `DATABASE_URL` resolution contract, coupon rules and lifecycle gates, scrypt hashing, Zod schemas (root-relative image URLs, price bounds, bulk cart with variants, the BD address model), order-total derivation **and the city-tier shipping mapping**, the **ELY- order-number format**, the variant-aware cart planners (merge + bulk composite keys), the CSP builder, rate limiting + `clientIp`, auth/tracking/order-status/order-access gates, review-aggregate transactional growth, sitemap/robots privacy, JSON-LD builders, the seed policy, and the ElyBeauty catalog constants (19 products / authored order / categories / variants).
+- **E2E** covers the reference anatomy (home/shop/detail/footer), the full guest COD checkout → `ELY-XXXXXXXX` → tracking loop **including the token-gated receipt and guess-denial**, an idempotent checkout replay, the guest-cart merge at login, the **variant carry-through** (select → bag → summary → receipt), the **shipping tiers** (Dhaka ৳70 / outside ৳130 / FREESHIP → FREE), auth success/failure, admin gating, the address-book lifecycle, reviews, wishlist flows, the cart badge freshness, the SEO/platform contracts (JSON-LD with BDT, robots/sitemap, security headers, noindex), the Stripe-configured surfaces' guards, and — most importantly — `mobile-navigation.spec.ts`, the **Tailwind v4 regression guard** for the mobile menu (conditional mount, no-JS-toggled `hidden`, toggle-closes, scroll lock, the in-panel search flow, route-change close on the iPhone-13 viewport).
 - E2E specs wait for hydration (`gotoHydrated`) before interacting; clicking before hydration falls back to native form GET, which is exactly the class of bug the guard exists for.
 
 ## Design System
 
 | Token | Value | Usage |
 |---|---|---|
-| `background` | `hsl(30 20% 98%)` | Warm cream page background |
-| `primary` | `hsl(24 70% 50%)` | Terracotta orange — buttons, active nav pill, badges |
-| `foreground` | `hsl(20 14% 12%)` | Body text |
-| `badge-sale` | `hsl(0 72% 61%)` | Red "−N%" discount pill |
-| `badge-featured` | `hsl(24 70% 60%)` | Orange Featured/Best Seller pill |
-| `border` | `hsl(33 15% 90%)` | Card borders |
+| `background` | `hsl(30 20% 97%)` | Warm ivory page background |
+| `primary` | `hsl(30 12% 48%)` | Warm taupe — buttons, active states |
+| `foreground` | `hsl(0 0% 10%)` | Body text |
+| `muted-foreground` | `hsl(0 0% 40%)` | Secondary text, compare-at prices |
+| `border` / `input` | `hsl(30 10% 88%)` | Hairlines, inputs |
+| `destructive` | `hsl(0 84.2% 60.2%)` | SALE badge, errors |
+| `radius` | `0.25rem` (4px) | Sharp editorial corners |
 
-Typography: **Playfair Display** for display headings (`.font-display`), **Inter** for body — both via `next/font`. Radius: `xl` cards (12px), `3xl` heroes (24px). Tailwind v4 CSS-first config in `src/app/globals.css` (`@theme inline`; no `tailwind.config.js`).
+Typography: **Cormorant Garamond** (300–600) for display headings via `.font-display` (light weight, tight tracking), **Inter** (300–600) for body — both via `next/font`. Micro-labels: `.eyebrow-label` (12px/500, 0.12em tracking, uppercase); text CTAs: `.link-cta` (underlined). Tailwind v4 CSS-first config in `src/app/globals.css` (`@theme inline`; no `tailwind.config.js`).
 
 ## Screenshots
 
 Captured from the running production build — see `docs/screenshots/`:
 
-`01-home` … `11-checkout` · `12-admin-dashboard` … `18-admin-settings` (incl. `15b-admin-coupons`) · `19-account` · `20-mobile-home` · `21-mobile-menu-open` · `22-tracking-locked` · `23-checkout-success-locked` — regenerate with `node scripts/capture-screenshots.mjs` (server on :3000)
+`01-home` … `11-checkout` (incl. `04b-cart-coupon-hint`) · `12-admin-dashboard` … `18-admin-settings` (incl. `15b-admin-coupons`) · `19-account` · `20-mobile-home` · `21-mobile-menu-open` · `22-tracking-locked` · `23-checkout-success-locked` — regenerate with `node scripts/capture-screenshots.mjs` (server on :3000)
 
 ## Troubleshooting
 
@@ -157,9 +161,9 @@ Captured from the running production build — see `docs/screenshots/`:
 | Page paints but never hydrates (no console errors) | Static prerender + per-request CSP nonce mismatch | Make the route render per-request (`await connection()` — see `(auth)/layout.tsx`) |
 | Mobile menu broken after a refactor | Tailwind v4 display-utility toggling | Restore the mount/transform pattern; run the mobile-navigation e2e spec |
 | `EADDRINUSE :3100` during e2e | A previous standalone server is alive (process renames to `next-server`) | `pkill -f next-server` |
-| Stock-assuming e2e pins fail after many sessions ("In Stock" gone, sold-out 409s) | E2E checkouts permanently drain the traffic-owned demo stock (S14-4) | `npx tsx scripts/restore-demo-stock.ts` (also runs automatically on a fresh e2e server start) |
+| Stock-assuming e2e pins fail after many sessions | E2E checkouts permanently drain the traffic-owned demo stock | `npx tsx scripts/restore-demo-stock.ts` (also runs automatically on a fresh e2e server start) |
 | npm blocks install scripts | npm's script-approval gate | `npm install-scripts approve @prisma/engines esbuild unrs-resolver` |
 
 ## License
 
-MIT — see the repository settings. Reference app © its respective owners; this implementation shares no code with it.
+MIT — see the repository settings. Reference app © its respective owners; this implementation shares no code with it, and all imagery is independently generated.

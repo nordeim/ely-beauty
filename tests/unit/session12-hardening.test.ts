@@ -17,7 +17,7 @@ describe("cartClearFilter", () => {
     image: "/images/placeholder.svg",
     unitPrice: 100,
     quantity: 1,
-    stock: 5,
+    stock: 5,    variant: "",
     lineTotal: 100,
   });
 

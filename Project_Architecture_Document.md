@@ -1,4 +1,4 @@
-# HomeNest Kitchen — Master Project Architecture Document (PAD) v1.0
+# ElyBeauty — Master Project Architecture Document (PAD) v2.0
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
@@ -6,6 +6,16 @@
 **Last Updated:** 2026-10-12
 **Audience:** Senior Engineers, Tech Leads, DevOps, and Onboarding Engineers
 **Rule:** Every architectural decision in this document traces to a specific rationale. Nothing is here "because it's popular."
+
+#### Revision Block — v2.0 (Run-72 — the ElyBeauty re-skin)
+
+- `[SR]` **The re-skin**: the operator's new reference app is ElyBeauty (premium skincare, BDT ৳, Bangladesh, COD) at ely-beauty.base44.app — investigated LIVE (dossier: docs/reference-investigation.md); the old nest-culinary-hub reference returns 503. All surfaces re-skinned to the new design language (Cormorant Garamond + Inter, ivory/taupe, 4px radii, borderless editorial cards); every superset capability retained.
+- `[SR]` **New commerce model**: ৳ integer-cent money (poisha), city-tiered shipping (Dhaka ৳70 / outside ৳130 via the pure `shippingMethodForCity`), crypto-random `ELY-XXXXXXXX` order numbers, product variants (colors/sizes) as cart-line identity with `OrderItem.variantLabel` snapshots, optional order notes, single-page COD checkout (Stripe remains the configured-only Card activation).
+- `[SR]` **Schema**: Product += colors/sizes/howToUse/ingredients; Category += imageUrl; CartItem += variant (UNIQUE [cartId, productId, variant]); Order += notes. db push + fresh reseed is the documented dev flow.
+- `[SR]` **Routes**: /products → /shop (301 redirect; sitemap/SEO/JSON-LD follow); nav = SHOP / BEAUTY TOOLS / BRUSH & COMBS / ABOUT.
+- `[SR]` **Tests re-pinned**: 512 unit (54 files) + 69 e2e — kitchenware pins → ElyBeauty pins; NEW pins: variant carry-through, shipping tiers, ELY- format, catalog constants (19 products / authored order), BDT money. Every behavioral contract preserved.
+- `[SR]` **New Tailwind v4 trap (ADR-006 class)**: `@apply` cannot reference `@layer utilities` classes — apply-able custom classes must be declared with `@utility` (eyebrow-label/link-cta).
+- `[SR]` **Imagery**: 27 independently generated brand images (the reference hotlinks a third-party Shopify CDN — no asset laundering).
 
 #### Revision Block — v1.0 (Initial Blueprint)
 
@@ -36,7 +46,7 @@
 
 ### 1.1 Document Metadata & Purpose
 
-HomeNest Kitchen is a premium kitchenware e-commerce storefront with a full admin back office, built as a visual-and-functional superset of the Base44 reference app (`https://nest-culinary-hub.base44.app/`). This PAD is the definitive statement of how the system is wired and why each decision was made. Use it: (a) when onboarding — sections 2–4 explain the whole system in one read; (b) when debugging — section 11 lists known failure modes and section 6 explains the CSP/hydration interaction that produces the most confusing symptoms; (c) when reviewing change proposals — every ADR names its rejected alternatives.
+ElyBeauty is a premium kitchenware e-commerce storefront with a full admin back office, built as a visual-and-functional superset of the Base44 reference app (`https://nest-culinary-hub.base44.app/`). This PAD is the definitive statement of how the system is wired and why each decision was made. Use it: (a) when onboarding — sections 2–4 explain the whole system in one read; (b) when debugging — section 11 lists known failure modes and section 6 explains the CSP/hydration interaction that produces the most confusing symptoms; (c) when reviewing change proposals — every ADR names its rejected alternatives.
 
 The starting point of this remediation was a client-only Vite SPA that kept the entire catalog, all users, orders, and auth in `localStorage` with unsalted client-side SHA-256 "password hashing." The remediation replaced that substrate with a real server, a real database, and real sessions while preserving (and exceeding) the SPA's feature surface and matching the reference site's visual design pixel-for-pixel where it matters.
 
@@ -52,7 +62,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, select, sheet, label, tabs, radio) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^3.25 | Single validation boundary (ADR-005) |
-| Unit tests | Vitest | ^3.2 | Node-env suite (496 tests; grew with every remediation session + the session-61 Stripe retrofit — see §8.1) |
+| Unit tests | Vitest | ^3.2 | Node-env suite (512 tests; grew with every remediation session + the session-61 Stripe retrofit — see §8.1) |
 | E2E tests | Playwright | ^1.64 | 68 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) |
 | Fonts | next/font (Playfair Display + Inter) | — | Self-hosted at build, no runtime font requests |
 
@@ -112,6 +122,15 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 - **Rationale:** Visual parity is a requirement, not a preference; the trap log encodes the failure modes so they aren't rediscovered.
 - **Consequences:** (+) Byte-comparable rendering vs the reference; deterministic menus. (−) Contributors must read the trap log before restyling overlays.
 - **Alternatives rejected:** Keeping the SPA's forest-green palette (visual drift); a `tailwind.config.js` (v4 anti-pattern).
+
+
+**ADR-008: The ElyBeauty re-skin — computed-style parity, variant line identity, and city-tiered shipping (run-72).**
+
+- **Context:** The operator's reference app changed to ElyBeauty (premium skincare, BDT, COD). The clone must match its observable design and commerce behavior while keeping every hardened superset capability.
+- **Decision:** (a) Design tokens are pinned to the LIVE reference's computed styles (Cormorant Garamond + Inter, `hsl(30 12% 48%)` taupe, 4px radius) — computed styles are ground truth, not screenshots. (b) Product variants (colors/sizes) become cart-LINE identity (`@@unique([cartId, productId, variant])`, empty-string default for NULL-safety), snapshot onto `OrderItem.variantLabel`, and plan through composite keys in the merge/bulk paths. (c) Shipping tiers map onto the existing standard/express vocabulary via the pure `shippingMethodForCity` (Dhaka ৳70 / outside ৳130) so every money invariant (threshold, FREESHIP coupon, in-tx re-derivation) keeps working unchanged. (d) Order numbers become crypto-random `ELY-XXXXXXXX` (no sequence to enumerate). (e) The checkout becomes the reference's single-page COD form; Stripe stays the configured-only Card activation. (f) Imagery is independently generated (the reference hotlinks a third-party Shopify CDN — no asset laundering).
+- **Rationale:** Every choice preserves a tested invariant while matching observed reference behavior; the deviations are recorded in `docs/implementation-plan.md` §2.
+- **Consequences:** (+) Parity + superset both verified green (512 unit / 69 e2e / live agent-browser pass). (−) The kitchenware-era test pins required a full re-pinning sweep; variant-aware compound keys add mild complexity to the cart planners.
+- **Alternatives Rejected:** Copying the reference's CDN images (asset laundering); keeping the 3-step wizard (checkout parity loss); sequential order numbers (enumeration).
 
 ### 1.4 Reference-Parity Ledger
 
@@ -174,8 +193,9 @@ Trust flow: the browser receives rendered HTML + flight data; every mutation is 
 
 | Route group | Routes | Rendering | Auth |
 |---|---|---|---|
-| `(storefront)` | `/`, `/products`, `/product/[id]`, `/cart`, `/checkout`, `/checkout/success`, `/track-order`, `/wishlist`, `/account`, `/about`, `/contact`, `/legal/[slug]` | Dynamic RSC (`force-dynamic` in layout) | Public; `/account` redirects to `/login` |
-| `(storefront)/admin` | `/admin`, `/admin/products|orders|categories|carousel|analytics|settings` | Dynamic RSC | `role === "admin"` else access-denied card |
+| `(storefront)` | `/`, `/shop`, `/product/[id]`, `/cart`, `/checkout`, `/checkout/success`, `/track-order`, `/wishlist`, `/account`, `/about`, `/contact`, `/legal/[slug]` | Dynamic RSC (`force-dynamic` in layout) | Public; `/account` redirects to `/login` |
+| `(storefront)/admin` | `/admin`, `/admin/products|orders|categories|coupons|payments|carousel|analytics|settings` | Dynamic RSC | `role === "admin"` else access-denied card |
+| redirect | `/products` → `/shop` (301, `next.config.ts`) | — | — |
 | `(auth)` | `/login`, `/register` | Per-request RSC (`await connection()`) | Public |
 | `api` | see ADR-004/005 tables in README | Node route handlers | Cart/wishlist/checkout: cookie-identified; addresses: session |
 | metadata | `robots.txt`, `sitemap.xml`, `/_not-found` | Static | — |
@@ -220,18 +240,21 @@ Non-relational stores: `Coupon`, `CarouselSlide`, `StoreSetting` (key/value), `N
 
 ### 4.2 Conventions & Invariants
 
-- **Money:** `Int` cents everywhere (`price`, `compareAtPrice`, `subtotal`, `shipping`, `tax`, `discount`, `total`, `unitPrice`, coupon `value`).
+- **Money:** `Int` cents (poisha; ৳1 = 100) everywhere (`price`, `compareAtPrice`, `subtotal`, `shipping`, `tax`, `discount`, `total`, `unitPrice`, coupon `value`). Display is whole-taka (`formatMoney`); the city-tiered shipping (Dhaka ৳70 / outside ৳130) rides the `shippingMethod` vocabulary via the pure `shippingMethodForCity`.
 - **Enums-as-strings:** `role`, `status`, `shippingMethod`, `paymentMethod`, coupon `type`, event `type` — vocabularies validated by `src/lib/validation.ts` (`ORDER_STATUSES`, `PAYMENT_METHODS`, …).
-- **JSON-encoded columns:** `Product.images` / `tags` / `specs` (parsed by `src/lib/products.ts`); `Order.shippingAddress` (checkout snapshot — orders never break because a product or address later changes).
+- **JSON-encoded columns:** `Product.images` / `tags` / `specs` / `colors` ([{name,hex}]) / `sizes` (string[]) (parsed by `src/lib/products.ts`); `Order.shippingAddress` (checkout snapshot — orders never break because a product or address later changes).
+- **Variants (run-72):** `CartItem.variant` (empty-string default) is part of the line identity — `@@unique([cartId, productId, variant])` — so the same product in two colors is two lines; the login merge and bulk add-all plan on composite `productId|variant` keys; checkout snapshots the selection onto `OrderItem.variantLabel`; `Order.notes` carries the checkout's optional order notes.
+- **Order numbers (run-72):** `ELY-XXXXXXXX` — 8 uppercase base36 chars, crypto-random via `src/lib/order-number.ts` (no sequence information to enumerate); the UNIQUE column + the checkout/webhook retry loops make collisions unobservable.
 - **Order integrity:** `OrderItem` snapshots `nameSnapshot`/`imageSnapshot`/`unitPrice`; `OrderEvent` is the append-only audit trail for `placed` / `status_changed` / `tracking_added`; `Order.carrier`/`trackingNumber` are operator-set resting state, never derived; `Order.idempotencyKey` (nullable unique) makes placement replay-safe.
 - **Natural keys:** `User.email`, `Product.slug` + `sku`, `Category.slug`, `Coupon.code` unique — the seed upserts by these so reseeding is idempotent.
 - **Stock:** decremented inside the checkout transaction (conditional atomic guard), restored inside the admin cancellation transaction; `CartItem.quantity` is clamped to live stock on read paths; `stock < 10` surfaces on the admin dashboard.
 
 ### 4.3 Seed Data (idempotent, `prisma/seed.ts`)
 
-2 demo users (admin + customer with a default address) · 8 categories matching the reference · 16 products (the reference's 8, exact names/prices/ratings/review-counts, plus 8 superset extras) · 3 hero slides (reference copy) · 13 settings · 3 coupons · 1 starter review per product.
+Seeds the ElyBeauty catalog from the live reference's public entity API (fetched 2026-11-08; the full dossier is `docs/reference-investigation.md`): **19 products / 4 categories** (beauty-tools 10, brush-combs 6, bestsellers 3, gift-sets 0 — reference-true) in the reference's authored "Newest" order (backdated `createdAt` via `productSeedCreatedAt`), ৳ whole-taka integer-cent prices, sold-out pieces visible (reference behavior), colors/sizes variants, full description/how-to-use/ingredients copy, 1 hero slide, 3 coupons (FREESHIP/SAVE20/WELCOME10), 11 settings (incl. the WhatsApp number + the shipping tiers), demo accounts `admin@elybeauty.com` / `demo@elybeauty.com`, and a starter review per product. **All imagery is independently generated** (`scripts/generate-imagery.mjs`) — the reference hotlinks a third-party Shopify CDN; no asset laundering.
 
-**Reseed policy (session 7, `src/lib/seed-policy.ts`):** product upserts refresh CATALOG CONTENT only (name, copy, category, images, tags, specs) — price, compareAtPrice, stock, rating, reviewCount, sku, badge, featured/newArrival and isActive are admin- or traffic-owned and survive a reseed; settings and carousel slides are CREATE-ONLY (missing keys/slides are created, existing values survive), matching the coupon-bookkeeping precedent (S4-8). Verified live in session 7: a mutated stock/price/rating/setting survives `db:seed`.
+
+**Reseed policy (session 7, `src/lib/seed-policy.ts`):** product upserts refresh CATALOG CONTENT only (name, copy, category, images, tags, specs, colors, sizes, howToUse, ingredients — run-72) — price, compareAtPrice, stock, rating, reviewCount, sku, badge, featured/newArrival and isActive are admin- or traffic-owned and survive a reseed; settings and carousel slides are CREATE-ONLY (missing keys/slides are created, existing values survive), matching the coupon-bookkeeping precedent (S4-8). Verified live in session 7: a mutated stock/price/rating/setting survives `db:seed`.
 
 ---
 
@@ -241,20 +264,20 @@ Tokens live in `src/app/globals.css` (`@theme inline`) — sampled from the live
 
 | Token | Value | Usage |
 |---|---|---|
-| `background` | `hsl(30 20% 98%)` | Warm cream page background |
-| `foreground` | `hsl(20 14% 12%)` | Body text |
-| `primary` / `ring` | `hsl(24 70% 50%)` | Terracotta orange — buttons, active nav pill, logo tile, links |
-| `secondary` / `muted` | `hsl(36 16% 94%)` | Search inputs, icon tiles, subtle fills |
-| `muted-foreground` | `hsl(25 9% 45%)` | Secondary text |
-| `badge-sale` | `hsl(0 72% 61%)` | Red "−N%" pill |
-| `badge-featured` | `hsl(24 70% 60%)` | Orange Featured pill |
-| `border` / `input` | `hsl(33 15% 90/88%)` | Card borders, inputs |
+| `background` | `hsl(30 20% 97%)` | Warm ivory page background |
+| `foreground` | `hsl(0 0% 10%)` | Body text |
+| `primary` / `ring` | `hsl(30 12% 48%)` | Warm taupe — buttons, active states, links |
+| `secondary` / `muted` / `accent` | `hsl(30 15% 93%)` / `hsl(30 10% 94%)` | Subtle fills |
+| `muted-foreground` | `hsl(0 0% 40%)` | Secondary text, compare-at prices |
+| `badge-sale` | `hsl(0 84.2% 60.2%)` | Red SALE rect |
+| `badge-featured` | `hsl(0 0% 10%)` | Near-black BESTSELLER rect |
+| `border` / `input` | `hsl(30 10% 88%)` | Hairlines, inputs |
 
-Typography: **Playfair Display** (`--font-playfair`, exposed as `.font-display`) for display headings — the reference's signature serif; **Inter** (`--font-inter`) for UI/body. Both self-hosted via `next/font` (zero layout shift, no runtime requests).
+Typography: **Cormorant Garamond** 300–600 (`--font-cormorant`, exposed as `.font-display` — light weight, tight tracking) for display headings; **Inter** 300–600 (`--font-inter`) for UI/body. Both self-hosted via `next/font` (zero layout shift, no runtime requests). Micro-labels `.eyebrow-label` (12px/500, 0.12em tracking, uppercase — the nav links, section eyebrows, CTAs); text CTAs `.link-cta` (underlined, `@utility`-declared so `@apply` can compose them — the run-72 trap).
 
-Geometry pins: radius `xl=12px` / `2xl=16px` / `3xl=24px` (v4 default scale shifted one notch — pinned to the reference's measured values); `--shadow-sm` pinned to v3 geometry; hover variants un-gated via `@custom-variant hover (&:hover)` so touch contexts match the reference's always-on hover styling.
+Geometry pins: radius `0.25rem` (4px — the reference's sharp editorial corners; the full named scale pinned down one notch); `--shadow-sm` pinned to v3 geometry; hover variants un-gated via `@custom-variant hover (&:hover)` so touch contexts match the reference's always-on hover styling.
 
-Component vocabulary: white cards with `border-border` + `rounded-xl` + `shadow-sm`; buttons `h-10` (`lg` = `h-11`), `rounded-lg`; nav pills `rounded-full`; hero `rounded-3xl`; category icon tiles `rounded-2xl` gradient squares.
+Component vocabulary: **borderless editorial cards** (no border/radius/shadow on product cards); the fixed 80px header is transparent over the home hero (white text) and solid ivory + hairline border elsewhere; the hero is full-bleed with a centered white Cormorant headline; the mobile panel is an ivory push-down with uppercase links (active = `text-primary`); the WhatsApp float is a green circle bottom-right; the footer is a 4-column ivory sheet.
 
 ---
 
@@ -266,7 +289,7 @@ Component vocabulary: white cards with `border-border` + `rounded-xl` + `shadow-
 | Sessions | DB rows (SHA-256 token hashes) + `homenest_session` cookie = `token.hmac(token)`; httpOnly, SameSite=Lax, Secure in production, 30-day TTL |
 | Authorization | Role gate server-side on every admin action + layout; ownership checks on address/cart/wishlist mutations |
 | Input validation | Zod schemas at every boundary (`src/lib/validation.ts`); `FormData` and JSON bodies never touch Prisma raw |
-| Money integrity | Server-side re-derivation **inside the placement transaction** (`computeOrderMoney`); conditional atomic stock decrements; idempotency key resolves lost-response replays; P2002 retry for order-number collisions |
+| Money integrity | Server-side re-derivation **inside the placement transaction** (`computeOrderMoney`); conditional atomic stock decrements; idempotency key resolves lost-response replays; P2002 retry for order-number collisions (fresh `ELY-XXXXXXXX` candidates) |
 | SQL injection | Prisma parameterized queries only; no raw string interpolation (the sole `$queryRaw` is a constant health probe) |
 | XSS | Strict CSP with per-request nonce + `strict-dynamic` (ADR-006); zero inline styles/scripts authored in the codebase; React-escaped output |
 | Clickjacking / sniffing | `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, HSTS (`includeSubDomains`), `Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()`; `poweredByHeader: false` (no framework fingerprint) |
@@ -290,7 +313,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 496 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 500 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -345,7 +368,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 | `validation.test.ts` (S17-2 addendum) | `MAX_CART_QUANTITY` is 99 and the cart schemas interpolate the shared constant |
 | `api-boundaries.test.ts` (C7 addendum) | Cart DELETE `?all=1`: no cart → `{itemCount:0}` with `deleteMany` never called; guest cart → cartId-scoped `deleteMany` + the fresh summary's `itemCount` |
 
-### 8.2 E2E (Playwright — 68 tests: 62 desktop + 6 mobile-navigation, `tests/e2e/`)
+### 8.2 E2E (Playwright — 69 tests: 62 desktop + 7 mobile-navigation, `tests/e2e/`)
 
 Two projects: `mobile-navigation` (iPhone-13 device emulation on Chromium — WebKit is not installable in the target sandbox) and `desktop-chromium` (1440×900). The config first runs `scripts/restore-demo-stock.ts` (S14-4 — e2e checkouts permanently drain the traffic-owned demo stock) and then boots the standalone production build on :3100 with `/api/health` as the readiness probe (reusing an existing healthy server, whose state is already restored).
 
@@ -469,7 +492,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | 46 | Fixed (session 11) | The in-tx address cap was still check-then-create — on SQLite the write lock lands at the first write, so concurrent POSTs at cap−1 could overshoot to 21 | The POST tx creates first (taking the lock), then counts under the lock; over cap → `AddressCapError` rolls the create back (friendly 409 survives). Pre-create `assertAddressCap` = fast-fail UX only. |
 | 47 | Fixed (session 12) | Checkout cleared the cart by `cartId` — a concurrent add committing between the pre-tx summary read and the in-tx sweep was silently deleted (never ordered, never restocked, off the receipt) | The sweep deletes through `cartClearFilter(cartId, lines)` — only the ordered line ids, cartId-compound scoped. Unit-pinned (`session12-hardening.test.ts`). |
 | 48 | Fixed (session 12) | The demo-credentials quick-fill (including the ADMIN account) shipped ON by default in production builds | Production default OFF (opt-in `NEXT_PUBLIC_DEMO_MODE="true"`), dev unchanged; DEPLOYMENT.md + `.env.example` rewritten; verified live (box absent/present on the built server). |
-| 49 | Fixed (session 12) | The `/products` default "Newest" order and home "New Arrivals" rendered the REVERSE of the reference's observable order (last-seeded superset products first; the reference shows Damascus-first everywhere) | The seed backdates `createdAt` via `productSeedCreatedAt(index)` (create-only; reseeds never rewrite it) and home featured flipped to `desc` — all three surfaces now render the reference's authored order; admin-created products sort as the newest. Unit-pinned + live-verified against the reference. |
+| 49 | Fixed (session 12) | The `/shop` default "Newest" order and home "New Arrivals" rendered the REVERSE of the reference's observable order (last-seeded superset products first; the reference shows Damascus-first everywhere) | The seed backdates `createdAt` via `productSeedCreatedAt(index)` (create-only; reseeds never rewrite it) and home featured flipped to `desc` — all three surfaces now render the reference's authored order; admin-created products sort as the newest. Unit-pinned + live-verified against the reference. |
 | 50 | Fixed (session 12) | `/checkout/success` ran the (items+events-inclusive) order lookup before the token check — a valid number cost a heavier query than an invalid guess (faint probe signal) | The deterministic token is verified BEFORE any DB read; invalid pairs short-circuit to the denial shell. Observable contract unchanged (pinned by `shopping-flow.spec.ts`). |
 | 51 | Fixed (session 13) | The closed cart drawer stayed keyboard-reachable and exposed to assistive tech (always-mounted `aria-modal` dialog, transform-only hidden state) | The `<aside>` gains `inert={!cartDrawerOpen}` + `aria-hidden` (a boolean attribute, not a display utility — the v4 display-toggle trap does not apply); e2e-pinned closed→open→closed. |
 | 52 | Fixed (session 13) | The seeded demo credentials shipped in the production client bundle despite the hidden quick-fill box (`DEMO_ACCOUNTS` at module scope of a `"use client"` file; `Admin123!` verifiable in the built chunk) | Server boundary: the login page computes `demoModeEnabled()` server-side and passes `demoAccounts` as props ONLY when enabled; the client file carries no credential strings. E2e bundle guard pins the production build. |
@@ -533,7 +556,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
 | `prisma/schema.prisma` / `seed.ts` | 18 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 496 unit · 68 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin) |
+| `tests/unit/*` · `tests/e2e/*` | 512 unit · 69 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---

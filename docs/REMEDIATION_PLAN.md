@@ -9552,3 +9552,87 @@ DEPLOYMENT.md drift-checked accurate — unchanged.
 - [x] Docs sweep: this section, SKILL v1.67.0 (opening bump + Session 70 Appendix B entry), AGENTS 2..70, CLAUDE tail, docs/session_132.md, worklog Tasks 71-a + 71
 - [x] Final gates re-run green on the final tree (lint · typecheck · typecheck:tests · 496/496 unit · build · 68/68 e2e)
 - [x] Commit + push to main through the SSH wrapper (fast-forward, no new branches)
+
+---
+
+## Session 71 — Run 72: The ElyBeauty Re-Skin (2026-11-08)
+
+**The mission changed.** The operator's new reference app is
+`https://ely-beauty.base44.app/` — a *different* Base44 app from the dead
+`nest-culinary-hub` one: a high-fashion, editorial premium-skincare storefront
+(BDT ৳, Bangladesh, Cash on Delivery). The repo (renamed `ely-beauty`) was
+re-skinned from the HomeNest Kitchen scaffold into the ElyBeauty clone:
+visual parity on every reference surface, every hardened superset capability
+retained. The run was planned in `docs/implementation-plan.md` and executed
+against the live-reference dossier `docs/reference-investigation.md`
+(investigated live 2026-11-08, logged in with the operator credentials; one
+clearly-named verification order placed — ELY-MW774C50, ৳358 — the operator
+may delete it).
+
+### The change-set (commit 42e9d95)
+
+- **Design tokens**: Cormorant Garamond 300–600 + Inter 300–600 (next/font);
+  ivory `hsl(30 20% 97%)` / taupe `hsl(30 12% 48%)` / 4px radii; borderless
+  editorial product cards; fixed transparent-over-hero header on `/` (solid
+  ivory + hairline elsewhere); uppercase micro-labels + underlined text CTAs;
+  WhatsApp float; 4-column ivory footer.
+- **Catalog**: 19 products / 4 categories seeded from the reference's public
+  entity API in its authored order; ৳ integer-cent money (whole-taka
+  display); sold-out pieces visible; variant data (colors/sizes) + full
+  description/how-to-use/ingredients copy.
+- **Commerce**: product variants as cart-line identity
+  (`@@unique([cartId, productId, variant])`, empty-string default);
+  `OrderItem.variantLabel` snapshots; composite-key merge/bulk planning;
+  city-tiered shipping via the pure `shippingMethodForCity` (Dhaka ৳70 /
+  outside ৳130, "Enter city to calculate" before input); crypto-random
+  `ELY-XXXXXXXX` order numbers; optional `Order.notes`; the BD address model
+  (state/ZIP optional, state back-filled from city).
+- **Checkout**: the reference's single-page form (CONTACT / SHIPPING ADDRESS /
+  PAYMENT METHOD / Order Notes + ORDER SUMMARY with live shipping + coupon
+  box) — Cash on Delivery default; the Card option + Payment Element only
+  when Stripe is configured. Every invariant kept: server-derived money
+  in-tx, idempotency key, scoped cart clear, ownership-bound replay,
+  token-gated receipt.
+- **Routes**: `/products` → `/shop` (301; sitemap/SEO/JSON-LD follow);
+  reference nav (SHOP / BEAUTY TOOLS / BRUSH & COMBS / ABOUT); mobile panel
+  with the in-panel SEARCH flow; desktop search overlay; "Your Bag" drawer;
+  account lands on ORDER HISTORY; login/register reference copy + the
+  disabled Google parity button.
+- **Imagery**: 27 independently generated brand images (`scripts/generate-imagery.mjs`)
+  — the reference hotlinks a third-party Shopify CDN; no asset laundering.
+- **NEW Tailwind v4 trap (the run's find)**: `@apply` cannot reference
+  classes declared in `@layer utilities` ("Cannot apply unknown utility
+  class") — apply-able custom classes must be declared with `@utility`
+  (`eyebrow-label` / `link-cta` in `globals.css`). Logged in AGENTS.md trap
+  6 and the SKILL.
+
+### Verification (all observed green)
+
+- Gates: lint ✓ · typecheck ✓ · typecheck:tests ✓ · **512/512 unit** (52
+  files) · build ✓ zero prisma:error · **69/69 e2e** (every behavioral
+  contract preserved — idempotency, token-gating, 429s, inert/modal drawer,
+  the mobile-nav Tailwind v4 contract; the kitchenware pins re-pinned to the
+  ElyBeauty catalog).
+- agent-browser live parity pass on the production build: home/shop/detail
+  anatomy exact (nav, sections, Cormorant white hero, 19 products, pills,
+  ৳288/৳350); the mobile panel contract (conditional mount — no standalone
+  `hidden` class, aria flip, scroll lock, in-panel search with live ৳
+  results, route-change close); the variant carry-through (Navy Blue →
+  "Your Bag (1)" → checkout summary); the shipping tiers (Enter city →
+  ৳70 Dhaka / ৳130 Chattogram — PLACE ORDER — ৳358 for the ৳288 pillowcase,
+  matching the live reference's verified numbers); zero page errors.
+- Screenshots: 25/25 captured to `docs/screenshots/` (capture-gate
+  discipline retained: badge waits, toast dismiss, panel settle, image
+  decode).
+
+### Deferrals / notes
+
+- The Google button renders disabled (no OAuth secrets in-repo) — the
+  reference has it live.
+- Product/hero imagery is generated, not the reference's CDN photos (the
+  documented imagery deviation).
+- The reference's own template-remnant nav links (?category=skincare etc.
+  matching no real category) are NOT cloned — the clone links the real
+  category slugs (working filters).
+- One verification order exists on the LIVE reference account
+  (ELY-MW774C50, "Clone Verification", ৳358) — operator-deletable.

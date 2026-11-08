@@ -49,6 +49,7 @@ const ORDER = {
   discount: 0,
   total: 3499,
   couponCode: null,
+        notes: null,
   shippingMethod: "standard",
   shippingAddress: JSON.stringify({ fullName: "Jordan Rivera", line1: "1 Main St", city: "Austin" }),
   paymentMethod: "card",

@@ -139,11 +139,11 @@ function linesFor(w: World, p1Qty = 2, p2Qty = 1): CartLine[] {
   return [
     {
       id: w.line1Id, productId: w.p1Id, name: "STALE SUMMARY NAME", slug: "stale-slug-1",
-      image: "/images/p1.png", unitPrice: 999_999, quantity: p1Qty, stock: 9999, lineTotal: 9_999_999,
+      image: "/images/p1.png", unitPrice: 999_999, quantity: p1Qty, stock: 9999, variant: "", lineTotal: 9_999_999,
     },
     {
       id: w.line2Id, productId: w.p2Id, name: "STALE SUMMARY TWO", slug: "stale-slug-2",
-      image: "/images/p2.png", unitPrice: 1, quantity: p2Qty, stock: 9999, lineTotal: 123,
+      image: "/images/p2.png", unitPrice: 1, quantity: p2Qty, stock: 9999, variant: "", lineTotal: 123,
     },
   ];
 }
@@ -156,6 +156,7 @@ function argsFor(w: World, lines: CartLine[], overrides: Partial<PlaceOrderArgs>
     customerName: "Guest Guest",
     lines,
     couponCode: w.couponCode,
+    notes: null,
     shippingMethod: "standard",
     paymentMethod: "cod",
     cardLast4: null,
