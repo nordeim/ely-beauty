@@ -8,6 +8,8 @@ import { parseJsonBody } from "@/lib/json-body";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { cartLinePatchSchema, cartMutateSchema, firstError } from "@/lib/validation";
 
+export const dynamic = "force-dynamic";
+
 // S79-7: the shared bounded JSON body seam (content-type gate + 32KB read
 // cap + the null contract this route already renders as 400).
 

@@ -524,3 +524,22 @@ Stage Summary:
 - Parity: zero deltas remaining — the restock delta closed (four detail pages now match the reference's purchasable state); panel/overlay/silk/shop/detail pins byte-consistent (−1px tolerances, hrefs byte-identical).
 - Standing verifications: sitemap 28 public-only · 25/25 screenshots (9 changed post-restock) · .env.example 9/9 · npm audit 0.
 - Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.
+
+---
+
+Task ID: 85
+Agent: run-91 executor (the API force-dynamic consistency & verification cycle)
+Task: The full remediation cycle on a fresh-clone workspace (68a8a23 = run-90 code 8a36e75 + 2 docs commits, incl. the operator's docs/session_37.md raw narrative): environment rebuild (npm install 582 pkgs; .env written with DATABASE_URL="file:../db/custom.db"; db/ created at the repo root; the parent-shell DATABASE_URL shadow converged via the documented symlink; db:setup green at 19 products / 2 users / 3 coupons; Playwright chromium headless-shell installed — the documented run-88 fresh-sandbox environmental gap) → docs review (AGENTS/CLAUDE/README/PAD v2.17/SKILL v2.16.0/session_36/session_37/worklog/REMEDIATION_PLAN through Session 90) → deep audit 91-a (read-only subagent, skills/ excluded: 12/12 standing anchors PASS, R1-R8 regression surface PASS, 0 CRITICAL/HIGH/MEDIUM/LOW, 3 INFO) → the operator's named surfaces verified live (DATABASE_URL contract A1; mobile navigation Tailwind v4 trap scan clean + live parity; Vitest + Playwright suites 737/90; sitemap/SEO 28 public-only) → the live-reference parity pass (mobile 390×844, logged in with the operator credentials: panel −1px uniform, overlay "silk" set −1px ×4 with $-format prices, /shop 19 bonnet-first h1 "All Products" both sites, detail ৳370 Inter 24px/600 with the S90-4 restock holding — zero new deltas) → S91-1 (TDD: the force-dynamic sweep — all 13 API route files declare export const dynamic = "force-dynamic", RED 11/13 → GREEN, pinned by the api-boundaries source-scan describe) → the full gate chain (738/738 unit, 90/90 e2e ×2 consecutive) → 25/25 screenshots from the live standalone server → sitemap 28 / .env.example 9/9 / npm audit 0 → the docs sweep (PAD v2.18, SKILL v2.17.0 with the de-staled project_state, README/CLAUDE counts 738, AGENTS force-dynamic convention note, REMEDIATION_PLAN Session 91, session_38, this worklog) → commit + SSH-wrapper push to main.
+
+Work Log:
+- Audit 91-a findings mapped: INFO-1 (11 of 13 API route files lack the explicit force-dynamic declaration — the family SKILL §6 idiom; zero behavioral impact today since Next 15+/16 leaves request-reading handlers uncached, but a future route edit that stops reading the request could silently become static-cached) → S91-1 TDD; INFO-2 (two minimatch copies, both outside the vulnerable range, dev-only, toolchain-pinned) → recorded, no action; INFO-3 (allowScripts is npm-ignored documentation) → recorded, no action.
+- The fresh-sandbox environmental sequence this run: the first e2e attempt's 79 failures were the missing chromium headless-shell binary (the documented run-88 lesson — `npx playwright install chromium`), after which 90/90 ×2 consecutive (2.3m + 2.4m).
+- The S91-1 remediation detail: the pin reads every src/app/api/**/route.ts source (the e2e-infrastructure/layout-tokens file-reading convention) and asserts the declaration — RED listed the 11 files; GREEN added the two-line export to each (surgical diff: 2 lines per route, 32 in the test); the declaration placed after the import block following the two Stripe routes' placement convention.
+- The docs-drift fix this cycle: ely-beauty_SKILL.md's project_state was still the run-88 record (735) after run-90 moved the count to 737 — the SKILL bumped to v2.17.0 with the current 738 state (the count-lockstep convention, enforced retroactively).
+
+Stage Summary:
+- All gates green: lint · typecheck · typecheck:tests · 738/738 unit (+1 pin) · clean build · 90/90 e2e ×2 consecutive.
+- Audit 91-a: 0 CRITICAL/HIGH/MEDIUM/LOW (3 INFO — one fixed as S91-1, two recorded).
+- Parity: zero new deltas vs the live reference (all measured pins byte-consistent within the recorded −1px tolerances).
+- Standing verifications: sitemap 28 public-only · 25/25 screenshots (6 changed: the raster-noise + data-dependent family) · .env.example 9/9 · npm audit 0.
+- Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.

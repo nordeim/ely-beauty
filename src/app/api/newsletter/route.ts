@@ -5,6 +5,8 @@ import { firstError, newsletterSchema } from "@/lib/validation";
 import { parseJsonBody } from "@/lib/json-body";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 
+export const dynamic = "force-dynamic";
+
 /** POST /api/newsletter — subscribe an email (idempotent). */
 export async function POST(request: NextRequest) {
   try {

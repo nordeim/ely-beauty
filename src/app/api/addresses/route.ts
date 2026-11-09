@@ -7,6 +7,8 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { addressDefaultSchema, addressSchema, firstError } from "@/lib/validation";
 
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/addresses — create a saved address for the signed-in user.
  * Body: addressSchema JSON. Returns { ok: true, id }.

@@ -5,6 +5,8 @@ import { contactSchema, firstError } from "@/lib/validation";
 import { parseJsonBody } from "@/lib/json-body";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/contact — persist a contact-form message for the support queue.
  * Body: contactSchema JSON. Returns { ok: true }.

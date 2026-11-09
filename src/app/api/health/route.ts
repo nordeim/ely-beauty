@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 /** GET /api/health — liveness + DB roundtrip for the standalone deploy. */
 export async function GET() {
   try {

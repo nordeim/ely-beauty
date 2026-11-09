@@ -22,6 +22,8 @@ import {
 } from "@/lib/stripe-payment";
 import { checkoutSchema, firstError } from "@/lib/validation";
 
+export const dynamic = "force-dynamic";
+
 // checkoutSchema + the Stripe path's CONFIRMED PaymentIntent id (card data
 // never touches this app: the Payment Element owns it; the id is the only
 // thing that crosses). S73-8 retired the scaffold's demo-card last-4 field —

@@ -5,6 +5,8 @@ import { parseImages } from "@/lib/products";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { clampSearchTerm } from "@/lib/validation";
 
+export const dynamic = "force-dynamic";
+
 /** GET /api/search?q=… — typeahead search over active products. */
 export async function GET(request: NextRequest) {
   try {

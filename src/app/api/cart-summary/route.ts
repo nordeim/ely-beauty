@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { findCartId, getCartSummary } from "@/lib/cart";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/cart-summary — the cart drawer's line payload.
  * Session-9 S9-6: the last unauthenticated endpoint without a meter —

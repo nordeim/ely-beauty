@@ -8,6 +8,8 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { assertWishlistCap, WishlistCapError, createWishlistItemInTx, getOrCreateWishlist } from "@/lib/wishlist";
 import { wishlistToggleSchema } from "@/lib/validation";
 
+export const dynamic = "force-dynamic";
+
 /** POST /api/wishlist — toggle a product in the caller's wishlist. */
 export async function POST(request: NextRequest) {
   try {

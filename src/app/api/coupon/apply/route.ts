@@ -7,6 +7,8 @@ import { findCartId, getCartSummary } from "@/lib/cart";
 import { applyCouponCode } from "@/lib/coupons";
 import { couponApplySchema, firstError } from "@/lib/validation";
 
+export const dynamic = "force-dynamic";
+
 /** The payload CouponBox / checkout render from. */
 export type CouponApplyResponse =
   | { ok: true; code: string; discount: number; label: string; description: string; freeShipping?: true }

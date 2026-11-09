@@ -8,6 +8,8 @@ import { parseJsonBody } from "@/lib/json-body";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { cartBulkSchema, firstError } from "@/lib/validation";
 
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/cart/bulk — add every wishlist item in ONE request (session-8
  * S8-6). The per-item loop in add-all-button fought the shared 60/min cart

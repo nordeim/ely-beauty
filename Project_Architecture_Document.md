@@ -1,9 +1,14 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.17
+# ElyBeauty — Master Project Architecture Document (PAD) v2.18
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-09
+
+#### Revision Block — v2.18 (Run 91 — the API force-dynamic consistency & verification cycle)
+
+- `[API]` **Every API route file declares `export const dynamic = "force-dynamic"` (S91-1, audit 91-a INFO-1)**: 11 of 13 route files carried no explicit rendering-mode declaration (only the two Stripe routes did). Zero behavioral impact today — Next 15+/16 leaves request-reading handlers uncached by default — but the family SKILL §6 idiom is the explicit declaration, and a future edit that stops reading the request (e.g. a parameterless GET) would silently become static-cached without it. TDD: the source-scan pin in `tests/unit/api-boundaries.test.ts` (RED 11/13 → GREEN file-wide, all 13 routes); the convention recorded in AGENTS.md. Unit count 737 → 738.
+- `[VERIFY]` **The operator's named surfaces verified live this cycle**: the DATABASE_URL contract (`.env` = `file:../db/custom.db`, `db/` at the repo root, the db-path seam resolving one file for CLI/dev/build/standalone; audit A1 PASS); the mobile navigation (Tailwind v4 trap scan clean — zero JS-toggled display utilities, the conditional-mount pattern holding; live parity panel −1px uniform, hrefs byte-identical; the mobile-navigation e2e spec green ×2); the Vitest + Playwright suites (737→738 unit / 90 e2e ×2 consecutive); the sitemap + SEO surface (28 public-only locs, robots, noindex ×10, canonicals, escaped JSON-LD). Zero new parity deltas on the live reference (panel, overlay "silk" set −1px ×4, /shop 19 bonnet-first "All Products", detail ৳370 Inter 24px/600 with the S90-4 restock holding).
 
 #### Revision Block — v2.17 (Run 90 — the coupon-label format & README-table drift cycle)
 

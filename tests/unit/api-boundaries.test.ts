@@ -20,6 +20,8 @@
 // IP (the C1 pin's isolation convention).
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { readFileSync, readdirSync } from "node:fs";
+import path from "node:path";
 
 vi.mock("@/lib/db", () => ({
   db: {
@@ -579,5 +581,35 @@ describe("DELETE /api/addresses — 429 wiring (S27-1, 60/min, behind auth)", ()
     expect(sixtyFirst.status).toBe(429);
     expect(sixtyFirst.headers.get("retry-after")).toBeTruthy();
     await expect(sixtyFirst.json()).resolves.toEqual(GENERIC_429);
+  });
+});
+
+// S91-1 — the force-dynamic route convention (audit 91-a INFO-1). The family
+// SKILL §6 idiom: every API route handler declares its rendering mode
+// explicitly. Next 15+/16 leaves request-reading handlers uncached by
+// default, but the explicit declaration is the convention — and a future
+// edit that stops reading `request`/`cookies()` (e.g. a parameterless GET)
+// would silently become static-cached without it. The pin scans the SOURCE
+// of every src/app/api/**/route.ts (the same file-reading convention as
+// e2e-infrastructure.test.ts / layout-tokens.test.ts).
+describe("S91-1 — every API route handler declares force-dynamic", () => {
+  it("all src/app/api/**/route.ts files export dynamic = \"force-dynamic\"", () => {
+    const routeFiles = readdirSync(path.resolve(import.meta.dirname, "../../src/app/api"), {
+      recursive: true,
+    })
+      .filter((f): f is string => typeof f === "string" && f.endsWith("route.ts"))
+      .map((f) => path.resolve(import.meta.dirname, "../../src/app/api", f))
+      .sort();
+
+    // The repo's API surface — 13 route files (2 stripe + 11 storefront).
+    expect(routeFiles).toHaveLength(13);
+
+    const missing = routeFiles.filter(
+      (file) => !/export\s+const\s+dynamic\s*=\s*"force-dynamic"/.test(readFileSync(file, "utf8")),
+    );
+    expect(
+      missing,
+      `route files missing the force-dynamic declaration: ${missing.map((f) => path.relative(process.cwd(), f)).join(", ")}`,
+    ).toEqual([]);
   });
 });

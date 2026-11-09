@@ -12770,3 +12770,114 @@ TDD-pinned this cycle.
   action: macOS-only optional, no-op on Linux).
 - **Field posture (re-verified this cycle):** `npm audit` 0 vulnerabilities ·
   `db:setup` prints 6.19.3 == 6.19.3.
+
+---
+
+## Session 91 — The API force-Dynamic Consistency & Verification Cycle
+
+**Evidence base:** the operator's standing instruction refreshed the workspace
+(fresh clone at `68a8a23` = run-90 code `8a36e75` + 2 docs commits, including
+the operator's `docs/session_37.md` raw narrative). Environment rebuilt from
+scratch: npm install (582 pkgs), `.env` written
+(`DATABASE_URL="file:../db/custom.db"`), `db/` created at the repo root, the
+parent-shell `DATABASE_URL` shadow converged via the documented symlink
+(`/home/z/my-project/db` → `<repo>/db`), `db:setup` green (19 products,
+2 users, 3 coupons), Playwright chromium headless-shell installed (the
+documented run-88 fresh-sandbox environmental gap).
+
+**Audit 91-a** (read-only subagent, skills/ excluded): **12/12 standing
+anchors PASS, R1–R8 (the run-88..90 regression surface) all PASS, 0
+CRITICAL/HIGH/MEDIUM/LOW — 3 INFO.** The five CONFIG_FALLBACKS byte-exact;
+npm audit 0 (prod and full); zod 4.6.7 idioms verified; the Tailwind v4 trap
+scan clean (zero `classList` usage in src/, every `hidden` token a static
+responsive pair, the mobile panel conditionally mounted).
+
+**The operator's named verification surfaces (this cycle's focus), all
+verified live:**
+
+- **DATABASE_URL contract (the operator's explicit ask):** `.env` carries
+  `DATABASE_URL="file:../db/custom.db"`; `db/` sits at the repo root
+  (git-ignored); `src/lib/db-path.ts` resolves the relative URL against the
+  prisma/schema.prisma anchor for dev, build, standalone server and seed
+  alike (audit A1 PASS with file:line evidence; live-verified — db:setup
+  created `<repo>/db/custom.db`, health `{"db":"up"}` on the standalone
+  server). No code change required: the single-seam contract was already
+  the documented and implemented design.
+- **Mobile navigation (the operator's Tailwind v4 concern):** the live
+  parity pass measured the clone's panel rows at 98/134/170/206/242 vs the
+  reference's 99/135/171/207/243 (−1px uniform, the recorded tolerance;
+  hrefs byte-identical; SEARCH + 4 links both). The audit's trap scan found
+  ZERO JS-toggled display utilities in src/ — the conditional-mount pattern
+  holds (`mobile-nav.tsx:57`), the cart drawer rides transform + inert, the
+  overlay mounts conditionally. The mobile-navigation e2e spec (the
+  regression guard) green in both e2e runs. **No Tailwind v4 bug present.**
+- **Vitest + Playwright suites (the operator's ask):** both present and
+  green — `vitest.config.ts` (node env, tests/unit/**, @ alias, setupFiles)
+  with **737/737 across 64 files**, `playwright.config.ts` (3 projects:
+  mobile-navigation iPhone-13 chromium, desktop-chromium 1440×900,
+  admin-catalog workers:1; webServer = restore-demo-stock + standalone on
+  :3100; globalSetup heal) with **90/90 ×2 consecutive** (2.4m + 2.3m).
+- **Sitemap + SEO:** `sitemap.xml` **28 `<loc>`, 0 private paths** (9 static
+  public + 19 active products); robots disallows `/admin /account /checkout
+  /api`; noindex meta on all 10 private surfaces; canonicals site-wide via
+  `siteBaseUrl()`; JSON-LD (Product + Organization + WebSite) through the
+  escaped `jsonLdScript` seam; og-default + manifest + icon present.
+- **Live parity (mobile 390×844, logged in with the operator credentials):**
+  panel −1px uniform ✓ · overlay input Cormorant 18px/300 with the /0.6-alpha
+  placeholder ✓ · the "silk" set 213/297/381/465 vs 214/298/382/466 (−1px ×4)
+  with $370.00/$288.00/$470.00/$520.00 both sites ✓ · /shop 19 unique cards
+  bonnet-first with h1 "All Products" BOTH sites ✓ · bonnet detail ৳370 Inter
+  24px/600 with ADD TO CART + BUY IT NOW active both sites (the S90-4 restock
+  holding) ✓. **Zero new parity deltas.**
+
+### Plan
+
+- [x] **S91-1 — the force-dynamic consistency sweep (audit INFO-1, TDD).**
+  11 of 13 API route files lack `export const dynamic = "force-dynamic";`
+  (only the two Stripe routes declare it). Zero behavioral impact today —
+  Next 15+/16 route handlers that read `request`/`cookies()` are uncached by
+  default — but the family SKILL §6 idiom is the explicit declaration, and a
+  future route edit (e.g. a GET that stops reading the request) could
+  silently become static-cached. RED first: a new describe in
+  `tests/unit/api-boundaries.test.ts` reads every `src/app/api/**/route.ts`
+  source and asserts the declaration — fails 11/13 on the pulled tree.
+  GREEN: add the export to the 11 files (cart, cart/bulk, cart-summary,
+  checkout, coupon/apply, addresses, contact, newsletter, search, wishlist,
+  health).
+- [x] **S91-2 — the full gate chain on the final tree:** lint · typecheck ·
+  typecheck:tests · unit suite (737 + 1 new describe file-wide pin count) ·
+  clean build · **90/90 e2e ×2 consecutive**.
+- [x] **S91-3 — screenshots:** regenerate 25/25 from a live standalone
+  server (the run-90 dead-server lesson: verify `git status` shows the
+  expected changed-file set, not zero).
+- [x] **S91-4 — standing verifications:** sitemap 28 public-only ·
+  `.env.example` 9/9 against the codebase's env reads · `npm audit` 0.
+- [x] **S91-5 — docs sweep:** this execution log filled, worklog Task 85,
+  the polished `docs/session_38.md`, README/CLAUDE test-count rows swept to
+  the new unit count, AGENTS.md API-route note if the contract moves (the
+  force-dynamic declaration becomes the route-file convention).
+- [x] **S91-6 — commit + SSH-wrapper push to main** (no new branches).
+
+### Execution log
+
+- **S91-1 GREEN (TDD):** RED — the new source-scan describe in
+  `tests/unit/api-boundaries.test.ts` (reads every `src/app/api/**/route.ts`,
+  the e2e-infrastructure/layout-tokens file-reading convention) failed
+  listing the 11 files. GREEN — the two-line export added to each (a
+  surgical 2-lines-per-route diff), placed after the import block following
+  the two Stripe routes' convention; 22/22 in the file, the pin now guards
+  all 13 route files file-wide.
+- **S91-2 gates, all green on the final tree:** lint ✓ · typecheck ✓ ·
+  typecheck:tests ✓ · **738/738 unit** (64 files; +1 pin) · clean build ✓ ·
+  **e2e 90/90 ×2 consecutive** (2.4m + 2.3m).
+- **S91-3 screenshots:** 25/25 regenerated from the live standalone
+  server (6 changed — the known raster-noise + data-dependent family; git
+  status showing real changes, the run-90 dead-server lesson applied).
+- **S91-4 standing verifications:** sitemap 28 · `.env.example` 9/9 ·
+  npm audit 0.
+- **S91-5 docs:** REMEDIATION_PLAN (this section) · worklog Task 85 ·
+  `docs/session_38.md` · README/CLAUDE counts 737 → 738 (badge, table,
+  hierarchy, testing section) · AGENTS.md force-dynamic route convention
+  note · PAD v2.18 revision block · SKILL v2.17.0 — its `project_state` was
+  still the run-88 record (735) after run-90 moved the count to 737; the
+  count-lockstep convention enforced retroactively.
