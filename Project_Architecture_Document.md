@@ -1,9 +1,25 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.15
+# ElyBeauty — Master Project Architecture Document (PAD) v2.16
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-09
+
+#### Revision Block — v2.16 (Run 88 — the npm-audit retirement cycle)
+
+- `[TOOLCHAIN]` **The npm-audit zero (S88-1..S88-4, the operator's `docs/start_server_log.txt`)**:
+  the run-86-recorded "accepted dev-only families" retired — vitest 3.2.7 →
+  4.1.12 (the two critical tinypool RCE gadgets and the two @vitest/mocker
+  moderates gone; vitest 4 drops tinypool entirely and carries the patched
+  mocker 4.1.12), the scoped npm overrides
+  `@typescript-eslint/typescript-estree → minimatch ^11.0.5` and
+  `@prisma/config → deepmerge-ts ^8.0.2` (the two advisories whose upstream
+  fix has not propagated), and the prisma CLI ↔ client skew aligned at
+  ^6.19.3 (the operator-log "Generated Prisma Client (v6.12.0)" signal).
+  `npm audit` = 0 vulnerabilities. All floors pinned by
+  `tests/unit/toolchain-versions.test.ts` (10 pins, lockfile-read); the one
+  source fix: vitest 4's `vi.fn()` typing in `session17-hardening.test.ts`
+  (mocks now typed to the seam's exact function signatures).
 
 #### Revision Block — v2.15 (Run 87 — the lost-config build-resilience cycle)
 
@@ -476,11 +492,11 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI runtime | React | ^19 | `useActionState`-native forms, Server Components |
 | Language | TypeScript (strict) | ^5.9 | `strict` + `noUncheckedIndexedAccess`; `any` is lint-banned |
 | Styling | Tailwind CSS (CSS-first) | ^4.1 | `@theme inline` tokens pinned to the reference's computed values; no config file |
-| ORM / DB | Prisma + SQLite | ^6.11 | Zero-ops local story; relative `file:` URL contract (ADR-002) |
+| ORM / DB | Prisma + SQLite | ^6.19.3 | Zero-ops local story; relative `file:` URL contract (ADR-002); CLI and client aligned at one version since S88-3 (the 6.12.0/6.19.3 skew pinned by tests/unit/toolchain-versions.test.ts) |
 | UI primitives | Radix UI (dialog, select, sheet, label, tabs, radio) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^4.6.7 | Single validation boundary (ADR-005) — v4 since run 86 (S86-1) |
-| Unit tests | Vitest | ^3.2 | Node-env suite (725 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins — see §8.1) |
+| Unit tests | Vitest | ^4.1.12 | Node-env suite (735 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins + the S88 toolchain pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
 | E2E tests | Playwright | ^1.64 | 90 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 

@@ -12406,3 +12406,168 @@ prod-only build of a Next app conventionally installs full deps.
   v2.15 (the revision block + the stack-table count), ely-beauty_SKILL.md
   v2.15.0 (project_state + the Appendix B Session 87 entry), worklog Task
   81, session_30.md.
+
+## Session 88 — The npm-Audit Retirement Cycle (the operator's start_server_log.txt)
+
+Evidence base (all verified this session):
+
+- `docs/start_server_log.txt` (the operator's environment, post-run-87):
+  the S87 bootstrap **verified in the field** — `npm run build` green
+  ("Compiled successfully in 13.6s", TypeScript pass, 22/22 static pages,
+  all 40 routes, standalone copy) on a tree the operator rebuilt from
+  scratch (`rm db/custom.db` + `rm -rf .next` + fresh `npm install` +
+  `db:setup` reseeding the exact 2 users / 4 categories / 19 products /
+  1 slide / 11 settings / 3 coupons catalog). Two NEW signals in the log:
+  1. `npm install` reports **11 vulnerabilities (9 moderate, 2 critical)**
+     — reproduced locally on the fresh clone, signature-identical.
+  2. `db:setup` prints **"Generated Prisma Client (v6.12.0)"** while the
+     lockfile carries `@prisma/client@6.19.3` — the CLI/runtime skew,
+     reproduced locally too.
+- The audit decomposition (npm audit, local): **2 critical tinypool
+  advisories** (GHSA-5gmw-xhrv-c9v3 + GHSA-85c8-ppgw-ccpr — prototype
+  pollution gadgets → RCE in worker options) + **2 moderate
+  @vitest/mocker advisories** (GHSA-82fw-gwwq-j7x9 path traversal /
+  arbitrary file read via redirect mock; GHSA-qxg6-89mg-rqv8 code
+  injection via manual mock registration) — all four through `vitest`
+  3.2.7 (vulnerable 0.0.95–4.1.10; tinypool is a DIRECT vitest-3 dep
+  `^1.1.1`, the only tinypool edge in the tree); and **1 moderate
+  minimatch advisory ×7 packages** (GHSA-g3hv-75wg-m249 DoS via globparts
+  amplification) through `eslint-config-next` → `typescript-eslint` →
+  `@typescript-eslint/typescript-estree` → nested minimatch 10.2.6
+  (vulnerable 7.0.0–11.0.0; the patch lives only in ≥11.0.1, and
+  `typescript-estree@latest` still declares `^10.2.2` — the ecosystem fix
+  has NOT propagated, so an npm `overrides` pin is the only path).
+- The run-86 record: "the remaining 11 = the accepted dev-only families" —
+  deferred debt, re-surfaced by the operator's log. Audit 88-a (read-only
+  subagent): 12/12 anchors PASS, run-87 regression-free (4/4), `.env.example`
+  9/9 — the tree is healthy; this cycle is **dependency/toolchain-only**
+  (zero `src/` changes).
+
+The fix (three dependency moves, each pinned by tests):
+
+- [x] **S88-1 (vitest 3.2.7 → 4.1.12)**: the single-major bump that retires
+      all four vitest-family advisories at once — vitest 4.1.12 depends on
+      `@vitest/mocker@4.1.12` (patched; vulnerable ≤4.1.11) and **drops
+      tinypool entirely** (vitest 4's pool rewrite). Compatibility surface
+      verified up front: no snapshot files (no format migration), 7
+      jsdoc-pragma `@vitest-environment jsdom` tests (pragma unchanged in
+      v4), `@vitejs/plugin-react@5.1.1` peers vite ^4–^7 (vitest 4.1.12
+      accepts ^6/^7/^8), all 13 `vi.mock` targets are local alias/package
+      mocks (unaffected by the mocker redirect-mock fix). The one known
+      alias risk (`toThrowError` ×3 in `auth-secret.test.ts`) is verified
+      against the v4 matcher set; `vitest.config.ts` needs NO change
+      (environment/include/setupFiles/alias/plugin all stable APIs — so the
+      S87-2 CONFIG_FALLBACKS registry stays byte-in-sync untouched).
+- [x] **S88-2 (the minimatch scoped override)**: npm `overrides` in
+      package.json — `"@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.5" }` — the patched 11.x pinned under the ONLY
+      vulnerable consumer; the root minimatch 3.1.5 consumers (outside the
+      vulnerable range) are untouched. The eslint gate re-verified after
+      (lint is typescript-eslint's only consumer here).
+- [x] **S88-3 (prisma alignment at 6.19.3)**: `prisma` + `@prisma/client`
+      both `^6.19.3` (the latest 6.x for both; prisma 7/8-rc are out of
+      scope for a hygiene cycle) — the CLI/runtime skew (6.12.0 CLI
+      generating the client that the 6.19.3 runtime executes) is the
+      operator-log-visible defect; aligned, `db:setup` prints matching
+      versions. `allowScripts` entries updated in lockstep (prisma /
+      @prisma/engines / @prisma/client at 6.19.3; stale 6.12.0 rows
+      removed).
+- [x] **S88-4 (the TDD pins)**: `tests/unit/toolchain-versions.test.ts` —
+      RED on the pulled tree: (a) the prisma CLI ↔ client version-equality
+      pin (the skew alarm); (b) the vitest advisory floor (≥4.1.12);
+      (c) tinypool absent from the lockfile or ≥2.1.2; (d) @vitest/mocker
+      absent or ≥4.1.12; (e) every minimatch in the lockfile outside the
+      vulnerable 7.0.0–11.0.0 range; (f) the scoped override declared in
+      package.json (the drift alarm if someone deletes it).
+- [x] **S88-5 (the acceptance)**: `npm audit` → **0 vulnerabilities**;
+      the full gate chain lint · typecheck · typecheck:tests · unit (725+N)
+      · clean build · **e2e ×2 consecutive**; `db:setup` regenerates a
+      matching-version client; sitemap 28 public-only; 25/25 screenshots;
+      `.env.example` 9/9 (unchanged).
+- [x] **S88-6 (the docs sweep)**: AGENTS.md S77-10 ledger (both ACCEPTED
+      families → RETIRED, with the actual fix recorded — vitest 4.1.12 not
+      5; the scoped override not the eslint-config-next downgrade), this
+      execution log, worklog Task 82, session_32.md, CLAUDE/README counts,
+      PAD v2.16, ely-beauty_SKILL.md v2.16.0 + Appendix B.
+
+Out of scope (recorded): prisma 7 / 8-rc (a major migration, not hygiene);
+`eslint-config-next` 15.x downgrade (npm's suggested "fix" — wrong
+direction for a Next 16 repo; the scoped override retires the advisory
+without it); the a11y supersets and heritage names (standing records).
+
+### Session 88 execution log
+
+- **Diagnosis**: the fresh-clone baseline reproduced the operator's two
+  `start_server_log.txt` signals byte-for-byte — `npm install` → "11
+  vulnerabilities (9 moderate, 2 critical)" and `db:setup` → "Generated
+  Prisma Client (v6.12.0)" (against the lockfile's 6.19.3 runtime). The
+  audit decomposes into 3 root packages: tinypool 1.1.1 (2 critical,
+  direct vitest-3 dep) + @vitest/mocker 3.2.7 (2 moderate, via vitest
+  3.2.7) + minimatch 10.2.6 nested under @typescript-eslint/typescript-
+  estree 8.72.1 (7 moderate packages via eslint-config-next). Registry
+  research up front: vitest 4.1.12 carries mocker 4.1.12 (patched) and
+  drops tinypool entirely; minimatch's patch exists only in ≥11.0.1 while
+  typescript-estree@latest still declares ^10.2.2 (override is the only
+  path); prisma 6.x aligns at 6.19.3 for both packages.
+- **The surprise (mid-cycle)**: the prisma alignment moved the CLI into a
+  NEWLY-published advisory's range — `deepmerge-ts` GHSA-ggr8-5vv4-36mx
+  (stack exhaustion; vulnerable <8.0.0, via @prisma/config, prisma
+  6.13.0-dev.1–7.10.0; the operator's 6.12.0 CLI sat below it). TDD'd the
+  same way: two more RED pins (the scoped-override declaration + the
+  <8.0.0 absence), then the surgical `"@prisma/config": {
+  "deepmerge-ts": "^8.0.2" }` override — verified at runtime (db:setup
+  regenerates + reseeds cleanly; @prisma/config's only usage is the
+  stable `deepmerge` named export).
+- **TDD (RED 7+2 → GREEN; 725 → 735 unit)**:
+  `tests/unit/toolchain-versions.test.ts` — 10 pins reading the LOCKFILE
+  (not the declared ranges): the prisma CLI↔client version-equality (the
+  skew alarm), the vitest ≥4.1.12 floor (lockfile + package.json
+  declaration), tinypool absent-or-≥2.1.2, @vitest/mocker absent-or-
+  ≥4.1.12, minimatch outside 7.0.0–11.0.0 everywhere, deepmerge-ts
+  ≥8.0.0 everywhere, and both scoped-override declarations (the drift
+  alarms). RED 7/8 on the pulled tree; the deepmerge pair RED until its
+  override; all 10 GREEN after.
+- **The one source change**: vitest 4 types `vi.fn()` as
+  `Mock<Procedure | Constructable>`, which no longer satisfies
+  `session17-hardening.test.ts`'s strict `satisfies CategoryWriteClient`
+  — the mocks now carry the seam's exact function types
+  (`vi.fn<CategoryDeleteManyFn>()` etc., the S88-1 comment in-file). The
+  other 63 test files (725 tests incl. 7 jsdom-pragma component suites
+  and 13 vi.mock modules) run unchanged on vitest 4.1.12 — zero test
+  edits, `toThrowError` aliases included.
+- **Acceptance (S88-5)**: `npm audit` → **found 0 vulnerabilities**
+  (from 11; exit 0). `db:setup` on the aligned pair prints "Generated
+  Prisma Client (v6.19.3)" — the operator-log skew signal gone. Gates:
+  lint ✓ · typecheck ✓ · typecheck:tests ✓ · **735/735 unit (+10)** ·
+  clean build ✓ · **90/90 e2e ×2 consecutive** (the first attempt's 79
+  failures were the fresh sandbox's missing Playwright browsers —
+  `npx playwright install chromium`, environmental, then 90/90 ×2) ·
+  sitemap 28 public-only ✓ · **25/25 screenshots regenerated** (19 of 25
+  byte-identical to run-87's — the dependency-only parity signal; the 6
+  changed shots are the known raster-noise surfaces) · `.env.example`
+  9/9 unchanged.
+- **Audit 88-a** (read-only subagent, skills/ excluded): 12/12 standing
+  anchors PASS, run-87 regression-free (4/4: resolveAlias, registry,
+  script chain, resilience pins), 0 CRITICAL/HIGH/MEDIUM/LOW — 4 INFO
+  (all executed this cycle: the allowScripts refresh, the vitest
+  declaration floor, this ledger update, the health/webhook unmetered
+  record).
+- **Live-reference re-measurement (dependency-only cycle, expected zero
+  drift — confirmed, mobile 390×844)**: the panel rows SHOP/BEAUTY
+  TOOLS/BRUSH & COMBS/ABOUT at reference 135/171/207/243 centers vs clone
+  134/170/206/242 (±1px, the recorded tolerance; hrefs byte-identical,
+  SEARCH row present both); the overlay input Cormorant Garamond 18px/300
+  with the /0.6-alpha placeholder on both sites; the "silk" set in the
+  SAME panel-open state — reference 214/298/382/466 vs clone
+  213/297/381/465 (±1px ×4; the run-87 pins' 174/258/342/426 were the
+  panel-closed state — both states now recorded); /shop 19 unique cards
+  bonnet-first on both (the clone's first href resolves to the same
+  "Premium Double Sided Ruffles Silk Hair Bonnet" detail page); the
+  detail price ৳370 Inter 24px/600 on both. The recorded supersets
+  present, not reverted (type=search input, role=dialog, the toggle
+  labels).
+- **Docs sweep (S88-6)**: AGENTS.md S77-10 ledger (both ACCEPTED
+  families → RETIRED with the actual fixes; the skew + deepmerge
+  retirement), this execution log, worklog Task 82, session_32.md,
+  CLAUDE.md (735 pins), README (735 ×4 + badge), PAD v2.16,
+  ely-beauty_SKILL.md v2.16.0 + the Appendix B entry.

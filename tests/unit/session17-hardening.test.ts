@@ -10,7 +10,7 @@
 //
 // S81-1: the seam counts ProductCategory JUNCTION rows (the many-to-many
 // membership count) instead of the retired single Product.categoryId FK.
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, type Mock } from "vitest";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 import {
@@ -19,22 +19,30 @@ import {
 } from "@/lib/admin-categories";
 import { isForeignKeyViolation } from "@/lib/prisma-errors";
 
+// S88-1: vitest 4's `vi.fn()` default types as `Mock<Procedure |
+// Constructable>`, which no longer satisfies the strict Prisma signatures —
+// the mocks are typed to the seam's exact functions instead.
+type CategoryCountFn = CategoryWriteClient["productCategory"]["count"];
+type CategoryDeleteManyFn = CategoryWriteClient["category"]["deleteMany"];
+
 function fakeDb(overrides: {
   count?: number;
-  deleteMany?: ReturnType<typeof vi.fn>;
+  deleteMany?: Mock<CategoryDeleteManyFn>;
   deleteError?: unknown;
 }) {
   const deleteMany =
     overrides.deleteMany ??
     (overrides.deleteError
-      ? vi.fn().mockRejectedValue(overrides.deleteError)
-      : vi.fn().mockResolvedValue({ count: 1 }));
+      ? vi.fn<CategoryDeleteManyFn>().mockRejectedValue(overrides.deleteError)
+      : vi.fn<CategoryDeleteManyFn>().mockResolvedValue({ count: 1 }));
   return {
     client: {
       // S81-1: the many-to-many seam — the guard counts JUNCTION rows
       // (memberships), which for one categoryId IS the distinct product
       // count using the category.
-      productCategory: { count: vi.fn().mockResolvedValue(overrides.count ?? 0) },
+      productCategory: {
+        count: vi.fn<CategoryCountFn>().mockResolvedValue(overrides.count ?? 0),
+      },
       category: { deleteMany },
     } satisfies CategoryWriteClient,
     deleteMany,
