@@ -8,24 +8,19 @@ $ diff .env .env.example
 ---
 > AUTH_SECRET=""
 
-$ rm db/custom.db
-
-$ rm -rf .next
-(venv) pete@pop-os:/Home1/project/ely-beauty
+$ rm -rf .next/
+ 
+$ vi docs/DEPLOYMENT.md
+ 
 $ npm install
 
-up to date, audited 568 packages in 11s
+up to date, audited 583 packages in 3s
 
-171 packages are looking for funding
+176 packages are looking for funding
   run `npm fund` for details
 
-11 vulnerabilities (9 moderate, 2 critical)
-
-To address all issues (including breaking changes), run:
-  npm audit fix --force
-
-Run `npm audit` for details.
-
+found 0 vulnerabilities
+ 
 $ npm run db:setup
 npm notice run ely-beauty@1.0.0 db:setup
 npm notice run prisma db push --accept-data-loss && tsx prisma/seed.ts
@@ -35,12 +30,12 @@ Datasource "db": SQLite database "custom.db" at "file:../db/custom.db"
 
 SQLite database custom.db created at file:../db/custom.db
 
-🚀  Your database is now in sync with your Prisma schema. Done in 6.95s
+🚀  Your database is now in sync with your Prisma schema. Done in 7.34s
 
-✔ Generated Prisma Client (v6.12.0) to ./node_modules/@prisma/client in 478ms
+✔ Generated Prisma Client (v6.19.3) to ./node_modules/@prisma/client in 375ms
 
 Seeding ElyBeauty…
-Users: admin=cmw8w5mr80000i0ztdapq516n demo=cmw8w5mxa0001i0ztdbw8u1s1
+Users: admin=cmw91sda90000i0hbfobc3eh4 demo=cmw91sdgc0001i0hbp4vpjita
 Categories: 4
 Products: 19
 Carousel slides: 1
@@ -50,8 +45,8 @@ Seed complete.
 
 $ ls -l db/
 total 308
--rw-r--r-- 1 pete pete 311296 Nov  9 14:39 custom.db
-
+-rw-r--r-- 1 pete pete 311296 Nov  9 17:17 custom.db
+ 
 $ npm run build
 npm notice run ely-beauty@1.0.0 build
 npm notice run node scripts/ensure-build-configs.mjs && next build && mkdir -p public && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/
@@ -60,18 +55,18 @@ npm notice run node scripts/ensure-build-configs.mjs && next build && mkdir -p p
 ✓ Running next.config.ts took 33ms
 
   Creating an optimized production build ...
-✓ Compiled successfully in 13.6s
+✓ Compiled successfully in 14.0s
   Running TypeScript ...
-  Finished TypeScript in 13.7s ...
+  Finished TypeScript in 11.9s ...
   Collecting page data using 3 workers ...
-✓ Collecting page data using 3 workers in 1494ms
+✓ Collecting page data using 3 workers in 1104ms
   Generating static pages using 3 workers (0/22) ...
   Generating static pages using 3 workers (5/22)
   Generating static pages using 3 workers (10/22)
   Generating static pages using 3 workers (16/22)
-✓ Generating static pages using 3 workers (22/22) in 244ms
+✓ Generating static pages using 3 workers (22/22) in 310ms
   Finalizing page optimization ...
-✓ Finalizing page optimization in 4.0s
+✓ Finalizing page optimization in 3.6s
 
 Route (app)
 ┌ ƒ /
@@ -121,4 +116,13 @@ Route (app)
 
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand
+
+$ npm run start
+npm notice run ely-beauty@1.0.0 start
+npm notice run NODE_ENV=production node .next/standalone/server.js 2>&1 | tee server.log
+▲ Next.js 16.4.5
+- Local:         http://localhost:3000
+- Network:       http://0.0.0.0:3000
+✓ Ready in 0ms
+✓ Running next.config took 5ms
 
