@@ -119,7 +119,7 @@ export const PRODUCTS: SeedProduct[] = [
     templateCategory: "skincare",
     price: 37000,
     sku: "ELY-001",
-    stock: 0,
+    stock: 25, // S90-4 restocked — the reference restocked since run-72
     rating: 4.8,
     reviewCount: 24,
     // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
@@ -183,7 +183,7 @@ export const PRODUCTS: SeedProduct[] = [
     templateCategory: "lip_care",
     price: 34000,
     sku: "ELY-003",
-    stock: 0,
+    stock: 30, // S90-4 restocked — the reference restocked since run-72
     rating: 4.7,
     reviewCount: 53,
     // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
@@ -390,7 +390,7 @@ export const PRODUCTS: SeedProduct[] = [
     templateCategory: "skincare",
     price: 54000,
     sku: "ELY-011",
-    stock: 0,
+    stock: 20, // S90-4 restocked — the reference restocked since run-72
     rating: 4.6,
     reviewCount: 21,
     // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline
@@ -595,7 +595,7 @@ export const PRODUCTS: SeedProduct[] = [
     templateCategory: "skincare",
     price: 104000,
     sku: "ELY-019",
-    stock: 0,
+    stock: 15, // S90-4 restocked — the reference restocked since run-72
     rating: 4.7,
     reviewCount: 19,
     // S76-9 (D-12): the 3-image gallery (main + two brand-pipeline

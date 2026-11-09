@@ -19,9 +19,10 @@ import {
 } from "@/lib/admin-categories";
 import { isForeignKeyViolation } from "@/lib/prisma-errors";
 
-// S88-1: vitest 4's `vi.fn()` default types as `Mock<Procedure |
-// Constructable>`, which no longer satisfies the strict Prisma signatures —
-// the mocks are typed to the seam's exact functions instead.
+// S88-1 (S90-3 precision): vitest 4.1.12 declares
+// `fn<T extends Procedure | Constructable = Procedure>` — the DEFAULT generic
+// is bare `Procedure`, whose `Mock<Procedure>` no longer satisfies the strict
+// Prisma signatures — so the mocks are typed to the seam's exact functions.
 type CategoryCountFn = CategoryWriteClient["productCategory"]["count"];
 type CategoryDeleteManyFn = CategoryWriteClient["category"]["deleteMany"];
 

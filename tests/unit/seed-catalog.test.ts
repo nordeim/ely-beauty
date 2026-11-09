@@ -10,10 +10,11 @@
 // S15-2). If a seed change moves any value here, re-check the
 // storefront/shopping-flow e2e assumptions in the same change.
 //
-// Run-72 note: the reference lists several products with stock 0 (sold-out
-// pieces stay visible in its grid — verified live). The seed mirrors that
-// data; the "restore harness" pins below therefore assert INTEGER stock
-// (>= 0), not positive stock.
+// Run-72 note (superseded by S90-4): the reference listed several products
+// with stock 0 at extraction time (sold-out pieces stay visible in its grid
+// — verified live). Run-90 re-measurement: the reference RESTOCKED all four
+// (active purchase panels on their detail pages); the seed mirrors the
+// restock, and the S90-4 pin below asserts positive stock file-wide.
 import { describe, expect, it } from "vitest";
 
 import { PRODUCTS } from "../../prisma/seed";
@@ -143,6 +144,25 @@ describe("seed catalog constants (S15-2, run-72)", () => {
       expect(typeof p.slug).toBe("string");
       expect(Number.isInteger(p.stock)).toBe(true);
       expect(p.stock).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it("the four run-72 sold-out products are restocked (S90-4 — the live reference restocked them)", () => {
+    // Run-90 live re-measurement: the reference's detail pages for the four
+    // run-72 stock-0 products (Bonnet / Curler / Spa Socks / Ice Bowl) now
+    // render active purchase panels (variants + ADD TO CART + BUY IT NOW) —
+    // it restocked since the run-72 extraction. The seed mirrors: every
+    // product now carries POSITIVE stock, so the clone's detail pages match
+    // the reference's purchasable state.
+    const byName = (frag: string) => PRODUCTS.find((p) => p.name.includes(frag));
+    for (const frag of ["Bonnet", "Curler", "Socks", "Ice Bowl"]) {
+      const hit = byName(frag);
+      expect(hit, `seed product matching "${frag}"`).toBeTruthy();
+      expect(hit!.stock, `"${frag}" restocked (S90-4)`).toBeGreaterThan(0);
+    }
+    // The whole catalog is purchasable now (no sold-out rows remain).
+    for (const p of PRODUCTS) {
+      expect(p.stock, `"${p.name}" positive stock (S90-4)`).toBeGreaterThan(0);
     }
   });
 

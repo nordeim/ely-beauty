@@ -79,8 +79,9 @@ test.describe("storefront", () => {
     await expect(page.getByRole("navigation", { name: "Product pages" })).toHaveCount(0);
 
     // Page 1 opens in the reference's authored order = newest-first (the
-    // seed backdates rows): the sold-out Bonnet is FIRST, the Pillowcase
-    // (first in-stock card) second.
+    // seed backdates rows): the Bonnet is FIRST, the Pillowcase second.
+    // (S90-4: the Bonnet was the run-72 sold-out lead; the reference
+    // restocked it — the grid renders stock-independent either way.)
     const firstArticle = page.locator("article").first();
     await expect(firstArticle.getByText("Premium Double Sided Ruffles Silk Hair Bonnet")).toBeVisible();
     await expect(page.getByText("Pure Satin Silk Pillowcase – For Hair & Skin").first()).toBeVisible();
@@ -416,8 +417,8 @@ test.describe("storefront — the S75 measured frame (desktop layout geometry)",
   test("the product detail frame renders 544px columns (gap-8 lg:gap-16 + the gutter)", async ({ page, request }) => {
     // The stocked Pillowcase — resolved through the search API with a
     // single-hit term. (S77-4 changed the result order to the authored
-    // catalog order, under which "silk" leads with the reference-true
-    // SOLD-OUT bonnet — the frame test needs the stocked product.)
+    // catalog order, under which "silk" leads with the Bonnet — the frame
+    // test keeps the single-hit Pillowcase for term stability.)
     // The request fixture carries the absolute base URL — a
     // relative fetch inside page.evaluate on a fresh context fails to parse.
     const res = await request.get("/api/search?q=pillowcase");
@@ -487,9 +488,9 @@ test.describe("storefront — the S76 measured card + variant anatomy (desktop g
   });
 
   test("the size chips are the reference's 38px pills (D-6) and the gallery rail renders (D-8/D-12)", async ({ page, request }) => {
-    // The massager is the IN-STOCK sizes-bearing piece (the bonnet — the
-    // reference-true sold-out lead — renders the Check-back-soon panel
-    // instead of purchase controls).
+    // The massager is the sizes-bearing piece pinned since S76 (the
+    // bonnet restocked in S90-4 — both now render purchase controls; the
+    // massager keeps the D-6 chip pin's single-hit "Pink" term).
     const res = await request.get("/api/search?q=massager");
     const data = (await res.json()) as { results?: { id: string }[] };
     const productId = data.results?.[0]?.id;

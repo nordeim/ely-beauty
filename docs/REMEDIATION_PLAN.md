@@ -12646,3 +12646,127 @@ observation recorded: the home Bestsellers section carries a raw-ID string
 - **Housekeeping:** a stray `3100` log artifact (a dev-server start redirect typo) was
   removed before commit; no other unintended changes (`git status` clean apart from the
   intended S89-1 + docs + screenshots set).
+
+---
+
+## Session 90 — The Coupon-Label Format & README-Table Drift Cycle
+
+**Evidence base:** the operator's standing instruction refreshed the workspace to
+`99d9887` (run-89 pushed @ `21f72ab` + the operator's `docs/session_35.md` raw
+narrative). No new operator-side signal artifacts this cycle (no build_error.txt /
+start_server_log.txt update) — a standard verification cycle. Field posture held on
+re-verification: `npm audit` 0 vulnerabilities, `db:setup` printing 6.19.3 == 6.19.3.
+
+**Audit 90-a** (read-only subagent, skills/ excluded): **12/12 standing anchors PASS,
+R1–R6 (the run-89 regression surface) all PASS, 0 CRITICAL/HIGH/MEDIUM — 1 LOW + 3
+INFO.** The five CONFIG_FALLBACKS byte-exact; the toolchain pins lockfile-read; the
+docs-vs-code claims (735 ×5, PAD v2.16, SKILL v2.16.0, the AGENTS RETIRED ledger)
+all verified true. Findings: F-1 (LOW) the README architecture table's version cells
+stale after runs 86/88 (Prisma ^6.11 → ^6.19.3, Zod ^3.25 → ^4.6.7, Vitest ^3.2 →
+^4.1.12); F-3 (INFO) the coupon min-subtotal error label hand-builds the ৳ string
+instead of using `formatMoney`; F-4 (INFO) the S88-1 comment's vitest-4 typing
+description imprecise; F-2 (INFO) the fsevents allowScripts omission (macOS-only
+optional, no-op on Linux — recorded, no action).
+
+**The F-3 upgrade:** the audit called the label refactor "output-equivalent" — it is
+NOT. `formatMoney` groups with commas (`৳1,000`) while the hand-built label does not
+(`৳1000`), and the seeded **SAVE20 coupon carries minSubtotal 100000 (৳1,000)** — a
+live user path (SAVE20 in a cart under ৳1,000) currently renders "৳1000" against the
+comma-grouped convention every other money surface in the app uses (cart totals,
+product grid, even the FREESHIP description "৳3,000"). A real formatting divergence,
+TDD-pinned this cycle.
+
+### Plan
+
+- [ ] **S90-1 — the README architecture-table drift (F-1).** The three stale version
+  cells corrected: Prisma `^6.11` → `^6.19.3`, Zod `^3.25` → `^4.6.7`, Vitest
+  `^3.2 · ^1.64` → `^4.1.12 · ^1.64` (Playwright already accurate). Docs-only; the
+  735/90 counts in the same table already correct.
+- [ ] **S90-2 — the coupon min-subtotal label via formatMoney (F-3, upgraded).**
+  RED first: a pin asserting the SAVE20-shape rejection message contains "৳1,000"
+  (comma-grouped) — fails on the current hand-built "৳1000". GREEN: the label builds
+  from `formatMoney(coupon.minSubtotal)` (the money module's canonical formatter),
+  deleting the duplicated hand-rolled `Number.isInteger`/`toFixed` logic.
+- [ ] **S90-3 — the S88-1 comment precision (F-4).** The session17-hardening comment
+  says vitest 4 types `vi.fn()` as `Mock<Procedure | Constructable>`; the installed
+  4.1.12 declaration is `fn<T extends Procedure | Constructable = Procedure>` — the
+  constraint vs the default. Comment reworded to the precise form (the operative
+  conclusion — typed mocks at specific-`Mock<>` sites — is unchanged).
+- [x] **S90-4 — the restock parity cycle (discovered mid-cycle, the live parity
+  pass).** The reference RESTOCKED the four run-72 stock-0 products (Bonnet /
+  Curler / Spa Socks / Ice Bowl — verified live: all four reference detail pages
+  render active purchase panels, variants + ADD TO CART + BUY IT NOW) while the
+  clone's seed still pinned their stock at 0 (the run-72 extraction snapshot) —
+  a user-visible parity delta on four detail pages, including the /shop grid's
+  first card. TDD: the S90-4 pin in `tests/unit/seed-catalog.test.ts` (RED on
+  the pulled tree → GREEN) asserts positive stock file-wide; the seed's four
+  rows restocked (25/30/20/15 — the reference exposes no numeric stock, so the
+  values are the clone's demo-choice; the visible contract is "purchasable");
+  applied to the live DB via `restore-demo-stock.ts` (the S7-3 traffic-owned
+  policy — `db:setup` alone never touches stock); the three stale "sold-out
+  bonnet" comments in `storefront.spec.ts` + the run-72 note in
+  `seed-catalog.test.ts` re-recorded; **live-verified: all four clone detail
+  pages now render ADD TO CART + BUY IT NOW, matching the reference.** The
+  out-of-stock RENDERING code stays (the correct superset for genuinely drained
+  stock, e.g. post-e2e traffic).
+- [x] **S90-5 — the full gate chain on the final tree:** lint · typecheck ·
+  typecheck:tests · unit suite (735 + 2 new pins = 737) · clean build ·
+  **90/90 e2e ×2 consecutive**.
+- [x] **S90-6 — the standing verifications:** sitemap 28 public-only · 25/25
+  screenshots (regenerated AFTER the restock — the detail-page shots change) ·
+  `.env.example` 9/9.
+- [x] **S90-7 — docs sweep:** this execution log filled, worklog Task 84, the
+  polished `docs/session_36.md`, README/CLAUDE count rows 735 → 737, PAD
+  v2.17 revision block, AGENTS.md if the stock contract moves (it does not —
+  the S7-3 policy is unchanged; only the seed VALUES moved).
+
+### Execution log
+
+- **S90-1 GREEN (docs):** the README architecture-table version cells corrected
+  (Prisma ^6.19 · Zod ^4.6 · Vitest ^4.1 · Playwright ^1.64) — the audit 90-a
+  F-1 drift retired.
+- **S90-2 GREEN (TDD):** RED — the comma-grouping pin (`SAVE20`-shape rejection
+  must read "৳1,000", never "৳1000"; plus the poisha case "৳365.50") failed on
+  the pulled tree (1 failed | 14 passed). GREEN — `couponDiscount`'s
+  min-subtotal label now builds from `formatMoney(coupon.minSubtotal)`; the
+  hand-rolled `Number.isInteger`/`toFixed` logic deleted. 15/15 in the file.
+  (The audit's "output-equivalent" claim was WRONG — `formatMoney` comma-groups
+  at ৳1,000+; the seeded SAVE20 made it a live divergence. Upgraded from INFO to
+  a real formatting fix.)
+- **S90-3 GREEN (comment):** the S88-1 comment states the actual vitest 4.1.12
+  declaration (`fn<T extends Procedure | Constructable = Procedure>` — the
+  DEFAULT is bare `Procedure`, the constraint is the union), read from the
+  installed `@vitest/spy/dist/index.d.ts:398`.
+- **S90-4 GREEN (TDD, the mid-cycle parity finding):** the reference restocked
+  the four run-72 stock-0 products (all four reference detail pages verified
+  live: active purchase panels — variants + ADD TO CART + BUY IT NOW; the
+  reference displays NO numeric stock). RED — the restock pin (positive stock
+  file-wide + the four named products) failed on the pulled seed. GREEN — the
+  seed rows restocked (ELY-001 25 · ELY-003 30 · ELY-011 20 · ELY-019 15),
+  `restore-demo-stock.ts` applied them to the live DB (4 restored, 15 already
+  at seed), and all four clone detail pages live-verified rendering
+  ADD TO CART + BUY IT NOW. The three stale "sold-out bonnet" comments in
+  `storefront.spec.ts` + the run-72 note in `seed-catalog.test.ts` re-recorded;
+  the e2e product picks verified term-pinned (pillowcase/massager/body-brush —
+  no stock-order dependence). AGENTS.md :135 stock contract carries the S90-4
+  note.
+- **S90-5 gates, all green on the final tree:** lint ✓ · typecheck ✓ ·
+  typecheck:tests ✓ · **737/737 unit** (64 files; +2 pins) · clean build ✓ ·
+  **e2e 90/90 ×2 consecutive** (2.5m + 2.4m — the first two attempts hit
+  10-minute timeouts: the killed runs left orphan `next-server` processes
+  holding :3100/:3000, so the retries ran against wedged orphans; after
+  `kill -9` of the orphans, the clean run passed in 2.5m. The orphan-server
+  wedge is the recorded lesson: kill the webServer's children before retrying
+  a timed-out e2e run).
+- **S90-6 standing verifications:** sitemap **28 `<loc>`, 0 private paths** ·
+  **25/25 screenshots** (9 changed: the restocked detail page + the known
+  raster-noise family; 16 byte-identical) — the first capture attempt wrote
+  NOTHING (the e2e server died with its parent; the script's caught errors left
+  the old files — caught by `git status` showing zero changes; re-run against a
+  live server) · `.env.example` 9/9 (6 active + 3 commented opt-ins).
+- **Audit 90-a:** 12/12 standing anchors PASS, R1–R6 PASS, 0 CRITICAL/HIGH/
+  MEDIUM — 1 LOW (README table, fixed S90-1) + 3 INFO (F-3 fixed as S90-2;
+  F-4 fixed as S90-3; F-2 the fsevents allowScripts omission — recorded, no
+  action: macOS-only optional, no-op on Linux).
+- **Field posture (re-verified this cycle):** `npm audit` 0 vulnerabilities ·
+  `db:setup` prints 6.19.3 == 6.19.3.

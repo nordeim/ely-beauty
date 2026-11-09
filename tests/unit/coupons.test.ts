@@ -64,6 +64,24 @@ describe("couponDiscount — fixed coupons", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toContain("৳50");
   });
+
+  // S90-2: the min-subtotal label rides formatMoney — the canonical comma-grouped
+  // formatter — not a hand-built string. The seeded SAVE20 (minSubtotal 100000 =
+  // ৳1,000) is the live user path: "৳1,000", never "৳1000".
+  it("formats the minimum-subtotal label with formatMoney's comma grouping (S90-2)", () => {
+    const save20Shape: CouponInfo = { code: "SAVE20", type: "percent", value: 20, minSubtotal: 100000, description: "" };
+    const result = couponDiscount(save20Shape, 99999);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain("৳1,000");
+      expect(result.error).not.toContain("৳1000");
+    }
+    // The poisha case keeps its two decimals either way (36550 -> ৳365.50).
+    const poishaMin: CouponInfo = { code: "POISHA", type: "percent", value: 5, minSubtotal: 36550, description: "" };
+    const poishaResult = couponDiscount(poishaMin, 36549);
+    expect(poishaResult.ok).toBe(false);
+    if (!poishaResult.ok) expect(poishaResult.error).toContain("৳365.50");
+  });
 });
 
 describe("couponDiscount — unknown types", () => {

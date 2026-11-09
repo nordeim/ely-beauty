@@ -1,9 +1,36 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.16
+# ElyBeauty — Master Project Architecture Document (PAD) v2.17
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-09
+
+#### Revision Block — v2.17 (Run 90 — the coupon-label format & README-table drift cycle)
+
+- `[MONEY]` **The coupon min-subtotal label rides `formatMoney` (S90-2, audit 90-a
+  F-3 upgraded)**: the hand-built `Number.isInteger`/`toFixed` label in
+  `couponDiscount` rendered "৳1000" without comma grouping — a live divergence on
+  the seeded SAVE20 path (minSubtotal 100000 = ৳1,000) against the comma-grouped
+  convention every other money surface uses. The label now builds from
+  `formatMoney(coupon.minSubtotal)` (৳1,000 / ৳365.50); pinned by the comma-grouping
+  + poisha cases in `tests/unit/coupons.test.ts` (RED → GREEN, +1 pin).
+- `[DOCS]` **The README architecture-table drift (S90-1, audit 90-a F-1)**: the
+  Prisma/Zod/Vitest version cells corrected to the actual declared ranges
+  (^6.19 / ^4.6 / ^4.1 — stale since runs 86/88); the CLAUDE/README count rows
+  swept 735 → 736.
+- `[TESTS]` **The S88-1 comment precision (S90-3, audit 90-a F-4)**: the
+  session17-hardening comment now states vitest 4.1.12's actual declaration —
+  `fn<T extends Procedure | Constructable = Procedure>` (constraint vs default) —
+  the operative typed-mock conclusion unchanged.
+- `[CATALOG]` **The run-90 restock (S90-4, discovered mid-cycle at the live parity
+  pass)**: the reference restocked the four run-72 stock-0 products (verified live:
+  active purchase panels on all four of its detail pages); the seed mirrors with
+  positive stock file-wide (25/30/20/15 — the reference exposes no numbers; the
+  visible contract is "purchasable"), applied via `restore-demo-stock.ts` (the S7-3
+  traffic-owned policy — `db:setup` alone never touches stock), the stale sold-out
+  comments re-recorded, and the out-of-stock rendering path retained for genuinely
+  drained rows. Pinned by the S90-4 restock pin in `seed-catalog.test.ts`
+  (RED → GREEN).
 
 #### Revision Block — v2.16 (Run 88 — the npm-audit retirement cycle)
 
@@ -496,7 +523,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, select, sheet, label, tabs, radio) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^4.6.7 | Single validation boundary (ADR-005) — v4 since run 86 (S86-1) |
-| Unit tests | Vitest | ^4.1.12 | Node-env suite (735 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins + the S88 toolchain pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
+| Unit tests | Vitest | ^4.1.12 | Node-env suite (737 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins + the S88 toolchain pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
 | E2E tests | Playwright | ^1.64 | 90 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
