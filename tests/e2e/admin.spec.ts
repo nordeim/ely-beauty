@@ -131,7 +131,22 @@ test.describe("admin back office", () => {
   test("admin clears a product's template category through the None option (S82-3)", async ({ page }) => {
     await loginAsAdmin(page);
     await gotoHydrated(page, "/admin/products");
-    const dialog = await searchProductsAndOpenDialog(page, "Gua Sha", /Edit Stainless Steel Gua Sha/i);
+    let dialog = await searchProductsAndOpenDialog(page, "Gua Sha", /Edit Stainless Steel Gua Sha/i);
+
+    // S84-3 (audit 84-a M-1 — the S20-1 self-heal discipline, the S83-3
+    // symmetry): an aborted prior revert can leave the cleared template
+    // behind (the fresh-server restore heals it; a reused server does
+    // not). The trigger renders None as BOTH the null placeholder and
+    // the "none" item, so one textContent condition covers both dirt
+    // shapes — heal to the seed shape BEFORE the flow.
+    const templateCombo = dialog.getByRole("combobox", { name: "Template category" });
+    if ((await templateCombo.textContent())?.includes("None")) {
+      await templateCombo.click();
+      await page.getByRole("option", { name: "Skincare" }).click();
+      await dialog.getByRole("button", { name: "Save Changes" }).click();
+      await expect(dialog).toBeHidden();
+      dialog = await searchProductsAndOpenDialog(page, "Gua Sha", /Edit Stainless Steel Gua Sha/i);
+    }
 
     // Audit 82-a L-3: Radix Select cannot deselect — the "None" option is
     // the clear path for a set template category.

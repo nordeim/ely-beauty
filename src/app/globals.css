@@ -147,6 +147,20 @@
   @apply inline-flex items-center gap-2 border-b pb-1 text-sm font-normal uppercase tracking-[0.1em] transition-colors;
 }
 
+/* S84-1b (measured live this cycle — pixel-cluster evidence at the input's
+ * right edge, x300-309 @390px): Chromium renders a native clear glyph on
+ * typed search inputs. The reference's search input is a plain text field
+ * and renders nothing between the typed text and the Close icon. The
+ * overlay's input keeps type="search" (the searchbox role the e2e pins
+ * target); the Close button stays the sheet's only close affordance, so
+ * the glyph is suppressed. Scoped to search inputs — nothing else uses
+ * them in this app. */
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
 /* Motion hygiene: honor prefers-reduced-motion. */
 @media (prefers-reduced-motion: reduce) {
   *,

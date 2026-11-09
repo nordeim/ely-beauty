@@ -1,9 +1,47 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.11
+# ElyBeauty — Master Project Architecture Document (PAD) v2.12
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-09
+
+#### Revision Block — v2.12 (Run 84 — the overlay-input parity & self-heal-closure cycle)
+
+- `[TE]` **The e2e suite heals the catalog before any project on a reused
+  server** (S84-2, audit 84-a M-1): the webServer command's restore only
+  fires on a FRESH start — `reuseExistingServer` skips the command
+  entirely, so an aborted prior run's catalog dirt met the storefront
+  count pins before the admin-catalog project could heal. A new
+  `globalSetup` (`tests/e2e/global-setup.ts`) probes :3100 and runs the
+  idempotent `restore-demo-stock.ts` when a server is already listening
+  (a fresh start's restore stays the command's own). Verified
+  end-to-end: template + membership dirt seeded and confirmed LIVE on
+  the reused server (skincare 11) → the storefront spec 22/22 GREEN →
+  post-run state seed-clean (template skincare, memberships
+  beauty-tools, skincare 12). Pinned by
+  `tests/unit/e2e-infrastructure.test.ts`; the S82-3 opening gains the
+  symmetric per-test heal (S84-3, the S83-3 discipline).
+- `[FE]` **The search overlay's input matches the reference's measured
+  typography** (S84-1, D-84-1/D-84-2): the reference's input carries
+  `font-light` — computed 300 on both viewports (18px mobile / 24px
+  desktop) — and dims its placeholder to 60%
+  (`placeholder:text-muted-foreground/60`); the clone shipped the
+  default 400 and full opacity. Plus S84-1b: Chromium's native
+  search-cancel glyph (pixel-cluster evidence at the input's right
+  edge, x300-309 @390px) is suppressed — the reference's plain-text
+  input renders nothing between the typed text and the Close icon;
+  `type="search"` stays (the searchbox role the e2e pins target).
+  Verified on both viewports post-fix; the rows/panel geometry
+  unchanged (±1px).
+- `[SE]` **The dollar-worded copy retired** (S84-4, audit 84-a L-1):
+  validation.ts's four money-bound messages and the coupon dialog's
+  two fixed-value errors read taka (৳) — HomeNest heritage that survived
+  the S83-5 USD sweep because the grep patterns never matched the
+  worded forms.
+- `[TE]` Suite: 698 → **704 unit** (+6: the S84-1 input pin, the S84-1b
+  cancel-button pin, the S84-4/4b taka-copy pins, the S84-2/3
+  self-heal-closure pins; one D-1b pin updated for the new class
+  order).
 
 #### Revision Block — v2.11 (Run 83 — the e2e concurrency-isolation & USD-remnant cycle)
 

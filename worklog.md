@@ -386,3 +386,21 @@ Stage Summary:
 - Every fixed surface pinned: the e2e-infrastructure pins ×3 (the project split, the gated helper, the self-heal) + the layout-tokens S83 pins ×4 (the analytics orderBy, the comment, the US-fallback ban, the $0.00 ban).
 - Dev-server screenshots: 25/25 regenerated and validated (dimensions + non-trivial sizes).
 - Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.
+
+---
+
+Task ID: 78
+Agent: run-84 executor (the overlay-input parity & self-heal-closure cycle)
+Task: The full remediation cycle on the SURVIVING workspace (git pull 18aee4a → d2f20c0): docs review → gates re-validation (all green, 90/90 e2e on the FIRST run — run 83's serialized admin-catalog project holding) → deep audit 84-a (read-only subagent: 12/12 anchors PASS, 0 CRITICAL/HIGH, 1 MEDIUM M-1, 1 LOW L-1, 3 INFO) → live-reference re-measurement (every pinned surface GREEN, zero deltas — plus TWO new micro-deltas on the overlay INPUT: the reference's font-light 300 vs the clone's 400, the /60-dimmed placeholder vs full opacity; and ONE clone-side glyph: Chromium's native search-cancel button, pixel-cluster evidence) → the Session 84 plan → TDD remediation (RED 5+1 → GREEN) → the end-to-end globalSetup-heal verification → screenshots → docs sweep → commit + push.
+
+Work Log:
+- The reference re-measured on both viewports with the S81-3 panel content byte-verified again (labels AND hrefs: Shop/Beauty Tools→skincare/Brush & Combs→body_care/About), the "silk" overlay set ($370.00/$288.00/$470.00/$520.00 cp 36 two-decimals Cormorant 14px/300, the Bonnet's no-desc row), /shop 19 one-page bonnet-first, the detail ৳370 Inter 24px/600, the footer template slugs, and the --accent = --secondary = 30 15% 93% identity (the row-hover class-name difference renders identically). The clone probe: 8/8 server checks + the panel ±1px + the overlay rows byte-exact.
+- The fixes: the overlay input's font-light + placeholder /60 (one line, both viewports); the native search-cancel-button suppression (scoped globals.css rule; type=search stays for the searchbox role, verified by pixel-cluster analysis before/after); the globalSetup heal (probes :3100, restores the catalog BEFORE any project when a server is already listening — verified end-to-end: dirt seeded + confirmed LIVE on the reused server (skincare 11) → the storefront spec 22/22 GREEN → post-run state seed-clean); the symmetric S82-3 opening heal (the S83-3 discipline); the taka rewording (validation.ts ×4 + coupon-dialog ×2 + comments, never quoting the banned literals in the fixing comments).
+- The GREEN-phase correction: the D-1b S75 pin (the overlay input's class-order regex) updated for the font-light insertion; the S83-5 trap-5 lesson honored throughout (no fixing comment quotes its banned literal).
+- The operator's standing instructions verified: DATABASE_URL="file:../db/custom.db" with db/ at the repo root (the .env contract + db-path resolution + the symlink convergence, all held); vitest + playwright configs complete and green (the playwright config now three projects + globalSetup); the sitemap/robots/JSON-LD/OG/security surfaces verified on the running server (sitemap 28 public-only); .env.example re-verified 9/9 (committed); the mobile menu — the priority surface — re-verified end-to-end on both sites (panel ±1px, toggle/route close, the SEARCH row → overlay, e2e mobile-navigation spec green ×4 runs); Tailwind v4 traps intact (no display-utility toggles, @theme full hsl, the @source not guard — all audit-anchored PASS).
+
+Stage Summary:
+- All gates green: lint · typecheck · typecheck:tests · 704/704 unit (+6) · clean build · 90/90 e2e ×3 consecutive (4 total green runs this session).
+- Every fixed surface pinned: the S84-1 input pin (font-light + /60 + the lookahead ban), the S84-1b cancel-button pin, the S84-2 globalSetup pin, the S84-3 self-heal pin, the S84-4/4b taka-copy pins (+ the D-1b class-order update).
+- Dev-server screenshots: 25/25 regenerated and validated (none undersized).
+- Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.

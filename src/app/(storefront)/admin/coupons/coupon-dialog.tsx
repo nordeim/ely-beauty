@@ -32,11 +32,11 @@ export type CouponFormValues = {
   id: string | null;
   code: string;
   type: "percent" | "fixed" | "free_shipping";
-  /** percent: integer 1..100 · fixed: a dollar string parsed to cents ·
-   *  free_shipping: ignored (always submitted as 0). */
+  /** percent: integer 1..100 · fixed: a decimal taka string parsed to
+   *  cents · free_shipping: ignored (always submitted as 0). */
   value: string;
   description: string;
-  /** Dollar string; "" / "0" = no minimum. */
+  /** Decimal taka string; "" / "0" = no minimum. */
   minSubtotalDollars: string;
   /** Date-input value (YYYY-MM-DD); "" = never expires. */
   expiresAtDate: string;
@@ -95,7 +95,7 @@ export function CouponDialogButton({
     setError(null);
 
     // Type-aware value parsing: percent takes a whole 1..100 integer; fixed
-    // takes a dollar amount parsed to integer cents (the product-form
+    // takes a decimal taka amount parsed to integer cents (the product-form
     // convention); free_shipping carries no value (S20-6 — submitted as 0).
     // Both land as `value` (cents for fixed) in the action.
     let parsedValue: number;
@@ -110,7 +110,7 @@ export function CouponDialogButton({
     } else {
       const cents = parseDollarsToCents(form.value);
       if (cents === null || cents < 1) {
-        setError("Amount off must be a dollar amount of $0.01 or more.");
+        setError("Amount off must be a taka amount of ৳0.01 or more.");
         return;
       }
       parsedValue = cents;
@@ -120,7 +120,7 @@ export function CouponDialogButton({
     if (form.minSubtotalDollars.trim() !== "") {
       const cents = parseDollarsToCents(form.minSubtotalDollars);
       if (cents === null) {
-        setError("Minimum subtotal must be a dollar amount, like 25.00.");
+        setError("Minimum subtotal must be a taka amount, like 25.00.");
         return;
       }
       minSubtotal = cents;

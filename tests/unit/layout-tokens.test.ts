@@ -245,7 +245,9 @@ describe("S77 measured search-overlay anatomy (source pins)", () => {
 
   it("D-1b: the search input rides the display serif at text-lg lg:text-2xl with the tight 1.1 leading", () => {
     const overlay = src("components/store/search-overlay.tsx");
-    expect(overlay).toMatch(/font-display text-lg leading-\[1\.1\] lg:text-2xl/);
+    // S84-1 inserted font-light between the family and the sizes (the
+    // reference's measured 300 weight); the pin follows the class order.
+    expect(overlay).toMatch(/font-display font-light text-lg leading-\[1\.1\] lg:text-2xl/);
   });
 
   it("D-2: the result rows are the reference's single-column 80px anatomy", () => {
@@ -649,5 +651,42 @@ describe("S83 — the analytics determinism + USD-remnant pins", () => {
     const analytics = src("app/(storefront)/admin/analytics/page.tsx");
     expect(analytics).not.toContain('"$0.00"');
     expect(analytics).toMatch(/formatMoney/);
+  });
+});
+
+// S84 — the taka-copy pins (session 84): audit 84-a's L-1 — the
+// dollar-worded copy that survived the S83-5 USD sweep (the
+// coupon-dialog's fixed-value errors and validation.ts's four money-bound
+// messages, all HomeNest heritage in a ৳/poisha store whose dialog labels
+// already read (৳)).
+describe("S84 — the taka-copy pins", () => {
+  it("S84-4: validation.ts's money-bound messages read taka (audit L-1)", () => {
+    const validation = src("lib/validation.ts");
+    // The four bound messages (price / compare-at / coupon value /
+    // minimum subtotal) carry the store's currency, not the inherited one.
+    expect(validation).not.toMatch(/under \$1,000,000/);
+    expect(validation).toMatch(/under ৳1,000,000/);
+  });
+
+  it("S84-4b: the coupon dialog's fixed-value errors read taka (audit L-1)", () => {
+    const dialog = src("app/(storefront)/admin/coupons/coupon-dialog.tsx");
+    // The fixed-value/min-subtotal errors no longer borrow the inherited
+    // currency's wording (the fixing comments must not quote the banned
+    // literals — the S83-5 trap-5 lesson).
+    expect(dialog).not.toMatch(/dollar amount/i);
+    expect(dialog).not.toMatch(/\$0\.01/);
+  });
+
+  it("S84-1b: the native search-cancel button is suppressed (the reference's plain-text input)", () => {
+    const globals = src("app/globals.css");
+    // Measured live this cycle (pixel-cluster evidence at the input's right
+    // edge, x300-309 @390px): Chromium renders a native clear glyph on
+    // typed search inputs — the reference's input is a plain text field and
+    // renders nothing there. The clone keeps type=search (the searchbox
+    // role the e2e pins target); the Close button stays the sheet's only
+    // close affordance, so the glyph is suppressed.
+    expect(globals).toMatch(/::-webkit-search-cancel-button/);
+    expect(globals).toMatch(/-webkit-appearance:\s*none/);
+    expect(globals).toMatch(/display:\s*none/);
   });
 });

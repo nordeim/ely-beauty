@@ -99,6 +99,21 @@ describe("SearchOverlay — the S77 reference anatomy (D-1)", () => {
     expect(input.className).toContain("lg:text-2xl");
   });
 
+  it("the input rides font-light with the /60 placeholder (the reference's measured 300 + dimmed hint, S84-1)", () => {
+    renderOverlay();
+    const input = screen.getByRole("searchbox", { name: "Search products" });
+    // S84-1 (D-84-1/D-84-2, measured live 2026-11-09 on both viewports):
+    // the reference's input carries font-light — computed 300 (the clone
+    // shipped the default 400) — and dims its placeholder to 60% (its
+    // text-muted-foreground/60; the clone shipped full opacity). The
+    // weight/placeholder pair had never been compared before this cycle.
+    expect(input.className).toContain("font-light");
+    expect(input.className).toContain("placeholder:text-muted-foreground/60");
+    // The un-dimmed placeholder form is retired (the bare utility is a
+    // substring of the /60 form — the lookahead keeps the ban honest).
+    expect(input.className).not.toMatch(/placeholder:text-muted-foreground(?!\/60)/);
+  });
+
   it("the input row keeps the hairline border + pb-4 rhythm with 20px icons", () => {
     renderOverlay();
     const input = screen.getByRole("searchbox", { name: "Search products" });

@@ -6,6 +6,14 @@ import { defineConfig, devices } from "@playwright/test";
  * CSP in its production form. Run: npm run test:e2e
  */
 export default defineConfig({
+  // S84-2 (audit 84-a M-1): the pre-run catalog heal. The webServer
+  // command's restore only fires on a FRESH start — reuseExistingServer
+  // skips the command entirely, so on a reused server an aborted prior
+  // run's dirt met the storefront count pins before admin-catalog could
+  // heal. The globalSetup probes :3100 and restores BEFORE any project
+  // when a server is already listening (a fresh start's restore stays the
+  // command's own). Pinned by tests/unit/e2e-infrastructure.test.ts.
+  globalSetup: "./tests/e2e/global-setup.ts",
   testDir: "./tests/e2e",
   fullyParallel: true,
   forbidOnly: !process.env.CI,

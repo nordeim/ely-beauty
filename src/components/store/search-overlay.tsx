@@ -20,6 +20,11 @@ import { formatOverlayPrice } from "@/lib/money";
 // a header-anchored dropdown sheet from the header icon and an in-panel
 // swap from the panel row; this component replaces both with the one
 // shared full-screen sheet.
+//
+// S84-1 (measured live 2026-11-09): the reference's input carries
+// font-light — computed 300 on both viewports (18px mobile / 24px
+// desktop) — and dims its placeholder to 60% (the text-muted-foreground
+// /60 form). Both were missing here until this cycle.
 export type SearchResult = {
   id: string;
   name: string;
@@ -169,7 +174,7 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search products..."
             aria-label="Search products"
-            className="flex-1 bg-transparent font-display text-lg leading-[1.1] lg:text-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex-1 bg-transparent font-display font-light text-lg leading-[1.1] lg:text-2xl text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           <button
             type="button"

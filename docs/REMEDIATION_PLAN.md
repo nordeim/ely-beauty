@@ -11808,3 +11808,202 @@ established source-pin pattern (`src()` reader + describe blocks).
   traps), session_22.md, worklog Task 77, this log.
 - **Deferred (documented)**: the zod 3→4 migration epic — still the
   standing deferred debt (a dedicated cycle), unchanged.
+
+## Session 84 — The Overlay-Input Parity & Self-Heal-Closure Cycle
+
+> **Status:** EXECUTING (this cycle)
+> **Date:** 2026-11-09
+> **Inputs:** the gates re-validation on the pulled tree (d2f20c0: lint ✓ ·
+> typecheck ✓ · typecheck:tests ✓ · 698/698 unit ✓ · clean build ✓ ·
+> 90/90 e2e on the FIRST full run — run 83's serialized admin-catalog
+> project holding) + deep audit 84-a (read-only subagent, web-application +
+> code-review-checklist methodology, skills/ excluded: **12/12 standing
+> anchors PASS, 0 CRITICAL/HIGH, 1 MEDIUM, 1 LOW, 3 INFO** — all in
+> test-infra/copy, none in production paths) + the live-reference
+> re-measurement (agent-browser 0.41.1, logged in, mobile 390×844 +
+> desktop 1440×900) + the clone-side standalone probe.
+
+### Findings feeding this cycle
+
+**The reference re-measurement — every pinned surface GREEN, plus TWO new
+micro-deltas measured on the overlay INPUT (D-84-1/D-84-2):**
+
+- **The reference is unchanged** on every previously-pinned surface: the
+  mobile panel rows 89/125/161/197/233 @390×844 (36px rhythm, 14px/20px
+  uppercase Inter, ending at ABOUT) with the S81-3 content byte-verified
+  again (SEARCH + Shop → /shop, "Beauty Tools" → ?category=skincare,
+  "Brush & Combs" → ?category=body_care, About → /about); toggle-close
+  (5→0); SEARCH-row → overlay (z-70, bg 0.95, blur 4px); the "silk" set
+  (Bonnet $370.00 no-desc / Pillowcase $288.00 / Sandalwood Paddle $470.00
+  / Crystal Hair Remover $520.00 — cp 36, two decimals, Cormorant 14px/300,
+  80px rows); route-change close; /shop "All Products" + 19 cards
+  one-page, bonnet-first; desktop nav hrefs; desktop overlay input 24px/300
+  column x:384 w:672; detail ৳370 Inter 24px/600 + "skincare" eyebrow;
+  footer Shop column skincare/body_care/sets. The clone-side probe: panel
+  88/124/160/196/232 (±1px), overlay rows 4×80px, sitemap 28 public-only,
+  robots, JSON-LD, search API byte-parity — **zero deltas on any pinned
+  surface**.
+- **D-84-1 (parity, LOW-MEDIUM visual)**: the reference's overlay INPUT
+  carries `font-light` — computed **300** on both viewports (mobile 18px,
+  desktop 24px; its class `heading-editorial font-light`); the clone's
+  input (`font-display text-lg lg:text-2xl`, no weight class) renders the
+  default **400**. Never caught before because the weight was never
+  compared (S77-2 recorded sizes + leadings only).
+- **D-84-2 (parity, LOW visual)**: the reference dims the placeholder to
+  60% (`placeholder:text-muted-foreground/60` — computed
+  rgba(102,102,102,0.6)); the clone ships full opacity
+  (`placeholder:text-muted-foreground`).
+
+**Audit 84-a findings (both folded in):**
+
+- **M-1 (MEDIUM, test infrastructure) — the self-heal discipline is
+  asymmetric.** S83-3 heals S81-11's own opening, but an aborted prior
+  run's catalog dirt on a REUSED server (the webServer restore only fires
+  on a FRESH start; `reuseExistingServer` skips the command entirely) is
+  observed by the desktop-chromium storefront count pins BEFORE the
+  admin-catalog project runs and heals — the run-83 flake class in its
+  narrowest residual form. S82-3 also lacks the symmetric per-test heal
+  S81-11 got.
+- **L-1 (LOW) — dollar-worded copy survives the USD sweep.** The
+  coupon-dialog's fixed-value errors say "a dollar amount of $0.01 or
+  more" / "a dollar amount, like 25.00" while the same dialog's labels
+  read (৳); validation.ts ships four "must be under $1,000,000" action
+  errors (price / compare-at / value / minimum subtotal). HomeNest
+  heritage; the S83-5 grep patterns did not match these.
+
+### The work items (S84-1 .. S84-5)
+
+- [x] **S84-1 (D-84-1 + D-84-2)**: `src/components/store/search-overlay.tsx`'s
+      input gains `font-light` and swaps
+      `placeholder:text-muted-foreground` → `placeholder:text-muted-foreground/60`
+      (one line, both viewports). RED: a new pin in the search-overlay
+      component test's S77 anatomy block — font-light present, the /60
+      form present, and the un-dimmed form banned via negative lookahead
+      (`placeholder:text-muted-foreground(?!/60)`).
+- [x] **S84-2 (audit M-1, the structural closure)**:
+      `playwright.config.ts` gains `globalSetup` → a new
+      `tests/e2e/global-setup.ts` that probes 127.0.0.1:3100; when
+      something is already listening (the reused-server case — the
+      fresh case is owned by the webServer command's own restore) it
+      runs `npx tsx scripts/restore-demo-stock.ts` (idempotent), healing
+      the catalog BEFORE any project runs. RED: an e2e-infrastructure
+      pin (the config declares globalSetup; the module carries the probe
+      + the restore invocation).
+- [x] **S84-3 (audit M-1, the per-test symmetry)**: S82-3's opening
+      self-heals a leftover cleared template — if the Template category
+      combobox reads "None" (the abort dirt), select Skincare + save +
+      reopen through the gated helper, before the flow (the S83-3
+      precedent; `const dialog` → `let dialog`). RED: an
+      e2e-infrastructure source pin.
+- [x] **S84-4 (audit L-1)**: the taka rewording — validation.ts's four
+      "under $1,000,000" zod messages → "under ৳1,000,000"; the
+      coupon-dialog's two setError strings → taka phrasing + the two
+      "dollar" comments reworded (never quoting the banned literals in
+      the fixing comments — the S83-5 trap-5 lesson). RED:
+      layout-tokens pins (no `under \$1,000,000` in validation.ts; no
+      `dollar amount` / `\$0\.01` in coupon-dialog.tsx).
+- [x] **S84-5**: the docs sweep (REMEDIATION_PLAN checkboxes + execution
+      log, session_24.md, worklog Task 78, AGENTS.md's e2e-ordering note
+      for the globalSetup, CLAUDE.md + README counts, PAD, SKILL
+      project_state + Appendix B) + 25 dev-server screenshots
+      regenerated + `.env.example` re-verified + the post-fix clone probe
+      (overlay input 300//60 on both viewports + the native
+      search-cancel-button check) + the final full gate chain (e2e ×3)
+      + commit + SSH-wrapper push to main.
+
+### Validation against the codebase (pre-execution)
+
+Every change site pre-read: `src/components/store/search-overlay.tsx:165-172`
+(the input className — `font-display text-lg leading-[1.1] lg:text-2xl`
++ `placeholder:text-muted-foreground`, no weight class),
+`tests/unit/search-overlay.test.tsx:94-100` (the S77 input pin the RED
+extends; `getByRole("searchbox")` requires `type="search"` to stay),
+`playwright.config.ts:8-68` (the config — globalSetup joins the top
+level; the module sits at `tests/e2e/global-setup.ts` where no project's
+testMatch loads it: mobile/admin projects match their own specs,
+desktop-chromium matches the default `*.spec.ts` only),
+`tests/e2e/admin.spec.ts:131-162` (S82-3 — the heal inserts after the
+helper call; the combobox trigger renders "None" as BOTH the null
+placeholder and the "none" item, so one textContent condition covers
+both dirt shapes), `scripts/restore-demo-stock.ts` (idempotent — stock
+top-ups + membership/template rebuild), `src/lib/validation.ts:217,222,
+291,297` (the four zod messages), `src/app/(storefront)/admin/coupons/
+coupon-dialog.tsx:35,98,113,123` (the two errors + two comments; no
+other "dollar" occurrence in the file; `parseDollarsToCents` /
+`minSubtotalDollars` are internal names the pin does not touch),
+`tests/unit/layout-tokens.test.ts:610-660` (the S83 block the S84 pins
+follow), `tests/unit/e2e-infrastructure.test.ts:1-85` (the S83 block the
+S84 describe follows).
+
+### Session 84 execution log
+
+- **Environment**: the surviving workspace (git pull 18aee4a → d2f20c0 —
+  the operator's session-log commit adding session_23.md, the raw run-83
+  narrative); node_modules/db/.env intact; the ambient `DATABASE_URL`
+  shadow converged via the standing symlink (same file); the DB seed
+  state verified (19 products / 4 categories / 14 junction rows, the
+  dual-member Wooden brush, Gua Sha → beauty-tools, 3 coupons).
+- **Gates on the pulled tree**: lint ✓ · typecheck ✓ ·
+  typecheck:tests ✓ · 698/698 unit ✓ · clean build ✓ · **90/90 e2e on
+  the FIRST full run** (run 83's serialized admin-catalog project
+  holding — no flake to reproduce this cycle).
+- **Deep audit 84-a** (read-only subagent, web-application +
+  code-review-checklist methodology): 12/12 standing anchors PASS, the
+  run-83 change-set S83-1..S83-5 all correct with no production-path
+  regressions; 0 CRITICAL/HIGH/MEDIUM production-code defects — 1
+  MEDIUM (M-1, test-infra: the self-heal asymmetry), 1 LOW (L-1: the
+  dollar-worded copy), 3 INFO (the URL-wait encoding note, the
+  source-pin brittleness note, the doc-count consistency check).
+- **Live re-measurement** (agent-browser, logged in, mobile 390×844 +
+  desktop 1440×900): every pinned surface GREEN — the mobile panel rows
+  89/125/161/197/233 with the S81-3 content byte-verified again
+  (SEARCH + Shop/Beauty Tools(skincare)/Brush & Combs(body_care)/About
+  — labels AND hrefs), toggle-close, SEARCH-row → overlay, the "silk"
+  set ($370.00/$288.00/$470.00/$520.00, cp 36, two decimals, Cormorant
+  14px/300, 80px rows, the Bonnet's no-desc row), route-change close,
+  /shop "All Products" + 19 one-page bonnet-first, the desktop nav
+  hrefs, the desktop overlay input 24px/300 column x:384 w:672, the
+  detail ৳370 Inter 24px/600 + "skincare" eyebrow, the footer template
+  slugs. The clone-side probe: 8/8 server checks (health, sitemap 28
+  public-only, robots, JSON-LD, OG, canonical, shop order, search API),
+  the panel 88/124/160/196/232 (±1px), the overlay rows 4×80px with
+  byte-exact prices. **Two NEW input deltas measured (D-84-1 weight
+  300 vs 400; D-84-2 placeholder /60 vs full) + one clone-side glyph
+  found (S84-1b: the native search-cancel button, pixel-cluster
+  evidence x300-309 @390px — gone after the fix).**
+- **TDD (RED 5+1 → GREEN)**: the S84-1 input pin (font-light + /60 +
+  the lookahead ban), the S84-2 globalSetup pin, the S84-3 self-heal
+  pin, the S84-4/4b taka-copy pins, the S84-1b cancel-button pin (RED
+  on a second mini-cycle after the pixel-cluster evidence). One
+  GREEN-phase correction: the D-1b layout-tokens pin (the S75 overlay
+  input class-order regex) updated for the font-light insertion.
+- **The globalSetup heal, verified end-to-end**: template=None +
+  Bestsellers-membership dirt seeded directly in the DB and confirmed
+  LIVE on the reused standalone server (skincare count 11) → the
+  storefront spec 22/22 GREEN against that server (the heal fired
+  before the readers) → the post-run state seed-clean (template
+  skincare, memberships [beauty-tools], skincare 12).
+- **The S84-1b fix, verified visually**: the pixel clusters at the
+  input row (26-41 icon / 61-83 "silk" / 300-309 native glyph /
+  343-352 Close) → after the fix only 26-41 / 61-83 / 343-352 remain —
+  the typed row matches the reference's plain-text anatomy.
+- **Gates (all observed green)**: lint ✓ · typecheck ✓ ·
+  typecheck:tests ✓ · **704/704 unit** (+6) · clean build ✓ ·
+  **90/90 e2e ×3 consecutive full-suite runs** (+ the cycle's first
+  run = 4 total).
+- **Evidence**: 25 dev-server screenshots regenerated + validated
+  (25/25, none undersized); `.env.example` re-verified (9/9 env vars
+  covered — no new vars this cycle); the post-fix probe re-measured the
+  overlay input on both viewports (18px/300 + 24px/300, placeholder
+  0.6 alpha, rows byte-exact, panel ±1px unchanged).
+- **Docs sweep**: REMEDIATION_PLAN (this section), AGENTS.md (the S84
+  e2e-ordering note), CLAUDE.md (704 pins), README (704 counts + the
+  badge), PAD v2.12, ely-beauty_SKILL.md v2.12.0 (project_state + the
+  Session 84 Appendix B entry with four encoded traps), session_24.md,
+  worklog Task 78.
+- **Deferred (documented)**: the zod 3→4 migration epic — still the
+  standing deferred debt (a dedicated cycle), unchanged. Audit INFO-1
+  (the helper's URL-wait handles only space→+ encoding — safe for the
+  current call sites) and INFO-2 (source-pin regex brittleness under
+  reformatting — keep reformatting out of chore commits) recorded as
+  accepted notes.

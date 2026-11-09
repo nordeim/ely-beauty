@@ -214,12 +214,12 @@ export const productInputSchema = z.object({
     .number()
     .int()
     .min(1, "Price must be positive")
-    .max(MAX_PRICE_CENTS, "Price must be under $1,000,000"),
+    .max(MAX_PRICE_CENTS, "Price must be under ৳1,000,000"),
   compareAtPrice: z
     .number()
     .int()
     .min(1)
-    .max(MAX_PRICE_CENTS, "Compare-at price must be under $1,000,000")
+    .max(MAX_PRICE_CENTS, "Compare-at price must be under ৳1,000,000")
     .nullable()
     .optional(),
   sku: z.string().trim().min(2).max(60),
@@ -288,13 +288,13 @@ export const couponInputSchema = z
       .number()
       .int("Value must be a whole number")
       .min(0, "Value must be zero or positive")
-      .max(MAX_PRICE_CENTS, "Value must be under $1,000,000"),
+      .max(MAX_PRICE_CENTS, "Value must be under ৳1,000,000"),
     description: z.string().trim().max(200).default(""),
     minSubtotal: z
       .number()
       .int("Minimum subtotal must be a whole number")
       .min(0, "Minimum subtotal cannot be negative")
-      .max(MAX_PRICE_CENTS, "Minimum subtotal must be under $1,000,000")
+      .max(MAX_PRICE_CENTS, "Minimum subtotal must be under ৳1,000,000")
       .default(0),
     isActive: z.boolean().default(true),
     expiresAt: z

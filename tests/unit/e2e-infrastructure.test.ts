@@ -79,3 +79,44 @@ describe("S83 — the e2e concurrency-isolation pins", () => {
     expect(spec).toMatch(/self-heal/i);
   });
 });
+
+// S84 — the self-heal-closure pins (session 84): audit 84-a's M-1 found
+// the run-83 discipline asymmetric — an aborted prior run's catalog dirt
+// on a REUSED server (the webServer restore only fires on a FRESH start;
+// reuseExistingServer skips the command entirely) is observed by the
+// storefront count pins BEFORE the admin-catalog project runs and heals,
+// and S82-3 lacked the per-test heal S81-11 got in S83-3. These pins hold
+// the closure in the SOURCE:
+//
+//   S84-2  the global-setup heal   a globalSetup module probes :3100 and
+//                                  runs the idempotent restore BEFORE any
+//                                  project when a server is already
+//                                  listening (the reused-server case; a
+//                                  fresh start's restore stays the
+//                                  webServer command's own)
+//   S84-3  the S82-3 self-heal     the opening restores a leftover
+//                                  cleared template to Skincare before
+//                                  the flow (the S83-3 symmetry)
+describe("S84 — the self-heal-closure pins", () => {
+  it("S84-2: the suite heals the catalog before any project on a reused server", () => {
+    const config = readRepo("playwright.config.ts");
+    // The config wires the pre-run heal.
+    expect(config).toMatch(/globalSetup:/);
+    const setup = readRepo("tests/e2e/global-setup.ts");
+    // The reused-server probe — heal only when something already answers
+    // on :3100 (a fresh start's restore is the webServer command's own).
+    expect(setup).toMatch(/3100/);
+    // The heal is the idempotent restore script.
+    expect(setup).toMatch(/restore-demo-stock/);
+  });
+
+  it("S84-3: S82-3 self-heals a leftover cleared template before the flow", () => {
+    const spec = readRepo("tests/e2e/admin.spec.ts");
+    // The heal: if the Template combobox survived an aborted prior run
+    // reading None (the trigger renders None as BOTH the null placeholder
+    // and the "none" item — one textContent condition covers both dirt
+    // shapes), restore Skincare + save + reopen through the gated helper
+    // before the flow (the S20-1/S83-3 discipline).
+    expect(spec).toMatch(/S84-3[\s\S]{0,700}?Skincare/);
+  });
+});
