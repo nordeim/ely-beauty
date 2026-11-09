@@ -29,7 +29,7 @@ Any `DATABASE_URL` already present in the process environment (shell export, CI 
 
 ## DATABASE_URL contract (pinned by tests/unit/db-path.test.ts)
 
-`.env` carries `DATABASE_URL="file:../db/custom.db"`; `db/` lives at the repo root (git-ignored). A **relative** `file:` URL resolves against `prisma/schema.prisma` — at runtime via `src/lib/db-path.ts` AND for the seed (S77-6: `prisma/seed.ts` passes `datasourceUrl: resolveProcessDatabaseUrl()`; `prisma db push` still follows the shell env, so converge or unset shadowed `DATABASE_URL`s before CLI runs) — so `next dev`, `next build`, the standalone server and `db:seed` all open ONE file at `<repo>/db/custom.db` regardless of CWD. Absolute `file:` URLs and non-SQLite URLs pass through untouched. If you move the schema or the db folder, update that test first.
+`.env` carries `DATABASE_URL="file:../db/custom.db"`; `db/` lives at the repo root (git-ignored). A **relative** `file:` URL resolves against `prisma/schema.prisma` — at runtime via `src/lib/db-path.ts` AND for the seed (S77-6: `prisma/seed.ts` passes `datasourceUrl: resolveProcessDatabaseUrl()`; `prisma db push` still follows the shell env, so converge or unset shadowed `DATABASE_URL`s before CLI runs) — so `next dev`, `next build`, the standalone server and `db:seed` all open ONE file at `<repo>/db/custom.db` regardless of CWD. Absolute `file:` URLs and non-SQLite URLs pass through untouched. If you move the schema or the db folder, update that test first — and `scripts/restore-demo-stock.ts` in the same commit (S85-5: it resolves `<repo>/db/custom.db` absolutely, deliberately immune to the env shadow, so it is the second lockstep site of the db-location truth).
 
 ## Tailwind v4 trap log (violating these breaks production renders)
 

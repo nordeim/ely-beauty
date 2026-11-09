@@ -153,8 +153,11 @@
  * and renders nothing between the typed text and the Close icon. The
  * overlay's input keeps type="search" (the searchbox role the e2e pins
  * target); the Close button stays the sheet's only close affordance, so
- * the glyph is suppressed. Scoped to search inputs — nothing else uses
- * them in this app. */
+ * the glyph is suppressed. S85-4 scope note: the rule is deliberately
+ * app-wide — the admin GET-form search inputs (products, orders,
+ * payments) also use type="search" and lose the glyph (accepted:
+ * admin-only surfaces, never parity-measured; keyboard clearing still
+ * works). */
 input[type="search"]::-webkit-search-cancel-button {
   -webkit-appearance: none;
   appearance: none;

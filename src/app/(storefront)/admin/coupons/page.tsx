@@ -45,7 +45,7 @@ export default async function AdminCouponsPage() {
             // unknown legacy value (the dialog re-pins it on edit).
             type: coupon.type === "fixed" ? "fixed" : coupon.type === "free_shipping" ? "free_shipping" : "percent",
             // Display shapes: fixed values are stored in cents and shown as
-            // dollars — the same convention the dialog parses back.
+            // taka — the same convention the dialog parses back.
             // free_shipping carries value 0 (the dialog hides the field).
             value: coupon.type === "fixed" ? (coupon.value / 100).toFixed(2) : String(coupon.value),
             description: coupon.description,

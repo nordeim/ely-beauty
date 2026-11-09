@@ -1,9 +1,42 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.12
+# ElyBeauty — Master Project Architecture Document (PAD) v2.13
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-09
+
+#### Revision Block — v2.13 (Run 85 — the admin taka-copy completion & comment-scope cycle)
+
+- `[FE]` **The admin dialogs' money copy reads taka end-to-end** (S85-1/
+  S85-2, audit 85-a L-1): the product dialog's two field labels (Price /
+  Compare-at) and both parse errors, plus the settings form's threshold
+  error and its three "Enter taka (৳)." helpers, now carry the store's
+  currency — the residue the run-84 S84-4b sweep missed (it fixed only
+  the coupon dialog). The settings doc comment now describes the
+  taka ⇄ poisha edit (the `*Dollars` field names are recorded as
+  HomeNest-scaffold heritage, internal only).
+- `[DOC]` **The comment-scope sweep** (S85-3, audit INFO-2 + the cycle's
+  concept census): seven code comments reworded — the coupons page's
+  display-shape note, the checkout route's zero-value-line guard, the
+  cart-quantity seam's zero-value note, the money back-compat alias doc
+  ("taka-labeled inputs"), the SEO price converter's doc (decimal TAKA —
+  the JSON-LD BDT unit), the settings-schema helper doc, and the coupon
+  dialog's type-switch hazard example (৳10.00). The S84-4 trap-4 lesson
+  applied: the CONCEPT was swept, not just the symbols.
+- `[DOC]` **The S84-1b suppression comment states its real scope** (S85-4,
+  audit 85-a L-2): the app-wide `input[type="search"]` cancel-glyph rule
+  also covers the three admin GET-form search inputs (products, orders,
+  payments) — the run-84 "nothing else uses them" claim corrected; the
+  coverage is deliberate (admin-only, never parity-measured, keyboard
+  clearing intact). No rule change.
+- `[DOC]` **AGENTS.md's DATABASE_URL contract names the second lockstep
+  site** (S85-5, audit 85-a INFO-1): `scripts/restore-demo-stock.ts`
+  resolves `<repo>/db/custom.db` absolutely (deliberately immune to the
+  env shadow) — a db/ move must update the db-path test AND the restore
+  script in the same commit.
+- `[TE]` Suite: 704 → **708 unit** (+4: the S85-1/S85-2/S85-3/S85-4 pins
+  in `tests/unit/layout-tokens.test.ts` — the taka-copy completion and
+  the comment-scope pins).
 
 #### Revision Block — v2.12 (Run 84 — the overlay-input parity & self-heal-closure cycle)
 

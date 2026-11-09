@@ -2,7 +2,7 @@
  * Cart quantity clamping — the pure seam shared by the cart PATCH route and
  * the checkout guards. A clamped quantity of 0 means "no purchasable line":
  * callers must DELETE the line rather than persist quantity 0, and checkout
- * must never build an order item from it (a $0 item would still accrue
+ * must never build an order item from it (a ৳0 item would still accrue
  * shipping/tax).
  */
 

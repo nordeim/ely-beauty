@@ -51,7 +51,7 @@ export function parseAmountToCents(input: string): number | null {
 }
 
 /** Back-compat alias for the pre-ElyBeauty name — kept for its unit
- * test AND the three admin dialogs' dollar-labeled inputs (product-dialog,
+ * test AND the three admin dialogs' taka-labeled inputs (product-dialog,
  * coupon-dialog, settings-form — all import this alias). */
 export const parseDollarsToCents = parseAmountToCents;
 

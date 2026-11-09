@@ -12007,3 +12007,132 @@ S84 describe follows).
   current call sites) and INFO-2 (source-pin regex brittleness under
   reformatting — keep reformatting out of chore commits) recorded as
   accepted notes.
+
+---
+
+## Session 85 — The Admin Taka-Copy Completion & Comment-Scope Cycle
+
+The workspace was recycled mid-cycle after the fixes had been verified
+(708/708 unit + build + 90/90 e2e on the first post-fix run); the cycle
+re-landed the identical change-set on a fresh clone at cd4ecd9 and
+re-verified every gate. The cycle: gates re-validation → deep audit 85-a
+→ live-reference re-measurement → the Session 85 plan → TDD remediation
+(RED 4 → GREEN) → screenshots → the docs sweep → commit + push.
+
+### The cycle's evidence base
+
+- **Gates on the pulled tree**: lint ✓ · typecheck ✓ · typecheck:tests ✓ ·
+  704/704 unit ✓ · clean build ✓ · **90/90 e2e on the FIRST full run**.
+- **Deep audit 85-a** (read-only subagent, web-application +
+  code-review-checklist methodology, skills/ excluded): 12/12 standing
+  anchors PASS, the run-84 change-set S84-1..S84-5 all correct, 0
+  CRITICAL/HIGH/MEDIUM — 2 LOW (L-1: the dollar-worded admin copy that
+  survived BOTH the S83-5 and S84-4 sweeps — product-dialog's labels/errors
+  and settings-form's error/helpers; L-2: the S84-1b comment's
+  "nothing else uses them" claim is inaccurate — three admin GET-form
+  search inputs share `type="search"`), 3 INFO (the restore script's
+  independent db-path pin, two dollar-worded code comments).
+- **Live-reference re-measurement** (agent-browser, logged in, mobile
+  390×844 + desktop 1440×900): **zero new parity deltas** — every pinned
+  surface GREEN (the panel rows 89/125/161/197/233 with the S81-3 content
+  byte-verified, toggle-close, the SEARCH row → overlay, the "silk" set
+  $370.00/$288.00/$470.00/$520.00 on 80px/2px rows, route-change close,
+  the detail ৳370 Inter 24px/600 + "skincare" eyebrow, /shop "All
+  Products" + 19 bonnet-first, the desktop nav hrefs, the desktop overlay
+  input 24px/300 at column x:384 w:672, the footer template slugs). The
+  clone probe: panel 88/124/160/196/232 (±1px), the overlay rows and
+  input byte-exact on both viewports, **no native search-cancel glyph**
+  (pixel-cluster check), the S79-4 focus-visible ring confirmed rendering
+  (the a11y superset — caught at the lenient <180 gray threshold; run-84's
+  <120 threshold had missed the ring's ≈125 gray, so this is the ring's
+  first positive visual evidence, not a delta), sitemap 28 public-only,
+  robots, the search API bonnet-first with the Bonnet's empty description.
+- **A census beyond the audit**: a repo-wide concept sweep (the S84-4
+  trap-4 lesson — sweep the CONCEPT, not just the symbols) found the
+  coupon dialog's type-switch hazard comment still quoting the inherited
+  symbol in its fixed-value example, the money back-compat alias comment
+  calling the admin dialogs "dollar-labeled" (goes stale the moment this
+  cycle's dialog fixes land), the SEO price converter's doc calling its
+  product "decimal dollars" (it converts to decimal TAKA for the JSON-LD
+  BDT prices), and the settings schema's whole-number helper doc pointing
+  at "the dollars input".
+
+### The plan (validated against the codebase — every change site pre-read)
+
+- [x] **S85-1 (audit L-1, product-dialog user copy)**: the dialog's two
+      error strings (the price error, the compare-at error) and its two
+      labels ("Price ($)"/"Compare-at ($)" — the parenthesized inherited
+      symbol) reworded to the store's currency (৳), matching the
+      coupon-dialog's run-84 wording family. RED: a taka-copy pin case
+      for the product dialog (banning the parenthesized-symbol labels and
+      the inherited-currency error phrasing).
+- [x] **S85-2 (audit L-1, settings-form user copy)**: the threshold error
+      string and the three shipping/threshold helper lines (the
+      "Enter dollars." family) reworded to taka — the labels above them
+      already read (৳). RED: a taka-copy pin case for the settings form.
+- [x] **S85-3 (the comment-scope sweep — audit INFO-2 + the census
+      residue, one family)**: seven code comments reworded, never quoting
+      the banned literals in the fixing comments (the S83-5 trap-5
+      lesson): the settings form's doc comment (the conversion
+      description), the coupons page's display-shape comment, the checkout
+      route's zero-value-line guard comment, the cart-quantity seam's
+      zero-value-item comment, the money back-compat alias comment, the
+      SEO price converter's doc, and the coupon dialog's type-switch
+      hazard comment. RED: a comment-scope pin case banning the stale
+      phrases across the touched files.
+- [x] **S85-4 (audit L-2, the S84-1b comment scope)**: the globals.css
+      suppression comment's exclusivity claim corrected — the three admin
+      GET-form search inputs share `type="search"` and are DELIBERATELY
+      covered by the app-wide rule (keyboard clearing still works; the
+      surfaces are admin-only and never parity-measured). No rule change —
+      the comment now states the actual scope. RED: the S84-1b pin
+      extended with the comment-accuracy assertion.
+- [x] **S85-5 (audit INFO-1, the lockstep doc note)**: AGENTS.md's
+      DATABASE_URL contract line names the restore script as the second
+      lockstep site (a db/ move must update the db-path test AND
+      `scripts/restore-demo-stock.ts` together).
+
+Out of scope (recorded): the internal variable names carrying the inherited
+currency stem (`*Dollars` form fields, `parseDollarsToCents`,
+`centsToDollars`, `minSubtotalDollars`) — the S84-4b precedent keeps
+internal names out of the copy sweep (churn without user-facing benefit);
+the zod 3→4 migration epic remains the standing deferred debt.
+
+### Session 85 execution log
+
+- **Environment**: the workspace was recycled MID-CYCLE (after the fixes
+  had been verified: 708/708 unit + clean build + 90/90 e2e on the first
+  post-fix run). The cycle re-landed the identical change-set on a fresh
+  clone at cd4ecd9: npm install, a fresh `.env` with a generated
+  AUTH_SECRET, the ambient `DATABASE_URL` shadow re-converged via the
+  standing symlink, `db:setup` (19 products / 4 categories / 14 junction
+  rows / the dual-member brush / Gua Sha → beauty-tools / 3 coupons /
+  11 settings verified), Playwright chromium re-fetched.
+- **Gates on the re-applied tree**: lint ✓ · typecheck ✓ ·
+  typecheck:tests ✓ · **708/708 unit** (+4) · clean build ✓ ·
+  **90/90 e2e ×2 consecutive full-suite runs** (3 green runs total
+  counting the prior session's post-fix run on the byte-identical
+  change-set).
+- **TDD (RED 4 → GREEN)**: the S85-1 product-dialog pin, the S85-2
+  settings-form pin, the S85-3 comment-scope pin, the S85-4
+  comment-accuracy pin — all four RED on the pulled tree in the prior
+  session, GREEN after the fixes; the re-applied tree re-verified the
+  full layout-tokens file GREEN (72/72 within the file).
+- **The concept sweep, re-verified**: zero matches for the banned
+  phrasings across src/ ("in dollars", "Enter dollars.", "dollar
+  amount", the parenthesized-symbol labels, "shown as dollars",
+  "dollars ⇄", "edited in dollars", "dollar-labeled", "decimal
+  dollars", "dollars input", the $0-line/$0-item/means-$10 comment
+  forms).
+- **Evidence**: 25 dev-server screenshots regenerated + validated
+  (25/25 via `node scripts/capture-screenshots.mjs` against the
+  standalone server on :3000, none undersized); `.env.example`
+  re-verified (9/9 env vars covered — no new vars this cycle).
+- **Docs sweep**: REMEDIATION_PLAN (this section), AGENTS.md (the
+  S85-5 lockstep note), CLAUDE.md (708 pins), README (708 counts +
+  badge), PAD v2.13, ely-beauty_SKILL.md v2.13.0 (project_state + the
+  Session 85 Appendix B entry), session_26.md, worklog Task 79.
+- **Deferred (documented)**: the zod 3→4 migration epic — still the
+  standing deferred debt (a dedicated cycle), unchanged. The internal
+  variable names carrying the inherited currency stem are recorded as
+  accepted heritage (the S84-4b precedent).

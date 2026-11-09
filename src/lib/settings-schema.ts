@@ -17,7 +17,7 @@ export function numericSetting(min: number, max: number) {
     .transform((v) => String(Number(v)));
 }
 
-/** Whole-number string (cents amounts arriving from the dollars input). */
+/** Whole-number string (cents amounts arriving from the taka input). */
 export function integerSetting(min: number, max: number) {
   return z
     .string()

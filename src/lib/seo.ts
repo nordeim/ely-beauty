@@ -54,7 +54,9 @@ function absolutizeImage(baseUrl: string, image: string): string {
   return `${baseUrl}${image.startsWith("/") ? "" : "/"}${image}`;
 }
 
-/** Integer cents → decimal dollars (19999 → 199.99). Never a float math trap: prices are whole cents. */
+/** Integer cents → decimal taka (19999 → 199.99 — the JSON-LD BDT price
+ * unit; the name is HomeNest-scaffold heritage). Never a float math trap:
+ * prices are whole cents. */
 export function centsToDollars(cents: number): number {
   return Math.round(cents) / 100;
 }

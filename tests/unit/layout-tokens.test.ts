@@ -690,3 +690,79 @@ describe("S84 — the taka-copy pins", () => {
     expect(globals).toMatch(/display:\s*none/);
   });
 });
+
+// S85 — the taka-copy completion pins (session 85): audit 85-a's L-1 —
+// the two admin dialogs the run-84 S84-4b sweep missed (product-dialog's
+// labels/errors, settings-form's error/helpers), plus the comment-scope
+// sweep (audit INFO-2 + the cycle's concept census) and the S84-1b
+// comment's exclusivity-claim correction (audit L-2). The S84-4 trap-4
+// lesson applies: sweep the CONCEPT (currency wording), not just symbols.
+describe("S85 — the taka-copy completion pins", () => {
+  it("S85-1: the product dialog's price labels and errors read taka (audit L-1)", () => {
+    const dialog = src("app/(storefront)/admin/products/product-dialog.tsx");
+    // The two field labels carry the store's currency symbol, not the
+    // inherited template's (the coupon dialog's run-84 wording family).
+    expect(dialog).not.toMatch(/Price \(\$\)/);
+    expect(dialog).not.toMatch(/Compare-at \(\$\)/);
+    expect(dialog).toMatch(/Price \(৳\)/);
+    expect(dialog).toMatch(/Compare-at \(৳\)/);
+    // The two parse-error strings no longer borrow the inherited wording.
+    expect(dialog).not.toMatch(/in dollars/);
+    expect(dialog).toMatch(/in taka/);
+  });
+
+  it("S85-2: the settings form's threshold error and helpers read taka (audit L-1)", () => {
+    const form = src("app/(storefront)/admin/settings/settings-form.tsx");
+    // The three shipping/threshold helpers sit under labels that read (৳).
+    expect(form).not.toMatch(/Enter dollars\./);
+    expect(form).toMatch(/Enter taka/);
+    // The free-shipping-threshold parse error.
+    expect(form).not.toMatch(/dollar amount/i);
+    expect(form).toMatch(/taka amount/i);
+  });
+
+  it("S85-3: the comment-scope sweep — no stale inherited-currency wording in the touched files", () => {
+    // The settings form's doc comment describes the taka-to-poisha edit.
+    const form = src("app/(storefront)/admin/settings/settings-form.tsx");
+    expect(form).not.toMatch(/dollars ⇄ cents/);
+    expect(form).not.toMatch(/edited in dollars/);
+    // The coupons page's display-shape comment.
+    const couponsPage = src("app/(storefront)/admin/coupons/page.tsx");
+    expect(couponsPage).not.toMatch(/shown as dollars/);
+    // The checkout route's zero-value-line guard comment.
+    const checkout = src("app/api/checkout/route.ts");
+    expect(checkout).not.toMatch(/\$0 line/);
+    // The cart-quantity seam's zero-value-item comment.
+    const cartQuantity = src("lib/cart-quantity.ts");
+    expect(cartQuantity).not.toMatch(/\$0 item/);
+    // The money back-compat alias comment (the dialogs are taka-labeled
+    // once S85-1/S85-2 land — the phrase goes stale with them).
+    const money = src("lib/money.ts");
+    expect(money).not.toMatch(/dollar-labeled/);
+    // The SEO price converter's doc (its product is decimal taka — the
+    // JSON-LD BDT price unit).
+    const seo = src("lib/seo.ts");
+    expect(seo).not.toMatch(/decimal dollars/);
+    expect(seo).toMatch(/decimal taka/);
+    // The settings schema's whole-number helper doc.
+    const settingsSchema = src("lib/settings-schema.ts");
+    expect(settingsSchema).not.toMatch(/dollars input/);
+    // The coupon dialog's type-switch hazard comment (the fixed-value
+    // example must quote the store's symbol).
+    const couponDialog = src("app/(storefront)/admin/coupons/coupon-dialog.tsx");
+    expect(couponDialog).not.toMatch(/silently means \$10\.00/);
+    expect(couponDialog).toMatch(/silently means ৳10\.00/);
+  });
+
+  it("S85-4: the S84-1b suppression comment states its real (app-wide) scope (audit L-2)", () => {
+    const globals = src("app/globals.css");
+    // The run-84 comment claimed nothing else uses type=search — three
+    // admin GET-form search inputs do. The corrected comment names them
+    // and records the deliberate app-wide coverage.
+    expect(globals).not.toMatch(/nothing else uses\s+them/);
+    expect(globals).toMatch(/admin/);
+    expect(globals).toMatch(/app-wide/);
+    // The rule itself is unchanged (the S84-1b pins still hold above).
+    expect(globals).toMatch(/::-webkit-search-cancel-button/);
+  });
+});

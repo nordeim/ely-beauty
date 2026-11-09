@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Defensive: a quantity-0 line must never become an order item (it would
-    // be a $0 line that still accrues shipping/tax). The cart PATCH deletes
+    // be a ৳0 line that still accrues shipping/tax). The cart PATCH deletes
     // such lines — this guard backstops stale summaries and races.
     if (summary.lines.some((line) => line.quantity <= 0)) {
       return NextResponse.json(

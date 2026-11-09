@@ -127,14 +127,14 @@ export function ProductDialogButton({
 
     const priceCents = parseDollarsToCents(form.priceDollars);
     if (priceCents === null || priceCents <= 0) {
-      setError("Enter a valid price in dollars, e.g. 49.99.");
+      setError("Enter a valid price in taka (৳), e.g. 49.99.");
       return;
     }
     let compareAtCents: number | null = null;
     if (form.compareAtDollars.trim() !== "") {
       const parsed = parseDollarsToCents(form.compareAtDollars);
       if (parsed === null || parsed <= 0) {
-        setError("Enter a valid compare-at price in dollars (or leave it blank).");
+        setError("Enter a valid compare-at price in taka (৳) — or leave it blank.");
         return;
       }
       compareAtCents = parsed;
@@ -352,7 +352,7 @@ export function ProductDialogButton({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="product-price">Price ($)</Label>
+              <Label htmlFor="product-price">Price (৳)</Label>
               <Input
                 id="product-price"
                 type="text"
@@ -364,7 +364,7 @@ export function ProductDialogButton({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="product-compare-at">Compare-at ($)</Label>
+              <Label htmlFor="product-compare-at">Compare-at (৳)</Label>
               <Input
                 id="product-compare-at"
                 type="text"

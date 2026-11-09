@@ -221,7 +221,7 @@ export function CouponDialogButton({
                     ...prev,
                     type: nextType,
                     // S20-5: a type switch invalidates the typed value — a
-                    // pre-filled "10" percent silently means $10.00 fixed
+                    // pre-filled "10" percent silently means ৳10.00 fixed
                     // (a 10× semantic jump). Reset it so the admin retypes.
                     value: "",
                   }));

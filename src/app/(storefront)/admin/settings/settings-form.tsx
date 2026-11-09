@@ -47,9 +47,11 @@ function toFormState(settings: StoreSettings): SettingsFormState {
 }
 
 /**
- * Admin settings form — dollars ⇄ cents conversion happens here: the three
- * shipping/threshold fields are edited in dollars and submitted as integer
- * cents; the tax rate is submitted as a plain percent number.
+ * Admin settings form — taka ⇄ poisha conversion happens here: the three
+ * shipping/threshold fields are edited in taka (৳) and submitted as integer
+ * cents (poisha); the tax rate is submitted as a plain percent number.
+ * (The *Dollars field names are HomeNest-scaffold heritage — internal
+ * only, never rendered.)
  */
 export function SettingsForm({ settings }: { settings: StoreSettings }) {
   const router = useRouter();
@@ -78,7 +80,7 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
     }
     const thresholdCents = parseDollarsToCents(form.freeShippingThresholdDollars);
     if (thresholdCents === null) {
-      setError("Enter a valid dollar amount for the free-shipping threshold (e.g. 50).");
+      setError("Enter a valid taka amount for the free-shipping threshold (e.g. 50).");
       return;
     }
     if (!/^\d+(\.\d+)?$/.test(form.taxRatePercent.trim()) || Number(form.taxRatePercent) < 0 || Number(form.taxRatePercent) > 100) {
@@ -218,7 +220,7 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
               placeholder="6.95"
               required
             />
-            <p className="text-xs text-muted-foreground">Enter dollars.</p>
+            <p className="text-xs text-muted-foreground">Enter taka (৳).</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="settings-express-shipping">Shipping — outside Dhaka (৳)</Label>
@@ -231,7 +233,7 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
               placeholder="18.95"
               required
             />
-            <p className="text-xs text-muted-foreground">Enter dollars.</p>
+            <p className="text-xs text-muted-foreground">Enter taka (৳).</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="settings-free-threshold">Free shipping threshold (৳)</Label>
@@ -244,7 +246,7 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
               placeholder="50"
               required
             />
-            <p className="text-xs text-muted-foreground">Enter dollars.</p>
+            <p className="text-xs text-muted-foreground">Enter taka (৳).</p>
           </div>
         </div>
       </section>
