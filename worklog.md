@@ -485,3 +485,23 @@ Stage Summary:
 - Every fixed surface pinned: the 10 lockfile-read toolchain pins (the prisma skew alarm, the vitest floor, the tinypool/mocker/minimatch/deepmerge absence-or-patched floors, the two override drift alarms).
 - Dev-server screenshots: 25/25 regenerated and validated (19 byte-identical — the cheapest drift alarm there is).
 - Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.
+
+---
+
+Task ID: 83
+Agent: run-89 executor (the post-retirement verification & typed-mock completion cycle)
+Task: The full verification cycle on the pulled tree (7bf789c = run-88 pushed @ 75ba7c7 + the operator's docs/session_33.md raw narrative): workspace refresh (fast-forward, clean tree) → docs review (AGENTS/CLAUDE/README/PAD v2.16/SKILL v2.16.0/session_32/session_33/worklog/REMEDIATION_PLAN through Session 88) → the field-round-trip posture check (npm audit 0 prod+full, db:setup "Generated Prisma Client (v6.19.3)", 735/735 unit baseline) → deep audit 89-a (read-only subagent, skills/ excluded: 12/12 standing anchors PASS, R1–R8 run-87/88 regression surface PASS, 0 CRITICAL/HIGH/MEDIUM/LOW, 4 INFO) → live-reference re-measurement (mobile 390×844, zero new parity deltas; the overlay $-format re-verified end-to-end on both sites) → S89-1 (the audit's INFO-1: the typed-mock idiom completed at the two fakeDb override call sites) → the full gate chain → 25 screenshots off the standalone server → the docs sweep (REMEDIATION_PLAN Session 89/this worklog/session_34) → commit + SSH-wrapper push to main.
+
+Work Log: the operator's standing instruction with the review pair `docs/session_32.md` (the run-88 polished log) + `docs/session_33.md` (the run-88 raw narrative + final report, pulled @ `7bf789c`). Run 88's dependency retirement (vitest 4.1.12, prisma 6.19.3 alignment, the two scoped overrides) needed its field-round-trip verification; the audit's one INFO with code weight needed retiring.
+
+- Audit 89-a (read-only subagent, skills/ excluded): 12/12 standing anchors PASS, R1–R8 (run-87/88 regression surface) all PASS, 0 CRITICAL/HIGH/MEDIUM/LOW — 4 INFO. The five CONFIG_FALLBACKS byte-exact against the canonicals; the lockfile cross-checked (vitest 4.1.12, tinypool ABSENT, mocker 4.1.12, minimatch {11.0.5, 3.1.5}, deepmerge-ts 8.0.2, prisma == client == 6.19.3).
+
+- Changes (S89-1): the two `fakeDb({ deleteMany: vi.fn()… })` override call sites in `tests/unit/session17-hardening.test.ts` now declare `vi.fn<CategoryDeleteManyFn>()` — completing the S88-4 typed-mock idiom file-wide (behavior-preserving; the audit's INFO-1). No product code touched.
+
+- Live-reference re-measurement (mobile 390×844): panel rows reference 99/135/171/207/243 centers vs clone 98/134/170/206/242 (−1px uniform, hrefs byte-identical); overlay input Cormorant Garamond 18px/300 with the /0.6-alpha placeholder both sites; the "silk" set panel-open reference 214/298/382/466 vs clone 213/297/381/465 (−1px ×4); the overlay price format re-verified end-to-end — "$370.00"/"$288.00" on BOTH sites (the reference's overlay-only $ format that `formatOverlayPrice` mirrors); /shop 19 unique cards bonnet-first on both; detail ৳370 Inter 24px/600 on both. Supersets present (type=search, role=dialog, "Open menu" label, UL/LI/A overlay semantics). Zero new parity deltas. Reference-side observation recorded: a raw-ID string (`6a2bdd48591fe5701197b0ff`) sits in the reference home Bestsellers link text — a data artifact on their side; both /shop catalogs remain 19 with the identical first card.
+
+Stage Summary:
+- All gates green: lint · typecheck · typecheck:tests · 735/735 unit · clean build · 90/90 e2e ×2 consecutive.
+- Field posture holding: npm audit 0 vulnerabilities (prod and full), db:setup prints 6.19.3 == 6.19.3.
+- Standing verifications: sitemap 28 public-only · 25/25 screenshots (16 byte-identical; the 9 changed are the known raster-noise family) · .env.example 9/9.
+- Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.

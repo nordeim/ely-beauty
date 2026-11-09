@@ -90,14 +90,20 @@ describe("deleteCategoryIfEmpty (S17-1 / C6)", () => {
   });
 
   it("returns deleted when the delete lands", async () => {
-    const { client, deleteMany } = fakeDb({ deleteMany: vi.fn().mockResolvedValue({ count: 1 }) });
+    // S89-1: the typed-mock idiom completed at the two override call sites
+    // (the S88-4 audit INFO) — same generics as the fakeDb defaults.
+    const { client, deleteMany } = fakeDb({
+      deleteMany: vi.fn<CategoryDeleteManyFn>().mockResolvedValue({ count: 1 }),
+    });
     const result = await deleteCategoryIfEmpty(client, "cat-1");
     expect(result).toEqual({ outcome: "deleted" });
     expect(deleteMany).toHaveBeenCalledWith({ where: { id: "cat-1" } });
   });
 
   it("returns not-found when the delete matches no rows", async () => {
-    const { client } = fakeDb({ deleteMany: vi.fn().mockResolvedValue({ count: 0 }) });
+    const { client } = fakeDb({
+      deleteMany: vi.fn<CategoryDeleteManyFn>().mockResolvedValue({ count: 0 }),
+    });
     const result = await deleteCategoryIfEmpty(client, "cat-1");
     expect(result).toEqual({ outcome: "not-found" });
   });

@@ -12571,3 +12571,78 @@ without it); the a11y supersets and heritage names (standing records).
   retirement), this execution log, worklog Task 82, session_32.md,
   CLAUDE.md (735 pins), README (735 ×4 + badge), PAD v2.16,
   ely-beauty_SKILL.md v2.16.0 + the Appendix B entry.
+
+---
+
+## Session 89 — The Post-Retirement Verification & Typed-Mock Completion Cycle (the clean-audit consolidation)
+
+**Evidence base:** the operator's standing instruction refreshed the workspace (fast-forward
+to `7bf789c`, `docs/session_33.md` — the run-88 raw narrative + final report) and named
+`docs/session_32.md` + `docs/session_33.md` as the review pair. Run 88's dependency
+retirement (vitest 4.1.12, prisma 6.19.3 alignment, the two scoped overrides) shipped
+green with `npm audit` = 0; this cycle verifies that posture SURVIVED the field round-trip
+and retires the one audit INFO with code weight.
+
+**Audit 89-a** (read-only subagent, skills/ excluded): **12/12 standing anchors PASS,
+R1–R8 (run-87/88 regression surface) all PASS, 0 CRITICAL/HIGH/MEDIUM/LOW — 4 INFO.**
+R2's byte-compare confirmed all five CONFIG_FALLBACKS registry entries byte-exact against
+the canonicals; R4 cross-checked the lockfile (vitest 4.1.12, tinypool ABSENT, mocker
+4.1.12, minimatch {11.0.5, 3.1.5}, deepmerge-ts 8.0.2, prisma == client == 6.19.3).
+Locally reproduced on the pulled tree: `npm audit` → **0 vulnerabilities** (prod and
+full), `db:setup` → **"Generated Prisma Client (v6.19.3)"** (the run-88 skew fix holding),
+**735/735 unit** baseline green.
+
+**Live-reference re-measurement (mobile 390×844):** panel rows reference
+99/135/171/207/243 centers vs clone 98/134/170/206/242 (−1px uniform, the recorded
+tolerance; hrefs byte-identical); overlay input Cormorant Garamond 18px/300 with the
+/0.6-alpha placeholder both sites (clone expresses it as `lab(…/0.6)` — same color);
+the "silk" set panel-open reference 214/298/382/466 vs clone 213/297/381/465 (−1px ×4);
+**the overlay price format re-verified end-to-end this cycle: "$370.00"/"$288.00" on BOTH
+sites** (the reference's overlay-only $ format that `formatOverlayPrice` mirrors — the
+grid/detail prices stay ৳ whole-taka on both); /shop 19 unique cards bonnet-first on both;
+detail ৳370 Inter 24px/600 on both. Supersets present (type=search, role=dialog, the
+"Open menu" label, the UL/LI/A overlay semantics). **Zero new parity deltas.** Reference-side
+observation recorded: the home Bestsellers section carries a raw-ID string
+(`6a2bdd48591fe5701197b0ff`) in its link text — a data artifact on the reference; both
+/shop catalogs remain 19 with the identical first card, so no clone action.
+
+### Plan
+
+- [x] **S89-1 — the typed-mock completion (audit 89-a INFO-1).** The two
+  `fakeDb({ deleteMany: vi.fn()… })` override call sites in
+  `tests/unit/session17-hardening.test.ts` used the default-generic `vi.fn()` while the
+  rest of the file carries the S88-4 typed idiom. Both now declare
+  `vi.fn<CategoryDeleteManyFn>()` — same generics as the fakeDb defaults, completing the
+  idiom the vitest-4 typing fix introduced (behavior-preserving; the gate is
+  `typecheck:tests` + the file's 8 tests).
+- [x] **S89-2 — the full gate chain on the final tree:** lint · typecheck ·
+  typecheck:tests · 735/735 unit · clean build · **90/90 e2e ×2 consecutive** (house
+  stability discipline).
+- [x] **S89-3 — the standing verifications:** sitemap 28 public-only · 25/25 screenshots
+  regenerated under `docs/screenshots/` · `.env.example` 9/9.
+- [x] **S89-4 — docs sweep:** this execution log filled, worklog Task 83, the polished
+  `docs/session_34.md`, CLAUDE/README count rows if the suite count moves (it does not —
+  S89-1 changes zero test counts).
+
+### Execution log
+
+- **S89-1 GREEN:** both `fakeDb` override call sites now declare
+  `vi.fn<CategoryDeleteManyFn>()` (lines 93–97 and 103–106 with the in-file S89-1 note);
+  the file's 8 tests pass, `typecheck:tests` clean — zero behavior change, the S88-4
+  idiom now holds file-wide.
+- **S89-2 gates, all green on the final tree:** lint ✓ · typecheck ✓ ·
+  typecheck:tests ✓ · **735/735 unit** (64 files, 28.8s) · clean build ✓ (`.next` removed
+  first; standalone output produced) · **e2e 90/90 ×2 consecutive** (2.4m each, the
+  production webServer on :3100 with the S84-2 stock-restore globalSetup).
+- **S89-3 standing verifications:** sitemap **28 `<loc>` entries, 0 private paths**
+  (admin/login/register/cart/checkout/account/track/wishlist/api all absent) ·
+  **25/25 screenshots** regenerated (all above the 5KB floor; **16 of 25 byte-identical**
+  to run-88's — the 9 changed are the known raster-noise family: product detail, cart
+  coupon hint, login, six admin/account surfaces) · `.env.example` 6 active keys + 3
+  commented opt-ins = 9/9 matching the codebase env contract.
+- **Field-round-trip posture holding:** `npm audit` → 0 vulnerabilities (prod and full),
+  `db:setup` → "Generated Prisma Client (v6.19.3)", audit 89-a 12/12 anchors + R1–R8
+  with the five CONFIG_FALLBACKS byte-exact against the canonicals.
+- **Housekeeping:** a stray `3100` log artifact (a dev-server start redirect typo) was
+  removed before commit; no other unintended changes (`git status` clean apart from the
+  intended S89-1 + docs + screenshots set).
