@@ -17,7 +17,7 @@ Next, meticulously plan to create a comprehensive remediation plan with a detail
 
 Capture some screenshots for the dev server running the remediated codebase, save the screen captures as image files under the `docs/screenshots/` folder in the new `ely-beauty` repo. Also, create a working `.env.example` that matches the codebase, include the `.env.example` in the git commit.
 
-Next, update the relevant documentation to ensure alignment with the remediated codebase. 
+Next, update the relevant documentation to ensure alignment with the remediated codebase. Also create `ely-beauty_SKILL.md` using repo skills `skills/distill-codebase-skill` and `skills/to-distill-project-into-skill`
 
 Finally, please `git commit` and then `git push` the root of the remediated codebase to my GitHub repo `git@github.com:nordeim/ely-beauty.git` using the ssh key below and wrapper script `https://github.com/nordeim/ely-beauty/blob/main/docs/ssh_git_wrapper_v3.py`.  refer to `https://github.com/nordeim/ely-beauty/blob/main/docs/how-to-git-push-using-ssh-wrapper_SKILL.md` for instruction to use ssh wrapper script for `git push`.
 
