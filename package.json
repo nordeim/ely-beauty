@@ -4,19 +4,19 @@
   "description": "ElyBeauty — production-grade premium-skincare storefront + admin (Next.js 16 + React 19 + Prisma/SQLite)",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3000 2>&1 | tee dev.log",
-    "build": "next build && mkdir -p public && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
+    "dev": "node scripts/ensure-build-configs.mjs && next dev -p 3000 2>&1 | tee dev.log",
+    "build": "node scripts/ensure-build-configs.mjs && next build && mkdir -p public && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
     "start": "NODE_ENV=production node .next/standalone/server.js 2>&1 | tee server.log",
-    "lint": "eslint .",
+    "lint": "node scripts/ensure-build-configs.mjs && eslint .",
     "db:push": "prisma db push --accept-data-loss",
     "db:generate": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
     "db:setup": "prisma db push --accept-data-loss && tsx prisma/seed.ts",
-    "test": "vitest run",
+    "test": "node scripts/ensure-build-configs.mjs && vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
-    "typecheck": "tsc --noEmit",
-    "typecheck:tests": "tsc -p tsconfig.tests.json --noEmit"
+    "test:e2e": "node scripts/ensure-build-configs.mjs && playwright test",
+    "typecheck": "node scripts/ensure-build-configs.mjs && tsc --noEmit",
+    "typecheck:tests": "node scripts/ensure-build-configs.mjs && tsc -p tsconfig.tests.json --noEmit"
   },
   "dependencies": {
     "@prisma/client": "^6.11.1",

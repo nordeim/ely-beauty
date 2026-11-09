@@ -12271,3 +12271,138 @@ label, the Link overlay rows — recorded above, not reverted); the internal
   The wishlist route's fixed "Missing productId." stays (deliberate).
   The internal *Dollars variable names remain accepted heritage
   (S84-4b).
+
+## Session 87 — The Lost-Config Build-Resilience Cycle (the operator's 312-error wall)
+
+Evidence base (all verified this session):
+
+- `docs/build_error.txt` (the operator's environment, Next 16.4.5 Turbopack):
+  15 `@apply`/`@utility` "Unknown at rule" warnings + **312 module-not-found
+  errors** — 311 `@/`-alias imports + 1 `tw-animate-css` (from the globals.css
+  `@import`).
+- The repo itself is healthy: fresh full clone → lint ✓ · typecheck ✓ ·
+  typecheck:tests ✓ · 717/717 unit ✓ · build ✓ (audit 87-a: 12/12 anchors
+  PASS, zero run-86 regressions, `.env.example` 9/9).
+- **Scenario matrix (local reproduction, /tmp/scen)**: minus `tsconfig.json`
+  → 311 `@/` errors (the operator's error block, exact); minus
+  `postcss.config.mjs` → the @apply/@utility warnings + the tw-animate-css
+  module-not-found; minus **both** → 15 warnings + **312 errors** — the
+  operator's log reproduced signature-for-signature. Full tree: green.
+- Root cause: the operator's checkout **lost `tsconfig.json` and
+  `postcss.config.mjs`** — the only two build-critical root configs untouched
+  since the 2026-10-12 initial migration (`87cfa40`); the files modified
+  recently (package.json, next.config.ts, src/**) all survived. Their tree
+  materialization drops long-untouched files.
+- Why each symptom follows: no tsconfig.json → no `@/*` paths for Turbopack
+  (and the build's type-check falls to TS-default resolution); no
+  postcss.config.mjs → `@tailwindcss/postcss` never registers → raw PostCSS
+  warns on every `@apply`/`@utility` and the plugin-resolved
+  `@import "tw-animate-css"` falls to Turbopack's bare-specifier CSS
+  resolution → module-not-found.
+- Ruled out: `npm ci --omit=dev` (different signature — one hard "Cannot find
+  module '@tailwindcss/postcss'" and typescript stays installed via prisma);
+  the Next 16.4.5 workspace-marker root inference (our `outputFileTracingRoot`
+  pin holds it; the operator's log shows no root warnings; the
+  missing-config trees reproduce the exact signature).
+
+The fix must therefore live in files that demonstrably survive the operator's
+materialization (package.json, next.config.ts) and restore the rest:
+
+- [x] **S87-1 (the compilation belt)**: `turbopack.resolveAlias` pin in
+      `next.config.ts` — `"@/*": "./src/*"`, the identical mapping to
+      tsconfig's paths, so Turbopack compilation survives a lost (or
+      scaffold-default) tsconfig.json. Matrix-verified: the minus-tsconfig
+      tree goes 311 errors → 0 at the compilation phase.
+- [x] **S87-2 (the restore path)**: `scripts/ensure-build-configs.mjs` — a
+      `CONFIG_FALLBACKS` registry embedding the five 2026-10-12-vintage
+      configs (`tsconfig.json`, `postcss.config.mjs`, `vitest.config.ts`,
+      `tsconfig.tests.json`, `eslint.config.mjs`) + `missingConfigFiles()` +
+      `ensureAll(targetDir)` — write-if-missing-or-empty, NEVER overwrites
+      existing content, direct-run guarded for library import. Each canonical
+      file gains a one-line S87-2 comment header naming the restore path
+      (documentation + the recency hedge for the operator's loss mechanism).
+- [x] **S87-3 (the chain)**: package.json — the seven gated scripts
+      (`build`, `dev`, `lint`, `test`, `test:e2e`, `typecheck`,
+      `typecheck:tests`) run the bootstrap first (idempotent, ~10ms, silent
+      when nothing is missing).
+- [x] **S87-4 (the pins)**: `tests/unit/build-config-resilience.test.ts` —
+      RED-first: the S87-1 alias presence, the registry↔canonical sync
+      (string equality, the drift alarm), the temp-dir restore behavior
+      (all five restored, byte-exact; existing files untouched), and the
+      seven-script chain presence.
+- [x] **S87-5 (the acceptance matrix)**: the poison trees must build green —
+      full tree (regression), minus tsconfig.json, minus postcss.config.mjs,
+      and minus both (the operator's exact tree). Plus the standing gates:
+      lint · typecheck · typecheck:tests · unit · build · **e2e ×2
+      consecutive** · sitemap 28 · screenshots · `.env.example`.
+- [x] **S87-6 (the docs sweep)**: AGENTS.md (the build-anywhere contract +
+      the incident + the registry maintenance rule), this section's
+      execution log, worklog Task 81, session_30.md, CLAUDE/README counts,
+      PAD v2.15, ely-beauty_SKILL.md v2.15.0 + the Appendix B entry.
+
+Out of scope (recorded): the dev-only npm-audit families (run-86 deferred);
+the a11y supersets (S79-4 ring, state-aware toggle label, Link overlay rows);
+the internal `*Dollars` heritage names; the wishlist route's fixed message;
+moving build toolchain (tailwindcss/@tailwindcss/postcss/tw-animate-css)
+from devDependencies to dependencies — the operator's failure is the lost
+config files, not a prod-only install (signature-ruled-out above), and a
+prod-only build of a Next app conventionally installs full deps.
+
+### Session 87 execution log
+
+- **Diagnosis (the scenario matrix, one shared install + `cp -al`
+  variants)**: the operator's log reproduced signature-for-signature on a
+  tree minus tsconfig.json + postcss.config.mjs — 15 @apply/@utility
+  warnings + 312 module-not-found (311 `@/` + tw-animate-css); minus
+  tsconfig.json alone → the 311 block; minus postcss.config.mjs alone →
+  the CSS symptoms; full tree → green (audit 87-a had already verified
+  lint/typecheck/typecheck:tests/717-unit/build on the pulled tree).
+  Ruled out by different signature: `npm ci --omit=dev` (one hard early
+  "Cannot find module '@tailwindcss/postcss'" + typescript still installed
+  via prisma) and the Next 16.4.5 workspace-marker root inference (our
+  `outputFileTracingRoot` pin holds; no root warnings in the operator's
+  log). Root cause: the operator's tree materialization drops files
+  untouched since the 2026-10-12 initial migration — the two build-critical
+  root configs — while every recently-modified file survived.
+- **TDD (RED 8 → GREEN)**: tests/unit/build-config-resilience.test.ts —
+  the S87-1 alias pin, the registry↔canonical byte-sync, the temp-dir
+  restore behavior (all five restored byte-exact), the empty-vs-nonempty
+  semantics (empty restored, customized content NEVER overwritten), the
+  seven-script chain, the bootstrap-tracked check. RED on the pulled tree
+  (module-missing collection failure); GREEN after S87-1..S87-3.
+  **725/725 unit (+8).**
+- **The resilience layers**: S87-1 `turbopack.resolveAlias` in
+  next.config.ts (matrix-verified: the minus-tsconfig tree goes 311→0 at
+  compilation); S87-2 scripts/ensure-build-configs.mjs (CONFIG_FALLBACKS
+  registry, write-if-missing-or-empty, never overwrites — generated from
+  the canonical files by a one-shot script, self-verified byte-exact) +
+  the S87-2 header comment on each of the five canonical configs; S87-3
+  the seven gated npm scripts chain the bootstrap first.
+- **Acceptance (S87-5)**: 4/4 poison-tree builds GREEN on fresh
+  installs — the full tree (regression: resolveAlias coexists with the
+  tsconfig-paths alias), minus tsconfig.json, minus postcss.config.mjs,
+  and the operator's exact both-missing tree (the bootstrap prints
+  "restored tsconfig.json / postcss.config.mjs" and the build completes).
+  The restored tsconfig byte-identical to canonical; the lost-both
+  standalone server boots on :3200, serves HTTP 200, and its 92KB CSS
+  carries compiled `@apply` output (`.container-page` expanded) — the
+  tailwind pipeline itself verified, not just the exit code.
+- **Gates**: lint ✓ · typecheck ✓ · typecheck:tests ✓ · **725/725 unit**
+  (+8) · clean build ✓ · **90/90 e2e ×2 consecutive** · sitemap 28
+  public-only ✓ · 25/25 screenshots regenerated + validated ·
+  `.env.example` re-verified 9/9 (no env changes this cycle; audit 87-a).
+- **Live-reference re-measurement (config-only cycle, expected zero
+  drift — confirmed)**: the mobile panel rows 125/161/197/233 vs the
+  clone 124/160/196/232 (±1px, hrefs byte-identical); the overlay input
+  Cormorant 18px/300 with the /60 placeholder on both sites; the silk
+  set — all four rows (bonnet/pillowcase/paddle/crystal) ±1px (clone
+  173/257/341/425 vs reference 174/258/342/426); /shop 19 unique cards
+  bonnet-first on both sites; the detail ৳370 Inter 24px on both sites;
+  the toggle-label superset ("Open menu"/"Close menu") and type=search
+  overlay input recorded, not reverted.
+- **Docs sweep (S87-6)**: AGENTS.md (the build-config-loss resilience
+  contract + the registry maintenance rule), REMEDIATION_PLAN (this
+  section), CLAUDE.md (725 pins), README (725 counts ×4 + badge), PAD
+  v2.15 (the revision block + the stack-table count), ely-beauty_SKILL.md
+  v2.15.0 (project_state + the Appendix B Session 87 entry), worklog Task
+  81, session_30.md.

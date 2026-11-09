@@ -27,6 +27,16 @@ Use `npm` (no bun lockfile is committed). Playwright's mobile project emulates i
 
 Any `DATABASE_URL` already present in the process environment (shell export, CI inject, parent `.env`) **wins over the repo `.env`** — Prisma never overrides existing process env. Symptom: `db/custom.db` never appears at the repo root, or rows survive "fresh" reseeds (the file being written is elsewhere). Diagnose with `node -e "console.log(process.env.DATABASE_URL)"` from the repo root. If the shadowed path differs, converge them (symlink) or unset before running DB commands.
 
+## Build-config loss (the operator's run-87 312-error wall — resilience contract)
+
+The operator's checkout tree once lost `tsconfig.json` + `postcss.config.mjs` (the only build-critical root configs untouched since the 2026-10-12 initial migration; `docs/build_error.txt`), and `npm run build` died with 312 module-not-found errors (311 `@/` aliases + `tw-animate-css`) plus 15 `@apply`/`@utility` "Unknown at rule" warnings — no tsconfig → no `@/*` paths for Turbopack and the build's type-check; no postcss config → `@tailwindcss/postcss` never registers → the CSS pipeline falls to raw PostCSS. Three layers now make the build survive that loss class (pinned by `tests/unit/build-config-resilience.test.ts`):
+
+1. `next.config.ts` carries the alias itself (`turbopack.resolveAlias: { "@/*": "./src/*" }` — the identical mapping to tsconfig paths), so Turbopack compilation never depends on tsconfig.json surviving the checkout.
+2. `scripts/ensure-build-configs.mjs` embeds the five long-untouched configs (`tsconfig.json`, `postcss.config.mjs`, `vitest.config.ts`, `tsconfig.tests.json`, `eslint.config.mjs`) in its `CONFIG_FALLBACKS` registry and restores any that are missing or empty — it NEVER overwrites existing content.
+3. Every gated npm script (`build`, `dev`, `lint`, `test`, `test:e2e`, `typecheck`, `typecheck:tests`) runs that bootstrap first (~10 ms, silent when nothing is missing).
+
+**Maintenance rule:** when editing any registered config, update its `CONFIG_FALLBACKS` copy in the same commit — the unit pin fails the suite on drift. Verified end-to-end on the poison trees (fresh install, each config deleted, the operator's exact both-missing tree): 4/4 builds green, the restored tsconfig byte-identical, the standalone server's CSS carrying compiled `@apply` output.
+
 ## DATABASE_URL contract (pinned by tests/unit/db-path.test.ts)
 
 `.env` carries `DATABASE_URL="file:../db/custom.db"`; `db/` lives at the repo root (git-ignored). A **relative** `file:` URL resolves against `prisma/schema.prisma` — at runtime via `src/lib/db-path.ts` AND for the seed (S77-6: `prisma/seed.ts` passes `datasourceUrl: resolveProcessDatabaseUrl()`; `prisma db push` still follows the shell env, so converge or unset shadowed `DATABASE_URL`s before CLI runs) — so `next dev`, `next build`, the standalone server and `db:seed` all open ONE file at `<repo>/db/custom.db` regardless of CWD. Absolute `file:` URLs and non-SQLite URLs pass through untouched. If you move the schema or the db folder, update that test first — and `scripts/restore-demo-stock.ts` in the same commit (S85-5: it resolves `<repo>/db/custom.db` absolutely, deliberately immune to the env shadow, so it is the second lockstep site of the db-location truth).

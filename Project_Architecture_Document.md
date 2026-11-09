@@ -1,9 +1,26 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.14
+# ElyBeauty — Master Project Architecture Document (PAD) v2.15
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-09
+
+#### Revision Block — v2.15 (Run 87 — the lost-config build-resilience cycle)
+
+- `[BE]` **The build-anywhere resilience contract (S87-1..S87-3, the operator's
+  `docs/build_error.txt`)**: the operator's checkout lost `tsconfig.json` +
+  `postcss.config.mjs` (the only build-critical root configs untouched since
+  the 2026-10-12 initial migration) and `npm run build` died with 312
+  module-not-found errors + 15 @apply/@utility warnings — reproduced
+  signature-for-signature on a local tree minus both files. Three layers now
+  hold: `turbopack.resolveAlias` carries the `@/*` alias in `next.config.ts`
+  itself; `scripts/ensure-build-configs.mjs` (the CONFIG_FALLBACKS registry —
+  write-if-missing-or-empty, never overwrites) restores the five
+  long-untouched configs; the seven gated npm scripts chain the bootstrap
+  first. Pinned by `tests/unit/build-config-resilience.test.ts` (717 → 725
+  unit). Acceptance: 4/4 poison-tree builds green (fresh install, each config
+  deleted, the operator's exact both-missing tree), the restored tsconfig
+  byte-identical, the standalone CSS carrying compiled `@apply` output.
 
 #### Revision Block — v2.14 (Run 86 — the zod 3→4 migration cycle)
 
@@ -463,7 +480,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, select, sheet, label, tabs, radio) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^4.6.7 | Single validation boundary (ADR-005) — v4 since run 86 (S86-1) |
-| Unit tests | Vitest | ^3.2 | Node-env suite (717 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins — see §8.1) |
+| Unit tests | Vitest | ^3.2 | Node-env suite (725 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins — see §8.1) |
 | E2E tests | Playwright | ^1.64 | 90 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 

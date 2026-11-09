@@ -13,6 +13,16 @@ const nextConfig: NextConfig = {
   // at .next/standalone/server.js, even when the repo sits inside a parent
   // workspace that owns its own lockfile.
   outputFileTracingRoot: path.join(import.meta.dirname, "."),
+  // S87-1: carry the `@/*` alias in the config itself — the identical
+  // mapping to tsconfig.json's paths — so Turbopack compilation survives a
+  // checkout that lost tsconfig.json (the operator's run-87 build wall:
+  // 311 of the 312 module-not-found errors died exactly there). tsconfig
+  // stays the type-check source of truth; this is the compilation belt.
+  turbopack: {
+    resolveAlias: {
+      "@/*": "./src/*",
+    },
+  },
   reactStrictMode: false,
   // Next 16 dev-origin protection silently blocks dev chunks served to a
   // 127.0.0.1 origin — allow both loopback hostnames during development.
