@@ -1,20 +1,8 @@
-$ diff .env .env.example
-18c18
-< NEXT_PUBLIC_SITE_URL=https://ely-beauty.jesspete.shop
----
-> NEXT_PUBLIC_SITE_URL=http://localhost:3000
-25c25
-< AUTH_SECRET="P9vcuV2srgCUHIs344tE8MRv7fv/ymP11jnSTdu2ixw="
----
-> AUTH_SECRET=""
-
-$ rm -rf .next/
- 
-$ vi docs/DEPLOYMENT.md
+$ rm -rf .next/ db/custom.db 
  
 $ npm install
 
-up to date, audited 583 packages in 3s
+up to date, audited 583 packages in 5s
 
 176 packages are looking for funding
   run `npm fund` for details
@@ -30,43 +18,43 @@ Datasource "db": SQLite database "custom.db" at "file:../db/custom.db"
 
 SQLite database custom.db created at file:../db/custom.db
 
-🚀  Your database is now in sync with your Prisma schema. Done in 7.34s
+🚀  Your database is now in sync with your Prisma schema. Done in 6.77s
 
-✔ Generated Prisma Client (v6.19.3) to ./node_modules/@prisma/client in 375ms
+✔ Generated Prisma Client (v6.19.3) to ./node_modules/@prisma/client in 469ms
 
 Seeding ElyBeauty…
-Users: admin=cmw91sda90000i0hbfobc3eh4 demo=cmw91sdgc0001i0hbp4vpjita
+Users: admin=cmw9txp150000i0oyyxew1wqy demo=cmw9txp7i0001i0oytfsu4kh0
 Categories: 4
 Products: 19
 Carousel slides: 1
 Settings: 11
 Coupons: 3
 Seed complete.
-
+ 
 $ ls -l db/
 total 308
--rw-r--r-- 1 pete pete 311296 Nov  9 17:17 custom.db
-
+-rw-r--r-- 1 pete pete 311296 Nov 10 06:25 custom.db
+ 
 $ npm run build
 npm notice run ely-beauty@1.0.0 build
 npm notice run node scripts/ensure-build-configs.mjs && next build && mkdir -p public && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/
 ▲ Next.js 16.4.5 (Turbopack)
 - Environments: .env
-✓ Running next.config.ts took 33ms
+✓ Running next.config.ts took 46ms
 
   Creating an optimized production build ...
-✓ Compiled successfully in 15.8s
+✓ Compiled successfully in 25.8s
   Running TypeScript ...
-  Finished TypeScript in 12.4s ...
+  Finished TypeScript in 26.0s ...
   Collecting page data using 3 workers ...
-✓ Collecting page data using 3 workers in 1572ms
+✓ Collecting page data using 3 workers in 5.9s
   Generating static pages using 3 workers (0/11) ...
   Generating static pages using 3 workers (2/11) 
   Generating static pages using 3 workers (5/11) 
   Generating static pages using 3 workers (8/11) 
-✓ Generating static pages using 3 workers (11/11) in 210ms
+✓ Generating static pages using 3 workers (11/11) in 350ms
   Finalizing page optimization ...
-✓ Finalizing page optimization in 3.9s
+✓ Finalizing page optimization in 14.9s
 
 Route (app)
 ┌ ƒ /
@@ -125,4 +113,4 @@ npm notice run NODE_ENV=production node .next/standalone/server.js 2>&1 | tee se
 - Network:       http://0.0.0.0:3000
 ✓ Ready in 0ms
 ✓ Running next.config took 5ms
- 
+
