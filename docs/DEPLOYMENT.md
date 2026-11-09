@@ -203,7 +203,7 @@ npm run test:e2e                             # Playwright suite (starts the stan
 
 The clean-check order in `AGENTS.md` is the deploy gate: every step must exit
 0. Regenerate the documentation screenshots with
-`node scripts/capture-screenshots.mjs` (server on :3000).
+`npx tsx scripts/capture-screenshots.ts` (server on :3000).
 
 ## 9. Common production issues
 

@@ -28,12 +28,35 @@ export interface AdminPasswordAdvisoryClient {
   };
 }
 
+/**
+ * S93-4 (audit 93-a LOW-3): a NEGATIVE verdict is cached for a short TTL.
+ * The detector burns a synchronous scrypt (~30–80 ms event-loop stall on
+ * the single-instance standalone server) on EVERY production dashboard
+ * render — including the post-rotation steady state, where the answer is
+ * always "inactive". Caching only the negative verdict skips that burn;
+ * a POSITIVE verdict is never cached, so the advisory clears on the very
+ * first render after the password rotates (the operator-facing contract).
+ * The TTL bounds staleness for the exotic revert path (a DB restore
+ * flipping the hash back to the default): the advisory re-arms within a
+ * minute.
+ */
+const NEGATIVE_VERDICT_TTL_MS = 60_000;
+let negativeVerdictUntil = 0;
+
+/** Test seam: the module-state TTL must never leak between tests. */
+export function resetAdvisoryCacheForTests(): void {
+  negativeVerdictUntil = 0;
+}
+
 /** True when the seeded admin still authenticates with the documented default password. */
 export async function isDefaultAdminPasswordActive(client: AdminPasswordAdvisoryClient): Promise<boolean> {
+  if (Date.now() < negativeVerdictUntil) return false;
   const admin = await client.user.findFirst({
     where: { email: DEMO_ADMIN_EMAIL, role: "admin" },
     select: { passwordHash: true },
   });
   if (!admin?.passwordHash) return false;
-  return scryptVerify(DEMO_ADMIN_PASSWORD, admin.passwordHash);
+  const active = scryptVerify(DEMO_ADMIN_PASSWORD, admin.passwordHash);
+  if (!active) negativeVerdictUntil = Date.now() + NEGATIVE_VERDICT_TTL_MS;
+  return active;
 }

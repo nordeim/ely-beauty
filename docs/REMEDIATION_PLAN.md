@@ -13084,3 +13084,143 @@ deltas.**
   serialized-project note, the session range) · CLAUDE.md (the S92-2
   project-standard bullet) · PAD v2.19 · SKILL v2.18.0 (project_state
   lockstep).
+
+---
+
+## Session 93 — The Rotation-Atomicity & Credential-Single-Sourcing Cycle
+
+**Evidence base:** the operator's standing instruction refreshed the
+workspace (`git pull` at `913c872` = run-92 code `2ec891b` + the raw
+narrative `docs/session_41.md`). No NEW operator-side signal artifact this
+cycle (start_server_log.txt unchanged since run 92) — a standard
+verification/remediation cycle on the mature tree.
+
+**Environment:** the sandbox workspace SURVIVED from run 92 (node_modules
+intact, `.env` with `DATABASE_URL="file:../db/custom.db"` + AUTH_SECRET,
+`db/` at the repo root with the shadow converged via hardlink — same
+inode). `npm install` → 0 vulnerabilities; fresh reseed (`db:setup` → 19
+products / 2 users / 3 coupons / 4 categories / 11 settings).
+
+**Baseline gates on the pulled tree (docs matched reality):** lint ✓ ·
+typecheck ✓ · typecheck:tests ✓ · **749/749 unit** (65 files) ✓.
+
+**Audit 93-a** (read-only subagent, `skills/` excluded, web-application +
+code-review-checklist methodology): **12/12 standing anchors PASS ·
+R1–R8 (run-92 regression surface) PASS · 0 CRITICAL — 1 MEDIUM + 3 LOW +
+4 INFO.**
+
+**The findings mapped to this plan:**
+
+- **MEDIUM-1:** `changePasswordAction`'s rotation is THREE independent
+  awaited writes (`db.user.update` → `db.session.deleteMany` →
+  `createSession`) — a crash or SQLite write-lock timeout between the
+  first two leaves the password CHANGED while every pre-change session
+  stays alive (the exact threat the rotation exists to kill) for up to
+  the 30-day TTL, with no forgot-password flow to recover. → **S93-1**
+  (the transactional rotation seam, the S13-4 `growReviewAggregate`
+  precedent).
+- **LOW-1:** the S92-2a credential single-sourcing missed
+  `scripts/capture-screenshots.mjs` — three login sites + a track-order
+  URL still hardcode both pairs. → **S93-2** (the script converts to
+  TypeScript and imports `demo-credentials.ts`; invocation becomes
+  `npx tsx`, the `restore-demo-stock.ts` pattern).
+- **LOW-2:** `ely-beauty_SKILL.md`'s demo-account table still carries the
+  pre-rename `@homenestkitchen.com` emails (stale since run 72;
+  contradicts `demo-credentials.ts`, AGENTS.md, README). → **S93-3**.
+- **LOW-3:** the S92-2e advisory detector burns a synchronous scrypt
+  (~30–80 ms event-loop stall) on EVERY production dashboard render —
+  including the post-rotation steady state. → **S93-4** (TTL-cached
+  negative verdict; positives never cached so the advisory clears the
+  moment the password rotates).
+- INFO-1 (no-JS fallback of the account forms GETs the current URL with
+  the fields in the query — the pre-existing ProfileForm pattern, login/
+  register degrade to POSTs via useActionState; recorded, no action) ·
+  INFO-2 (`newPassword === currentPassword` allowed — cryptographically
+  harmless, rotation still fires; recorded) · INFO-3 (a scheme-less
+  `NEXT_PUBLIC_SITE_URL` still throws in `new URL` — fail-fast is the
+  documented posture; recorded) · INFO-4 (docs count lockstep verified
+  current repo-wide — 749/92/28/25/9 all exact).
+
+**Live parity (mobile 390×844, reference logged in with the operator
+credentials, clone with the seeded demo customer):** panel rows
+SEARCH/Shop/Beauty Tools/Brush & Combs/About reference
+**99/135/171/207/243** vs clone **98/134/170/206/242** (the −1px uniform
+tolerance; hrefs byte-identical) · overlay input Cormorant Garamond
+18px/300 + the 0.6-alpha placeholder both sites (clone expresses the
+alpha as `lab(…/0.6)` — same color) with the type=search + role=dialog
+supersets on the clone · the "silk" set reference 214/298/382/466 vs
+clone 213/297/381/465 (−1px ×4) with $370.00/$288.00/$470.00/$520.00
+byte-identical · /shop 19 unique cards bonnet-first with h1 "All
+Products" both sites · the bonnet detail ৳370 Inter 24px/600 with ADD TO
+CART + BUY IT NOW active both. **Zero new parity deltas. Mobile
+navigation fully functional — no Tailwind v4 bug** (the panel is
+conditionally mounted; zero `classList` usage in src/, audit-verified).
+
+**Mid-cycle environmental incident (the documented trap recurring):** the
+clone-side parity pass hit the session-43 orphan-`next-server` wedge —
+the fresh standalone server died on EADDRINUSE behind a stale
+`next-server (v16.4.5)` from the previous session's build serving
+wiped-chunk HTML (the login page rendered its error boundary). Resolved
+by the documented `ss -tlnp` → PID-kill ritual; the fresh server then
+served byte-verifiable chunks (spot-checked on disk).
+
+### Plan
+
+- [x] **S93-1 — the transactional credential rotation (audit MEDIUM-1,
+  TDD).** RED: pins in a NEW `tests/unit/credential-rotation.test.ts` —
+  the seam module does not exist yet (the S92-2b compile-level RED
+  convention) — asserting (a) `rotateCredentialInTx` writes the new hash
+  via `user.update({ where: { id }, data: { passwordHash } })`, (b) kills
+  every session via `session.deleteMany({ where: { userId } })`, (c)
+  propagates a rejection (the caller's transaction must roll back).
+  GREEN: `src/lib/credential-rotation.ts` (the structural-client seam,
+  the `growReviewAggregate` convention) + `changePasswordAction` wrapping
+  BOTH writes in one `db.$transaction(async (tx) => …)` with
+  `createSession` AFTER the commit. A source pin (the api-boundaries
+  file-reading convention) holds the action-side composition: the
+  rotation routes through `$transaction` + the seam, never bare
+  sequential writes.
+- [x] **S93-2 — the screenshot script joins the credential single-source
+  (audit LOW-1).** `git mv scripts/capture-screenshots.mjs
+  scripts/capture-screenshots.ts`; the five hardcoded sites compose from
+  `src/lib/demo-credentials.ts` (two logins, the register fill, the
+  track-order URL via `encodeURIComponent`); the invocation becomes
+  `npx tsx scripts/capture-screenshots.ts [baseUrl]` (the
+  restore-demo-stock.ts pattern); README / SKILL / DEPLOYMENT / AGENTS
+  invocation references updated; `typecheck:tests` covers the file
+  (tsconfig.tests.json already includes `scripts/**/*.ts`).
+- [x] **S93-3 — the SKILL.md demo-email drift (audit LOW-2).** The
+  stale `@homenestkitchen.com` pair → `@elybeauty.com`;
+  `demo-credentials.ts`'s header lockstep list gains
+  `ely-beauty_SKILL.md`.
+- [x] **S93-4 — the advisory's TTL-cached negative verdict (audit LOW-3,
+  TDD).** RED: pins in `tests/unit/admin-password-advisory.test.ts` — a
+  negative verdict is served from cache within the TTL (a swapped-in
+  default-password client still reads false), re-checked after the TTL,
+  and a POSITIVE verdict is never cached (a swapped-in rotated client
+  reads false immediately). GREEN: the module-state TTL (60 s) +
+  `resetAdvisoryCacheForTests()`; the existing five pins reset in
+  `beforeEach` (test-pollution guard).
+- [x] **S93-5 — the full gate chain on the final tree:** lint ·
+  typecheck · typecheck:tests · unit (749 + the new pins) · clean build ·
+  e2e ×2 consecutive.
+- [x] **S93-6 — the standing verifications:** sitemap 28 public-only ·
+  25/25 screenshots regenerated from the live standalone server (the
+  orphan-server ritual run FIRST) · `.env.example` 9/9 · `npm audit` 0.
+- [x] **S93-7 — the docs sweep:** this execution log filled · worklog
+  Task 87 · the polished `docs/session_42.md` (+ the raw narrative
+  `docs/session_43.md` in the follow-up log commit) · README/CLAUDE
+  counts if the suite moves · AGENTS.md (the rotation-atomicity contract
+  note, the capture-script invocation) · SKILL version bump (project_state
+  lockstep) · PAD revision block.
+
+### Execution log
+
+- **S93-1 GREEN:** `src/lib/credential-rotation.ts` (the structural-client seam, caller-owned transaction boundary — the `growReviewAggregate` convention) + the action's `db.$transaction(async (tx) => { await rotateCredentialInTx(tx, user.id, scryptHash(...)) })` with `createSession` after the commit. RED was the compile-level module-miss (the S92-2b convention); GREEN 6/6 — 3 seam pins (update args, deleteMany scope, rejection propagation with the second write unrun) + 3 action-source pins (the api-boundaries file-reading convention: imports + composes the seam inside `$transaction`; `createSession` after the commit; the bare pre-S93-1 sequential-write shapes absent). The e2e round-trip (password-change.spec.ts, serialized) re-verified the flow live on the new path — 92/92 ×2.
+- **S93-2 GREEN:** `git mv` to `scripts/capture-screenshots.ts`; the five credential sites compose from `src/lib/demo-credentials.ts` (two admin logins, the demo login, the checkout contact fill, the track-order URL via `encodeURIComponent`); README/SKILL ×4/DEPLOYMENT/AGENTS invocation references updated. **Mid-fix lesson (root-caused before the workaround):** the first tsx run failed with 21 "Top-level await is currently not supported with the cjs output format" errors — tsx compiles the file as CommonJS because the repo's package.json carries no `"type": "module"` (the original `.mjs` extension was the ESM signal). Fix: the body lives in an async `main()` + `main().catch(...)` — the exact `restore-demo-stock.ts` pattern. `typecheck:tests` covers the file (tsconfig.tests.json already included `scripts/**/*.ts`); strict-mode typing added (Browser/Page/BrowserContext/Device types, unknown-in-catch guard, `as const` tuple array, non-null device-descriptor assertions under `noUncheckedIndexedAccess`).
+- **S93-3 GREEN:** the SKILL's demo table now reads `@elybeauty.com`; the module header's lockstep list extended to the four doc sites + the screenshot-script consumer.
+- **S93-4 GREEN:** the module-state TTL (60 s, `NEGATIVE_VERDICT_TTL_MS`) caches ONLY the negative verdict; `resetAdvisoryCacheForTests()` seams the state for tests (`beforeEach` in the spec — no verdict leakage). RED 8 failed (the export missing) → GREEN 8/8: the five S92-2e pins re-verified + cached-within-TTL (a swapped-in default-password client still reads false) + re-check-after-TTL (fake timers, 61 s) + positive-never-cached (rotation visible on the very next call).
+- **S93-5 gates, all green on the final tree:** lint ✓ · typecheck ✓ · typecheck:tests ✓ · **758/758 unit** (66 files, +9: 6 rotation + 3 advisory-TTL) · clean build ✓ (11/11 static pages, fresh `.next`) · **e2e 92/92 ×2 consecutive** (2.4m + 2.4m — the password round-trip green on the transactional path both runs).
+- **S93-6 standing verifications:** sitemap **28 `<loc>`, 0 private paths** (curl on the live standalone server; robots 4 disallows + the sitemap pointer) · **25/25 screenshots** regenerated from the live standalone server after the orphan-`next-server` PID-kill ritual (8 changed: the known raster-noise + data-dependent family — product detail, cart coupon hint, five admin/account surfaces on the fresh-reseed data state; 17 byte-identical) · `.env.example` **9/9** (6 active + 3 commented, zero drift vs the codebase's env reads) · `npm audit` **0 vulnerabilities** (prod and full). The two S92-2 surfaces re-verified through the live DOM on the capture server: the dashboard advisory card (role=alert + the /account?tab=profile link) and the password form's current/new fields with correct autocomplete tokens.
+- **Environment notes:** the sandbox workspace survived from run 92 (node_modules + `.env` + the hardlink-converged `db/` shadow — same inode verified); a fresh reseed ran before the capture pass so the admin shots render the pristine 2-user state. The session-43 orphan-server trap recurred ONCE at the clone-side parity pass (the stale port owner from the pre-rebuild session served wiped chunks — the login page hit its error boundary); killed by PID per the documented ritual, then every server-dependent pass ran clean.
+- **Docs:** this execution log · worklog Task 87 · the polished `docs/session_42.md` · README/CLAUDE counts 749 → 758 (badge, table, tree, commands, the CLAUDE pin list) · AGENTS.md (the S93-1 rotation-atomicity contract + the S93-4 TTL note in the password bullet, the capture-script invocation + single-source note, the session range) · PAD **v2.20** · **SKILL v2.19.0** (project_state lockstep).

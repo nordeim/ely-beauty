@@ -12,8 +12,11 @@
  * pair to detect "the seeded admin still authenticates with the documented
  * default password" on a production deploy.
  *
- * The pair is documented in AGENTS.md, README.md and .env.example — changing
- * it here means changing those three too (and re-seeding).
+ * The pair is documented in AGENTS.md, README.md, .env.example and
+ * ely-beauty_SKILL.md (S93-2 fixed the SKILL's pre-rename drift) — changing
+ * it here means changing those four too (and re-seeding). Consumers: the
+ * login quick-fill, the seed, the e2e helpers, the advisory detector, and
+ * scripts/capture-screenshots.ts (S93-2 — the last hardcoded copy retired).
  */
 export const DEMO_CUSTOMER_EMAIL = "demo@elybeauty.com";
 export const DEMO_CUSTOMER_PASSWORD = "Demo1234!";

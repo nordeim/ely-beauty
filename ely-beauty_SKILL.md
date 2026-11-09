@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.18.0
+version: 2.19.0
 last_updated: 2026-11-10
-project_state: "749 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-92 (session 40 cycle): the production-deploy hardening cycle — the operator's jesspete.shop signal (a live custom-domain deploy, verified from the sandbox: health/sitemap-28/robots/canonical/security headers all green); audit 92-a clean (12/12 anchors, run-91 surface 13/13, 0 CRITICAL, 1 HIGH + 1 MEDIUM + 2 LOW all remediated); S92-1 siteBaseUrl whitespace hardening; S92-2 the password-change surface + default-credential advisory (changePasswordAction with full session rotation, PasswordForm on the account Profile tab, demo-credentials single-sourced, the admin dashboard's Default-admin-password-active role=alert card on production posture, the serialized password-change e2e spec — 738 → 749 unit, 90 → 92 e2e); S92-3 DEPLOYMENT.md §6 the custom-domain walkthrough with the baked-sitemap rebuild callout. PREVIOUS (run-91): the force-dynamic sweep (all 13 API route files declare export const dynamic)"
+project_state: "758 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-93 (session 42 cycle): the rotation-atomicity & credential-single-sourcing cycle — audit 93-a clean (12/12 anchors, run-92 surface R1–R8 8/8, 0 CRITICAL, 1 MEDIUM + 3 LOW + 4 INFO, all substantive findings remediated); S93-1 the transactional credential rotation (rotateCredentialInTx — the hash write and the session kill commit/roll back together in ONE $transaction, the S13-4 growReviewAggregate precedent; +6 pins); S93-2 capture-screenshots converted to TypeScript and joined the demo-credentials single-source (npx tsx invocation, the restore-demo-stock.ts pattern); S93-3 the SKILL's pre-rename demo-email drift fixed; S93-4 the advisory's TTL-cached negative verdict (60s, positives never cached — +3 pins) — 749 → 758 unit, e2e 92 unchanged ×2 consecutive. PREVIOUS (run-92): the password-change surface + default-credential advisory (S92-2), the production-deploy hardening at jesspete.shop"
 tags:
   - nextjs16
   - react19
@@ -161,8 +161,8 @@ npm run dev                # http://localhost:3000 (logs tee'd to dev.log)
 | `NEXT_PUBLIC_SITE_URL` | recommended | metadataBase, sitemap, robots canonical origin |
 | `NEXT_PUBLIC_DEMO_MODE` | no | set `"false"` to hide the login demo-credentials box (`src/app/(auth)/login/login-form.tsx`) |
 
-**Demo accounts** (seeded): admin `admin@homenestkitchen.com` / `Admin123!`;
-customer `demo@homenestkitchen.com` / `Demo1234!`.
+**Demo accounts** (seeded): admin `admin@elybeauty.com` / `Admin123!`;
+customer `demo@elybeauty.com` / `Demo1234!`.
 
 ## 4. The Design System (Code-First)
 
@@ -2605,7 +2605,7 @@ limiter; atomic stock reservation; uniform login errors; demo-mode gate.
   EXACT. Root cause: the panel mount re-rasterizes the photographic
   content behind it, and screenshotting before the re-raster settles
   catches it mid-flight. Fix (the S35-2/S37-2 precedent shape):
-  `scripts/capture-screenshots.mjs`'s shot-21 flow now waits 700ms
+  `scripts/capture-screenshots.ts`'s shot-21 flow now waits 700ms
   past the panel mount (the parity-script methodology). Verified
   deterministic: consecutive settled captures byte-identical (md5
   `5e59d090…`), a reduced-motion freeze reproduces the same bytes
@@ -3290,7 +3290,7 @@ live rendering. Root cause: the 02 shot gated only on
 (rows 1+4 won the race; rows 2-3 lost it — the probabilistic
 signature of the S35-2/S37-2/S42-2/S50-1 capture-gate family, now
 on the lazy-image surface). Fix: `waitForImages(page)` in
-`scripts/capture-screenshots.mjs` — promote every `<img>` to
+`scripts/capture-screenshots.ts` — promote every `<img>` to
 `loading="eager"` (per spec, flipping a not-yet-loaded lazy image
 to eager STARTS its load) and gate on `document.images` complete
 with `naturalWidth > 0` (15s timeout — a genuinely broken image
@@ -4342,7 +4342,7 @@ node -e "console.log(process.env.DATABASE_URL)"   # env-shadowing check
 npx playwright test tests/e2e/mobile-navigation.spec.ts
 
 # screenshots for docs (server on :3000)
-node scripts/capture-screenshots.mjs
+npx tsx scripts/capture-screenshots.ts
 
 # standalone smoke
 npm run start & curl localhost:3000/api/health
@@ -4465,7 +4465,7 @@ at byte-identity). The sole delta: **03-product-detail, 527 px
 
 Key files: `src/app/not-found.tsx` · `tests/e2e/seo-platform.spec.ts` ·
 `src/lib/stripe-payment.ts` · `src/app/(auth)/layout.tsx` (the
-documented pattern) · `scripts/capture-screenshots.mjs` ·
+documented pattern) · `scripts/capture-screenshots.ts` ·
 `docs/session_130.md` · `research/parity-grid.mjs` (git-ignored) ·
 `research/agent-browser-crosscheck.sh` (git-ignored)
 

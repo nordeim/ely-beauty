@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { createSession, destroySession, getCurrentUser } from "@/lib/auth";
 import { getOrCreateCart } from "@/lib/cart";
 import { db } from "@/lib/db";
+import { rotateCredentialInTx } from "@/lib/credential-rotation";
 import { getOrCreateWishlist } from "@/lib/wishlist";
 import { scryptHash, scryptVerify } from "@/lib/password";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
@@ -190,6 +191,9 @@ export async function updateProfileAction(formData: FormData): Promise<{ ok: tru
  * - on success EVERY session row for the user is deleted and a fresh one
  *   created — the rotation signs out every OTHER device (this browser gets
  *   the new cookie), the standard secure behavior for a credential change.
+ *   Since S93-1 the hash write and the session kill run inside ONE
+ *   $transaction (credential-rotation.ts) — a crash between them can no
+ *   longer leave the password changed with the old sessions alive.
  */
 export async function changePasswordAction(formData: FormData): Promise<{ ok: true } | { ok: false; error: string }> {
   const user = await getCurrentUser();
@@ -215,14 +219,15 @@ export async function changePasswordAction(formData: FormData): Promise<{ ok: tr
     return { ok: false, error: "Your current password is incorrect." };
   }
 
-  await db.user.update({
-    where: { id: user.id },
-    data: { passwordHash: scryptHash(parsed.data.newPassword) },
+  // S93-1 (audit 93-a MEDIUM-1): the hash change and the session kill
+  // commit or roll back TOGETHER — three independent awaited writes left
+  // a crash window where the password changed while every pre-change
+  // session stayed alive. createSession runs AFTER the commit (its row
+  // write + cookie are not transactional; a failure there is a benign
+  // full sign-out, not a security hole).
+  await db.$transaction(async (tx) => {
+    await rotateCredentialInTx(tx, user.id, scryptHash(parsed.data.newPassword));
   });
-
-  // Rotate sessions: delete every row for this user, then issue a fresh one
-  // so THIS browser stays signed in while every other device is signed out.
-  await db.session.deleteMany({ where: { userId: user.id } });
   await createSession(user.id);
 
   revalidatePath("/account");
