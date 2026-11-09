@@ -40,7 +40,7 @@ export default defineConfig({
     },
     {
       name: "desktop-chromium",
-      testIgnore: /mobile-navigation\.spec\.ts|admin\.spec\.ts/,
+      testIgnore: /mobile-navigation\.spec\.ts|admin\.spec\.ts|password-change\.spec\.ts/,
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },
     {
@@ -54,8 +54,13 @@ export default defineConfig({
       // observable by a concurrent reader, and same-file parallelism (the
       // stale-snapshot clobber) is eliminated. Pinned by
       // tests/unit/e2e-infrastructure.test.ts.
+      // S92-2f: password-change.spec.ts joins the serialized project — it
+      // mutates the demo account's PASSWORD (change→restore window), which
+      // every concurrent demo login under fullyParallel would observe as a
+      // hard failure. Same S83-1 rationale, same fix: run alone, serialized,
+      // after every read-only project has finished.
       name: "admin-catalog",
-      testMatch: /admin\.spec\.ts/,
+      testMatch: /admin\.spec\.ts|password-change\.spec\.ts/,
       workers: 1,
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },

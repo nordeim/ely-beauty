@@ -12,6 +12,7 @@ import { formatMoney } from "@/lib/money";
 
 import { AddressDialog, DeleteAddressButton, SetDefaultAddressButton } from "./address-dialog";
 import { ProfileForm } from "./profile-form";
+import { PasswordForm } from "./password-form";
 
 export const dynamic = "force-dynamic";
 
@@ -168,11 +169,12 @@ export default async function AccountPage({
         {/* Content */}
         <div>
           {tab === "profile" ? (
-            <section aria-labelledby="account-profile-heading">
+            <section aria-labelledby="account-profile-heading" className="flex flex-col gap-5">
               <h2 id="account-profile-heading" className="sr-only">
                 Profile settings
               </h2>
               <ProfileForm name={user.name} email={user.email} phone={user.phone} />
+              <PasswordForm />
             </section>
           ) : null}
 

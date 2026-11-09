@@ -5,6 +5,7 @@ import { integerSetting, numericSetting } from "@/lib/settings-schema";
 import {
   addressSchema,
   categoryInputSchema,
+  changePasswordSchema,
   clampSearchTerm,
   cartLinePatchSchema,
   cartMutateSchema,
@@ -50,6 +51,44 @@ describe("loginSchema", () => {
   it("requires both fields", () => {
     expect(loginSchema.safeParse({ email: "a@b.co", password: "" }).success).toBe(false);
     expect(loginSchema.safeParse({ email: "", password: "x" }).success).toBe(false);
+  });
+});
+
+// S92-2b: the account password-change boundary. The NEW password rides the
+// register passwordSchema (8–128 chars) so the two surfaces can never drift;
+// the CURRENT password only needs to be present (its correctness is verified
+// by the action against the stored scrypt hash, not by shape).
+describe("changePasswordSchema (S92-2b)", () => {
+  it("accepts a valid pair", () => {
+    const parsed = changePasswordSchema.safeParse({
+      currentPassword: "Demo1234!",
+      newPassword: "NewSecure123!",
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("requires the current password to be present", () => {
+    expect(
+      changePasswordSchema.safeParse({ currentPassword: "", newPassword: "NewSecure123!" }).success,
+    ).toBe(false);
+  });
+
+  it("enforces the register password rules on the new password", () => {
+    expect(
+      changePasswordSchema.safeParse({ currentPassword: "Demo1234!", newPassword: "short" }).success,
+    ).toBe(false);
+    const tooLong = "x".repeat(129);
+    expect(
+      changePasswordSchema.safeParse({ currentPassword: "Demo1234!", newPassword: tooLong }).success,
+    ).toBe(false);
+  });
+
+  it("reports the same min-length copy as registration", () => {
+    const result = changePasswordSchema.safeParse({ currentPassword: "ok", newPassword: "short" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.message).toBe("Password must be at least 8 characters");
+    }
   });
 });
 

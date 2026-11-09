@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 
 import { demoModeEnabled } from "@/lib/demo-mode";
+import {
+  DEMO_ADMIN_EMAIL,
+  DEMO_ADMIN_PASSWORD,
+  DEMO_CUSTOMER_EMAIL,
+  DEMO_CUSTOMER_PASSWORD,
+} from "@/lib/demo-credentials";
 import { getSettings } from "@/lib/settings";
 
 import { LoginForm, type DemoAccount } from "./login-form";
@@ -27,13 +33,13 @@ export const metadata: Metadata = {
 const DEMO_ACCOUNTS: readonly DemoAccount[] = [
   {
     label: "Customer demo",
-    email: "demo@elybeauty.com",
-    password: "Demo1234!",
+    email: DEMO_CUSTOMER_EMAIL,
+    password: DEMO_CUSTOMER_PASSWORD,
   },
   {
     label: "Admin demo",
-    email: "admin@elybeauty.com",
-    password: "Admin123!",
+    email: DEMO_ADMIN_EMAIL,
+    password: DEMO_ADMIN_PASSWORD,
   },
 ];
 

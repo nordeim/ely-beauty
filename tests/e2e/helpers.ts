@@ -1,6 +1,13 @@
 import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 
+import {
+  DEMO_ADMIN_EMAIL,
+  DEMO_ADMIN_PASSWORD,
+  DEMO_CUSTOMER_EMAIL,
+  DEMO_CUSTOMER_PASSWORD,
+} from "../../src/lib/demo-credentials";
+
 /**
  * Navigate and WAIT FOR HYDRATION before any interaction.
  *
@@ -15,13 +22,13 @@ export async function gotoHydrated(page: Page, url: string): Promise<void> {
 }
 
 export const DEMO_CUSTOMER = {
-  email: "demo@elybeauty.com",
-  password: "Demo1234!",
+  email: DEMO_CUSTOMER_EMAIL,
+  password: DEMO_CUSTOMER_PASSWORD,
 };
 
 export const DEMO_ADMIN = {
-  email: "admin@elybeauty.com",
-  password: "Admin123!",
+  email: DEMO_ADMIN_EMAIL,
+  password: DEMO_ADMIN_PASSWORD,
 };
 
 /** The seeded in-stock product the specs add through its detail page (run-72:

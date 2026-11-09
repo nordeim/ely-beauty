@@ -12881,3 +12881,206 @@ verified live:**
   note · PAD v2.18 revision block · SKILL v2.17.0 — its `project_state` was
   still the run-88 record (735) after run-90 moved the count to 737; the
   count-lockstep convention enforced retroactively.
+
+## Session 92 — The Production-Deploy Hardening Cycle (the operator's jesspete.shop signal)
+
+**Evidence base:** the operator's standing instruction refreshed the workspace
+(fresh clone at `df631f1` = run-91 code `554d211` + 2 docs commits: the
+polished `docs/session_38.md` and the raw `docs/session_39.md` narrative).
+The NEW operator-side signal: `docs/start_server_log.txt` records a full
+**production deployment to `https://ely-beauty.jesspete.shop`** — their
+`.env` sets `NEXT_PUBLIC_SITE_URL=https://ely-beauty.jesspete.shop` + a real
+`AUTH_SECRET`; they ran `rm -rf .next`, `npm install` (0 vulnerabilities),
+`db:setup` (Prisma Client 6.19.3, 19 products seeded), `npm run build`
+(11/11 static pages, Next.js 16.4.5) and `npm run start` (standalone,
+Ready) — all green in the field.
+
+**The deployed site verified live from this sandbox (the field round-trip):**
+HTTP 200 home · health `{"status":"ok","db":"up"}` · `/shop` 200 with h1
+"All Products" + 19 product cards · sitemap **28 `<loc>` on the custom
+domain** · robots.txt (4 disallows + the sitemap pointer) · canonical +
+og:url on the custom domain · JSON-LD Organization + WebSite · the full
+security-header set (per-request CSP nonce, HSTS includeSubDomains,
+Permissions-Policy, X-Frame-Options DENY, nosniff, strict-origin referrer).
+
+**Audit 92-a** (read-only subagent, skills/ excluded): **12/12 standing
+anchors PASS, the run-91 force-dynamic regression surface CLEAN (13/13),
+0 CRITICAL — 1 HIGH + 1 MEDIUM + 2 LOW + 3 INFO.** Gates observed green on
+the pulled tree: lint ✓ · typecheck ✓ · typecheck:tests ✓ · 738/738 unit ✓
+· npm audit 0/0.
+
+**The findings mapped to this plan:**
+
+- **HIGH-1 (operational):** the seeded default admin credentials
+  (`admin@elybeauty.com` / `Admin123!`) are LIVE on the public domain — the
+  operator's `db:setup` seeded them into the production deploy, and the app
+  has **no password-change surface anywhere** (updateProfileAction covers
+  name/phone only), so there is no UI path to fix this. → **S92-2** (the
+  cycle's centerpiece): the account password-change surface + the
+  single-sourced demo credentials + the admin-dashboard default-credential
+  advisory.
+- **MEDIUM-1 (operational):** `TRUST_CF_CONNECTING_IP` defaults to trust —
+  on a DIRECT (non-Cloudflare) deploy the client-forgeable
+  `cf-connecting-ip` header mints fresh per-IP rate-limit buckets. The
+  default is the documented session-6 invariant for CF-fronted deploys and
+  must not flip silently; the fix is deploy guidance. → **S92-3** (the
+  custom-domain deploy section documents the choice).
+- **LOW-1 (code):** `siteBaseUrl()` does not trim whitespace — a
+  whitespace-only `NEXT_PUBLIC_SITE_URL` would 500 every page (the URL
+  constructor throws) while the baked sitemap emits broken origins.
+  → **S92-1** (TDD: trim + fallback pins).
+- **LOW-2 (docs):** DEPLOYMENT.md has no single custom-domain deploy
+  walkthrough and never states that **sitemap.xml/robots.txt are baked at
+  build time** (editing `NEXT_PUBLIC_SITE_URL` without a rebuild leaves the
+  sitemap on the old domain while dynamic canonicals flip — a divergence).
+  → **S92-3**.
+- INFO-1 (JSON-LD image absolutization is origin-only — documented pattern,
+  no action) · INFO-2 (in-memory rate limiter, single-process — documented,
+  no action) · INFO-3 (the standalone `.env` copy verified in Next's
+  write-standalone-directory — positive confirmation, recorded).
+
+**Live parity (mobile 390×844, both sites logged in):** panel rows
+SEARCH/Shop/Beauty Tools/Brush & Combs/About at 99/135/171/207/243 —
+**byte-identical on both sites in this environment** (hrefs byte-identical;
+the historical −1px clone delta was cross-environment rounding, not layout)
+· overlay input Cormorant Garamond 18px/300 with the 0.6-alpha placeholder
+both sites · the "silk" set reference 174/258/342/426 (panel-closed state)
+vs clone 173/257/341/425 (−1px uniform) with $370.00/$288.00/$470.00/$520.00
+both sites · /shop 19 unique cards bonnet-first with h1 "All Products" both
+sites · the bonnet detail ৳370 Inter 24px/600 with ADD TO CART + BUY IT NOW
+active both sites (the S90-4 restock holding). The reference's account page
+carries only ORDER HISTORY — the clone's profile/addresses tabs are the
+documented supersets, and the password surface joins them. **Zero new parity
+deltas.**
+
+### Plan
+
+- [x] **S92-1 — `siteBaseUrl()` whitespace hardening (audit LOW-1, TDD).**
+  RED: pins in `tests/unit/seo-ld.test.ts` — a whitespace-only value falls
+  back to `http://localhost:3000`; a value with surrounding whitespace
+  trims before the trailing-slash strip. GREEN: the `?.trim()` in
+  `src/lib/seo.ts` (the `db-path.ts` trim convention).
+- [x] **S92-2 — the password-change surface + default-credential advisory
+  (audit HIGH-1, TDD, the centerpiece).** Five pieces:
+  (a) `src/lib/demo-credentials.ts` — the seeded demo credentials
+  single-sourced (email + password constants for admin AND customer),
+  consumed by the login page's quick-fill box, the seed, and the advisory —
+  three copies today, one canonical source after;
+  (b) `changePasswordSchema` in `src/lib/validation.ts`
+  (`currentPassword` non-empty + `newPassword` on the register
+  `passwordSchema`) with pins in `tests/unit/validation.test.ts`;
+  (c) `changePasswordAction` in `src/lib/actions/auth.ts`: session-required,
+  rate-limited (per-email + per-IP budgets, the login pattern), current
+  password verified with a uniform inline error, new password scrypt-hashed,
+  ALL sessions deleted then a fresh one created (password rotation signs out
+  every other device — the standard secure behavior), `revalidatePath`;
+  (d) the `PasswordForm` client island under the account Profile tab
+  (the ProfileForm pattern) + the account page wiring;
+  (e) `isDefaultAdminPasswordActive()` (new lib, mock-client-unit-testable)
+  + the admin-dashboard advisory card: renders when the build is NOT in
+  demo mode AND the seeded admin still authenticates with the default
+  password — role="alert", links to /account. The e2e server (production
+  build, demo mode off, default admin password) exercises it for free.
+- [x] **S92-3 — DEPLOYMENT.md: the custom-domain production deploy
+  section.** The operator's exact workflow as a walkthrough (NEXT_PUBLIC_SITE_URL
+  → AUTH_SECRET → db:setup → build → start behind TLS), the
+  rebuild-after-env-change callout (sitemap/robots are baked — editing the
+  URL without a rebuild diverges the sitemap from the canonicals), the
+  change-the-default-admin-password step (now with the UI path from
+  S92-2), and the TRUST_CF_CONNECTING_IP decision for direct vs
+  CF-fronted deploys (MEDIUM-1).
+- [x] **S92-4 — the full gate chain on the final tree:** lint · typecheck ·
+  typecheck:tests · unit suite · clean build · **90+ e2e ×2 consecutive**
+  (the new auth/admin assertions included).
+- [x] **S92-5 — screenshots:** regenerate 25/25 from a live standalone
+  server; verify `git status` shows the expected changed-file set (the
+  run-90 dead-server lesson).
+- [x] **S92-6 — standing verifications:** sitemap 28 public-only ·
+  `.env.example` 9/9 · `npm audit` 0 · the deployed-site round-trip
+  recorded.
+- [x] **S92-7 — docs sweep:** this execution log filled, worklog Task 86,
+  the polished `docs/session_40.md`, README/CLAUDE counts, AGENTS.md
+  (the password-rotation contract + the advisory), PAD v2.19, SKILL
+  v2.18.0 (project_state lockstep).
+- [x] **S92-8 — commit + SSH-wrapper push to main** (no new branches).
+
+### Execution log
+
+- **S92-1 GREEN (TDD):** RED — the two new pins in `tests/unit/seo-ld.test.ts`
+  (whitespace-only → the localhost fallback; surrounding whitespace →
+  trimmed) failed 2/14 on the pulled tree. GREEN — the `?.trim()` in
+  `siteBaseUrl()` (`src/lib/seo.ts`), 14/14.
+- **S92-2 GREEN (TDD), the centerpiece — five pieces:**
+  (a) `src/lib/demo-credentials.ts` created; the login page's
+  `DEMO_ACCOUNTS`, `prisma/seed.ts`'s two user upserts, and the e2e
+  helpers' `DEMO_CUSTOMER`/`DEMO_ADMIN` now all compose from it (three
+  copies → one canonical source; zero behavior change — the seed re-ran
+  green);
+  (b) RED — 4 pins for `changePasswordSchema` in
+  `tests/unit/validation.test.ts` (valid pair; current required; the
+  register 8–128 rules on the new password; the shared min-length copy)
+  failed on import; GREEN — the schema beside `loginSchema`
+  (65/65);
+  (c) `changePasswordAction` in `src/lib/actions/auth.ts` —
+  session-required, `change-password:` per-email (10/min) +
+  `change-password-ip:` per-IP (30/min) budgets (the `ipBudget` kind
+  widened), uniform "Your current password is incorrect." on a failed
+  verify, scrypt re-hash, **`db.session.deleteMany({ userId })` then
+  `createSession`** (the rotation signs out every other device),
+  `revalidatePath("/account")`;
+  (d) the `PasswordForm` island (`account/password-form.tsx`, the
+  ProfileForm pattern: toast + inline error + pending disable + form
+  reset on success) wired as the Profile tab's second card;
+  (e) RED — 5 pins for `isDefaultAdminPasswordActive` in the new
+  `tests/unit/admin-password-advisory.test.ts` (default verifies → true;
+  rotated → false; no admin → false; null hash → false; malformed hash →
+  false) failed on import; GREEN — `src/lib/admin-password-advisory.ts`
+  (the structural client seam, the session-17/18 mock convention),
+  5/5; the dashboard card renders on `!demoModeEnabled() &&
+  isDefaultAdminPasswordActive(db).catch(() => false)`.
+- **S92-2f (the e2e layer, and the two mid-cycle lessons):** the
+  round-trip spec landed in its OWN serialized spec file — under
+  `fullyParallel: true` a concurrent demo login inside the change→restore
+  window would fail, so `password-change.spec.ts` joins the
+  `admin-catalog` project (`workers: 1`) and `desktop-chromium`
+  testIgnores it (the S83-1 pattern extended; the e2e-infrastructure
+  source pin updated to hold the new testMatch/testIgnore). The first
+  run failed at the alternate-password re-login: **React 19 resets
+  uncontrolled form inputs after EVERY action completion** (verified live
+  — both login boxes come back empty after a failed submission), so the
+  second submission went out with an empty email; the fix re-fills BOTH
+  fields before the retry (documented in-spec). The advisory e2e asserts
+  the card + the `/account?tab=profile` link target + the password form
+  fields on the production-posture e2e server. 92/92 ×2 consecutive.
+- **S92-3:** DEPLOYMENT.md — §6 "Custom-domain production deploy" (the
+  7-step verified walkthrough ending in the admin-password rotation),
+  the baked-sitemap rebuild callout, the demo-credentials note extended
+  with the S92-2 UI path; §7–§9 renumbered.
+- **S92-4 gates, all green on the final tree:** lint ✓ · typecheck ✓ ·
+  typecheck:tests ✓ · **749/749 unit** (65 files, +11) · clean build ✓
+  (11/11 static pages) · **92/92 e2e ×2 consecutive** (2.4m + 2.5m).
+- **S92-5 screenshots:** 25/25 regenerated from a live standalone
+  server — after killing the ORPHAN `next-server (v16.4.5)` port owner
+  by PID (the session-43 trap recurring live: `pkill -f
+  "standalone/server.js"` misses the renamed child, the fresh server
+  died on EADDRINUSE, and the orphan served wiped chunks — 13 capture
+  failures until the `ss -tlnp` ritual); 7 changed (the two NEW surfaces
+  — 12-admin-dashboard carrying the advisory, 19-account carrying the
+  password card — plus the known raster-noise + data-dependent family;
+  git status showing real changes, the run-90 dead-server lesson
+  applied). Both new surfaces re-verified through the live DOM
+  (role=alert present with the heading + link; the password card with
+  both fields + correct autocomplete attributes).
+- **S92-6 standing verifications:** sitemap **28 `<loc>`, 0 private
+  paths** ✓ · `.env.example` **9/9** against the codebase's env reads
+  (6 active + 3 commented; zero drift) ✓ · `npm audit` 0 (prod and
+  full) ✓ · the deployed-site round-trip recorded (health db:up,
+  sitemap 28 on the custom domain, robots, canonical/og, JSON-LD, the
+  security-header set).
+- **S92-7 docs:** this execution log · worklog Task 86 · the polished
+  `docs/session_40.md` · README/CLAUDE counts 738 → 749 + 90 → 92 e2e
+  (badge, table, tree, commands; CLAUDE's unit pin list + e2e project
+  note) · AGENTS.md (the password-rotation contract bullet, the S92-2f
+  serialized-project note, the session range) · CLAUDE.md (the S92-2
+  project-standard bullet) · PAD v2.19 · SKILL v2.18.0 (project_state
+  lockstep).

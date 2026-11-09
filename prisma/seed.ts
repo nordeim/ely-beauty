@@ -16,6 +16,12 @@ import { pathToFileURL } from "node:url";
 import { PrismaClient } from "@prisma/client";
 import { scryptHash } from "../src/lib/password";
 import { resolveProcessDatabaseUrl } from "../src/lib/db-path";
+import {
+  DEMO_ADMIN_EMAIL,
+  DEMO_ADMIN_PASSWORD,
+  DEMO_CUSTOMER_EMAIL,
+  DEMO_CUSTOMER_PASSWORD,
+} from "../src/lib/demo-credentials";
 import { couponSeedCreatedAt, productSeedCreatedAt, productSeedUpdate } from "../src/lib/seed-policy";
 
 // S77-6 (audit F7): the seed routes through the db-path seam — the SAME
@@ -670,25 +676,25 @@ async function main() {
 
   // ---- Users ----
   const admin = await prisma.user.upsert({
-    where: { email: "admin@elybeauty.com" },
+    where: { email: DEMO_ADMIN_EMAIL },
     update: {},
     create: {
-      email: "admin@elybeauty.com",
+      email: DEMO_ADMIN_EMAIL,
       name: "Store Admin",
       phone: "01787385459",
       role: "admin",
-      passwordHash: scryptHash("Admin123!"),
+      passwordHash: scryptHash(DEMO_ADMIN_PASSWORD),
     },
   });
   const demo = await prisma.user.upsert({
-    where: { email: "demo@elybeauty.com" },
+    where: { email: DEMO_CUSTOMER_EMAIL },
     update: {},
     create: {
-      email: "demo@elybeauty.com",
+      email: DEMO_CUSTOMER_EMAIL,
       name: "Ayesha Rahman",
       phone: "01787385459",
       role: "customer",
-      passwordHash: scryptHash("Demo1234!"),
+      passwordHash: scryptHash(DEMO_CUSTOMER_PASSWORD),
     },
   });
   await prisma.address.upsert({

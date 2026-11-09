@@ -124,8 +124,62 @@ revert admin edits.
 > real store, still change the admin password (or reseed with your own
 > credentials) before going live, and leave `NEXT_PUBLIC_DEMO_MODE` unset
 > (set `true` only for evaluation deploys that want the box back).
+> Since S92-2 the change has a UI path: sign in as the admin →
+> **/account → Profile → Password** (verify the current password, set the
+> new one — every other device is signed out), and the admin dashboard
+> itself warns with a **Default admin password active** card while the
+> seeded credential is still live on a production build.
 
-## 6. Updating
+## 6. Custom-domain production deploy (the run-92 workflow)
+
+The verified path for putting the store on a real domain (field-proven on
+`https://ely-beauty.jesspete.shop` — every step below was observed green
+on that deploy, including the built sitemap/robots on the custom domain
+and the health round-trip):
+
+1. **Point the domain at the server** (an A/AAAA/CNAME record at your
+   provider) and terminate TLS at a reverse proxy (Caddy/Nginx) that
+   forwards to the Node port — forward `X-Forwarded-For` (appending) and
+   `X-Forwarded-Proto` as §3 describes.
+2. **Set the env for the domain** in `.env`:
+   - `NEXT_PUBLIC_SITE_URL=https://your-domain.example` — the canonical
+     origin. Everything public composes from this single seam
+     (`siteBaseUrl()`, `src/lib/seo.ts`): metadata, canonicals, OpenGraph,
+     JSON-LD, `sitemap.xml`, `robots.txt`.
+   - `AUTH_SECRET` — a strong value (`openssl rand -base64 32`). The
+     server refuses to start in production without one.
+   - `TRUST_CF_CONNECTING_IP` — decide by edge topology: **unset (trust)
+     behind Cloudflare; `"false"` on a direct deploy** so the
+     client-forgeable `cf-connecting-ip` header cannot mint fresh per-IP
+     rate-limit buckets. (On any single-homed direct deploy, header IPs
+     are advisory at best — the per-email budgets on credential routes
+     remain the authoritative bound.)
+3. **Provision the database**: `npm run db:setup` (creates
+   `<repo>/db/custom.db`, pushes the schema, seeds the catalog — see §5
+   for the reseed-safety contract).
+4. **Build**: `npm run build` — assembles `.next/standalone/` and copies
+   `.env`, `.next/static`, and `public/` into it.
+5. **Start**: `npm run start` (or a process manager running the same
+   command from the repo root).
+6. **Rotate the admin password** before taking orders: sign in as the
+   seeded admin → /account → Profile → Password (S92-2). The dashboard's
+   advisory card stays up until this is done — treat it as the deploy's
+   final checklist item.
+7. **Verify** with the §8 checklist plus the domain surfaces:
+   `curl -s https://your-domain.example/sitemap.xml | grep -c "<loc>"`
+   (28 public locs on the custom domain) and the canonical/og tags in the
+   home page source.
+
+> **Rebuild after env changes — the baked-sitemap trap.** `sitemap.xml`
+> and `robots.txt` are **prerendered at build time** (they are the only
+> static routes in the build output), while page canonicals/JSON-LD render
+> per request. Editing `NEXT_PUBLIC_SITE_URL` in `.env` WITHOUT rebuilding
+> leaves the sitemap/robots on the old domain while the canonicals flip —
+> a silent divergence search engines will happily index. The §2 note
+> ("environment changes need a rebuild") covers this; this is the concrete
+> symptom it prevents.
+
+## 7. Updating
 
 ```bash
 git pull
@@ -136,7 +190,7 @@ npm run build
 # restart the server process
 ```
 
-## 7. Verification checklist
+## 8. Verification checklist
 
 ```bash
 curl -s localhost:3000/api/health            # {"status":"ok","db":"up",...}
@@ -151,7 +205,7 @@ The clean-check order in `AGENTS.md` is the deploy gate: every step must exit
 0. Regenerate the documentation screenshots with
 `node scripts/capture-screenshots.mjs` (server on :3000).
 
-## 8. Common production issues
+## 9. Common production issues
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|

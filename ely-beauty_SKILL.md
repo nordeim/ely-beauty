@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.17.0
-last_updated: 2026-11-09
-project_state: "738 unit tests · 90 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-91 (session 38 cycle): the API force-dynamic consistency & verification cycle — audit 91-a clean (12/12 anchors, R1-R8, 0 CRITICAL/HIGH/MEDIUM/LOW, 3 INFO); the operator's named surfaces verified live (DATABASE_URL contract, mobile nav Tailwind v4 scan clean, Vitest+Playwright suites, sitemap/SEO 28 public-only, zero parity deltas vs the live reference); S91-1 the force-dynamic sweep (all 13 API route files declare export const dynamic = 'force-dynamic' — TDD RED 11/13 → GREEN, pinned by the api-boundaries source-scan describe; 737 → 738 unit). PREVIOUS (run-90): the coupon-label formatMoney comma-grouping fix (S90-2) + the S90-4 restock parity cycle (the reference restocked the four run-72 stock-0 products; the seed mirrors at 25/30/20/15; 735 → 737 unit)"
+version: 2.18.0
+last_updated: 2026-11-10
+project_state: "749 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-92 (session 40 cycle): the production-deploy hardening cycle — the operator's jesspete.shop signal (a live custom-domain deploy, verified from the sandbox: health/sitemap-28/robots/canonical/security headers all green); audit 92-a clean (12/12 anchors, run-91 surface 13/13, 0 CRITICAL, 1 HIGH + 1 MEDIUM + 2 LOW all remediated); S92-1 siteBaseUrl whitespace hardening; S92-2 the password-change surface + default-credential advisory (changePasswordAction with full session rotation, PasswordForm on the account Profile tab, demo-credentials single-sourced, the admin dashboard's Default-admin-password-active role=alert card on production posture, the serialized password-change e2e spec — 738 → 749 unit, 90 → 92 e2e); S92-3 DEPLOYMENT.md §6 the custom-domain walkthrough with the baked-sitemap rebuild callout. PREVIOUS (run-91): the force-dynamic sweep (all 13 API route files declare export const dynamic)"
 tags:
   - nextjs16
   - react19
@@ -520,6 +520,19 @@ Clamp to 0 ⇒ delete the line; checkout backstops with a 409 filter.
 `/track-order?number=…` used to render full PII for guessable numbers. Any
 object exposed publicly needs a second, unguessable or knowledge-based factor
 (here: the purchase email), or an ownership check.
+
+### 9.9 React 19 clears uncontrolled form inputs after every action (S92-2)
+
+`<form action={formAction}>` (with `useActionState` or a plain server
+action) **resets every uncontrolled input when the action resolves** —
+including on FAILURE (the state comes back, the fields come back empty).
+Verified live in run 92: after a failed login, both the email and password
+boxes read `""`. Any test (or script) that submits the same form a second
+time must **re-fill every field**, not just the one that changed — the
+password-change e2e's first run submitted an empty email this way and the
+relogin "failed" with the previous attempt's stale error on screen.
+Controlled inputs (`value=` + onChange) are unaffected; the demo quick-fill
+box sets `.value` directly for the same reason.
 
 ## 10. Debugging Guide
 

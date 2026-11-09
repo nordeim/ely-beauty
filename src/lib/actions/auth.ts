@@ -10,7 +10,7 @@ import { db } from "@/lib/db";
 import { getOrCreateWishlist } from "@/lib/wishlist";
 import { scryptHash, scryptVerify } from "@/lib/password";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
-import { firstError, loginSchema, profileSchema, registerSchema } from "@/lib/validation";
+import { firstError, changePasswordSchema, loginSchema, profileSchema, registerSchema } from "@/lib/validation";
 import { headers } from "next/headers";
 
 /**
@@ -52,7 +52,10 @@ async function purgeExpiredSessions(): Promise<void> {
  * login becomes an amplification vector. The IP bucket bounds that; it is
  * generous (30/min) so NAT'd offices and e2e never feel it.
  */
-async function ipBudget(kind: "login-ip" | "register-ip", limit: number): Promise<{ ok: boolean; retryAfterSec?: number }> {
+async function ipBudget(
+  kind: "login-ip" | "register-ip" | "change-password-ip",
+  limit: number,
+): Promise<{ ok: boolean; retryAfterSec?: number }> {
   const h = await headers();
   return rateLimit(`${kind}:${clientIp(h)}`, limit, 60_000);
 }
@@ -167,6 +170,61 @@ export async function updateProfileAction(formData: FormData): Promise<{ ok: tru
     where: { id: user.id },
     data: { name: parsed.data.name, phone: parsed.data.phone || null },
   });
+  revalidatePath("/account");
+  return { ok: true };
+}
+
+/**
+ * Change the signed-in user's password (S92-2c, audit 92-a HIGH-1 — the app
+ * previously had NO password-change surface, so an operator deploying with
+ * the seeded demo admin had no UI path to fix it).
+ *
+ * Contract:
+ * - requires a session (the header-level gate; /account already redirects,
+ *   but the action re-checks — actions are public HTTP endpoints);
+ * - rate-limited per-email AND per-IP (the login pattern): a wrong current
+ *   password burns real scrypt CPU, so the endpoint gets the same budgets
+ *   as login (10/min per email, 30/min per IP);
+ * - the CURRENT password is verified against the stored scrypt hash with a
+ *   single uniform inline error (no oracle on the hash);
+ * - on success EVERY session row for the user is deleted and a fresh one
+ *   created — the rotation signs out every OTHER device (this browser gets
+ *   the new cookie), the standard secure behavior for a credential change.
+ */
+export async function changePasswordAction(formData: FormData): Promise<{ ok: true } | { ok: false; error: string }> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: "You must be signed in." };
+
+  const parsed = changePasswordSchema.safeParse({
+    currentPassword: formData.get("currentPassword"),
+    newPassword: formData.get("newPassword"),
+  });
+  if (!parsed.success) return { ok: false, error: firstError(parsed.error) };
+
+  const limit = rateLimit(`change-password:${user.email}`, 10, 60_000);
+  if (!limit.ok) {
+    return { ok: false, error: `Too many password changes. Please try again in ${limit.retryAfterSec}s.` };
+  }
+  const ipLimit = await ipBudget("change-password-ip", 30);
+  if (!ipLimit.ok) {
+    return { ok: false, error: `Too many password changes. Please try again in ${ipLimit.retryAfterSec}s.` };
+  }
+
+  const dbUser = await db.user.findUnique({ where: { id: user.id } });
+  if (!dbUser || !dbUser.passwordHash || !scryptVerify(parsed.data.currentPassword, dbUser.passwordHash)) {
+    return { ok: false, error: "Your current password is incorrect." };
+  }
+
+  await db.user.update({
+    where: { id: user.id },
+    data: { passwordHash: scryptHash(parsed.data.newPassword) },
+  });
+
+  // Rotate sessions: delete every row for this user, then issue a fresh one
+  // so THIS browser stays signed in while every other device is signed out.
+  await db.session.deleteMany({ where: { userId: user.id } });
+  await createSession(user.id);
+
   revalidatePath("/account");
   return { ok: true };
 }

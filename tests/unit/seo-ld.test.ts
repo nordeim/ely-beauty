@@ -144,4 +144,20 @@ describe("siteBaseUrl (session-6)", () => {
     expect(siteBaseUrl(undefined)).toBe("http://localhost:3000");
     expect(siteBaseUrl("")).toBe("http://localhost:3000");
   });
+
+  // S92-1 (audit 92-a LOW-1): a whitespace-only NEXT_PUBLIC_SITE_URL is
+  // truthy, so the pre-fix helper returned it verbatim — every page then
+  // threw at `new URL(siteUrl)` (a 500 site-wide) while the baked sitemap
+  // emitted broken origins. Whitespace trims BEFORE the fallback decision;
+  // surrounding whitespace on a real value trims before use (the db-path.ts
+  // trim convention).
+  it("treats a whitespace-only value as unset (S92-1)", () => {
+    expect(siteBaseUrl("   ")).toBe("http://localhost:3000");
+    expect(siteBaseUrl("\t\n")).toBe("http://localhost:3000");
+  });
+
+  it("trims surrounding whitespace before composing the base (S92-1)", () => {
+    expect(siteBaseUrl("  https://shop.example.com  ")).toBe("https://shop.example.com");
+    expect(siteBaseUrl(" https://shop.example.com/ ")).toBe("https://shop.example.com");
+  });
 });

@@ -40,15 +40,19 @@ function readRepo(relative: string): string {
 }
 
 describe("S83 — the e2e concurrency-isolation pins", () => {
-  it("S83-1: admin.spec.ts runs in its own serialized project (admin-catalog, workers: 1)", () => {
+  it("S83-1 + S92-2f: mutation-bearing specs run in the serialized project (admin-catalog, workers: 1)", () => {
     const config = readRepo("playwright.config.ts");
-    // The mutation-bearing spec is sliced OUT of the parallel project…
-    expect(config).toMatch(/testIgnore:\s*\/mobile-navigation\\\.spec\\\.ts\|admin\\\.spec\\\.ts\//);
+    // The mutation-bearing specs are sliced OUT of the parallel project…
+    // (S83-1: admin.spec.ts's catalog mutations; S92-2f:
+    // password-change.spec.ts's demo-password rotation window.)
+    expect(config).toMatch(
+      /testIgnore:\s*\/mobile-navigation\\\.spec\\\.ts\|admin\\\.spec\\\.ts\|password-change\\\.spec\\\.ts\//,
+    );
     // …into a dedicated single-worker project declared AFTER the readers
     // (projects run sequentially — mutations never overlap a reader).
     const projectMatch =
       config.match(
-        /name:\s*"admin-catalog",[\s\S]*?testMatch:\s*\/admin\\\.spec\\\.ts\/,[\s\S]*?workers:\s*1,/,
+        /name:\s*"admin-catalog",[\s\S]*?testMatch:\s*\/admin\\\.spec\\\.ts\|password-change\\\.spec\\\.ts\/,[\s\S]*?workers:\s*1,/,
       ) ?? [];
     expect(projectMatch.length).toBeGreaterThan(0);
     // The desktop project and the admin project are distinct entries.

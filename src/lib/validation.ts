@@ -41,6 +41,15 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+// S92-2b: the account password-change boundary. The NEW password rides the
+// register passwordSchema (8–128 chars) so the two surfaces can never drift;
+// the CURRENT password only needs to be present — its correctness is
+// verified by the action against the stored scrypt hash, not by shape.
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Enter your current password."),
+  newPassword: passwordSchema,
+});
+
 export const profileSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters").max(80),
   phone: z.string().trim().max(40).optional().or(z.literal("")),

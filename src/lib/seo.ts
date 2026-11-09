@@ -64,11 +64,13 @@ export function centsToDollars(cents: number): number {
 /**
  * Canonical site origin (session-6 S6-4) — every public page's
  * `alternates.canonical` composes from this so the base can never disagree
- * between pages. Trailing slashes are stripped; unset falls back to
- * localhost:3000 (the documented .env.example default).
+ * between pages. Trailing slashes are stripped; whitespace trims before the
+ * fallback decision so a whitespace-only value can never 500 the site
+ * (S92-1); unset falls back to localhost:3000 (the documented .env.example
+ * default).
  */
 export function siteBaseUrl(envValue?: string): string {
-  const base = envValue ?? process.env.NEXT_PUBLIC_SITE_URL;
+  const base = (envValue ?? process.env.NEXT_PUBLIC_SITE_URL)?.trim();
   return (base || "http://localhost:3000").replace(/\/+$/, "");
 }
 

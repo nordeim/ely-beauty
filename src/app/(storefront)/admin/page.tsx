@@ -4,6 +4,8 @@ import { DollarSign, Package, ShoppingBag, TriangleAlert, Users } from "lucide-r
 
 import { db } from "@/lib/db";
 import { buildRevenueChart, type RevenueDayRow } from "@/lib/analytics";
+import { isDefaultAdminPasswordActive } from "@/lib/admin-password-advisory";
+import { demoModeEnabled } from "@/lib/demo-mode";
 import { orderStatusBadgeClass } from "@/lib/format";
 import { formatMoney } from "@/lib/money";
 import { firstCategoryName, productCategoryInclude } from "@/lib/products";
@@ -75,6 +77,18 @@ export default async function AdminDashboardPage() {
   // unit-pinned in tests/unit/analytics.test.ts).
   const chartData: RevenuePoint[] = buildRevenueChart(revenueBuckets, now);
 
+  // S92-2e (audit 92-a HIGH-1): the default-credential advisory — on a
+  // NON-demo build (production posture) warn while the seeded admin still
+  // authenticates with the documented demo password. In dev the demo
+  // credentials are the advertised workflow, so the card stays hidden.
+  // The detector must never take the console down: any failure reads as
+  // "not active".
+  const defaultAdminPasswordActive =
+    !demoModeEnabled({
+      NODE_ENV: process.env.NODE_ENV,
+      NEXT_PUBLIC_DEMO_MODE: process.env.NEXT_PUBLIC_DEMO_MODE,
+    }) && (await isDefaultAdminPasswordActive(db).catch(() => false));
+
   const totalRevenue = revenueAgg._sum.total ?? 0;
   const archivedCount = Math.max(0, totalProducts - activeProducts);
 
@@ -91,6 +105,30 @@ export default async function AdminDashboardPage() {
         <h1 className="font-display text-2xl font-bold sm:text-3xl">Dashboard</h1>
         <p className="mt-1 text-sm text-muted-foreground">A snapshot of how your store is performing.</p>
       </header>
+
+      {/* S92-2e: the default-credential advisory (production posture only) */}
+      {defaultAdminPasswordActive ? (
+        <section
+          role="alert"
+          aria-labelledby="security-advisory-heading"
+          className="rounded-2xl border border-destructive/40 bg-destructive/10 p-5 shadow-sm"
+        >
+          <h2 id="security-advisory-heading" className="flex items-center gap-2 text-sm font-semibold text-destructive">
+            <TriangleAlert className="h-4 w-4 shrink-0" aria-hidden />
+            Default admin password active
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            The admin account still signs in with the documented demo password — anyone who can read the
+            repository or its docs knows it. Change it before serving real customers.
+          </p>
+          <Link
+            href="/account?tab=profile"
+            className="mt-3 inline-flex items-center rounded-lg bg-destructive px-3.5 py-2 text-xs font-semibold text-destructive-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Change the admin password
+          </Link>
+        </section>
+      ) : null}
 
       {/* KPI cards */}
       <section aria-label="Key metrics" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

@@ -65,6 +65,28 @@ test.describe("admin back office", () => {
     await expect(page.getByRole("link", { name: "Products" }).first()).toBeVisible();
   });
 
+  // S92-2e (audit 92-a HIGH-1): the default-credential advisory. The e2e
+  // server is a PRODUCTION build (demo mode off) seeded with the default
+  // admin password — exactly the dangerous configuration the operator's
+  // jesspete.shop deploy ran — so the dashboard MUST carry the warning and
+  // route to the password-change surface.
+  test("the dashboard warns while the default admin password is active (S92-2e)", async ({ page }) => {
+    await loginAsAdmin(page);
+    await gotoHydrated(page, "/admin");
+    const advisory = page.getByRole("alert").filter({ hasText: "Default admin password active" });
+    await expect(advisory).toBeVisible();
+    await expect(advisory.getByText("Change the admin password")).toBeVisible();
+    const changeLink = advisory.getByRole("link", { name: "Change the admin password" });
+    await expect(changeLink).toHaveAttribute("href", "/account?tab=profile");
+    // The profile tab carries the password-change card (S92-2d).
+    await changeLink.click();
+    await page.waitForSelector('html[data-hydrated="true"]', { timeout: 20_000 });
+    await expect(page).toHaveURL(/\/account\?tab=profile/);
+    await expect(page.getByRole("heading", { name: "Password", exact: true })).toBeVisible();
+    await expect(page.getByLabel("Current password")).toBeVisible();
+    await expect(page.getByLabel("New password")).toBeVisible();
+  });
+
   test("products manager lists seeded products", async ({ page }) => {
     await loginAsAdmin(page);
     await gotoHydrated(page, "/admin/products");
