@@ -1,0 +1,124 @@
+$ diff .env .env.example
+18c18
+< NEXT_PUBLIC_SITE_URL=https://ely-beauty.jesspete.shop
+---
+> NEXT_PUBLIC_SITE_URL=http://localhost:3000
+25c25
+< AUTH_SECRET="P9vcuV2srgCUHIs344tE8MRv7fv/ymP11jnSTdu2ixw="
+---
+> AUTH_SECRET=""
+
+$ rm db/custom.db
+
+$ rm -rf .next
+(venv) pete@pop-os:/Home1/project/ely-beauty
+$ npm install
+
+up to date, audited 568 packages in 11s
+
+171 packages are looking for funding
+  run `npm fund` for details
+
+11 vulnerabilities (9 moderate, 2 critical)
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+$ npm run db:setup
+npm notice run ely-beauty@1.0.0 db:setup
+npm notice run prisma db push --accept-data-loss && tsx prisma/seed.ts
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": SQLite database "custom.db" at "file:../db/custom.db"
+
+SQLite database custom.db created at file:../db/custom.db
+
+🚀  Your database is now in sync with your Prisma schema. Done in 6.95s
+
+✔ Generated Prisma Client (v6.12.0) to ./node_modules/@prisma/client in 478ms
+
+Seeding ElyBeauty…
+Users: admin=cmw8w5mr80000i0ztdapq516n demo=cmw8w5mxa0001i0ztdbw8u1s1
+Categories: 4
+Products: 19
+Carousel slides: 1
+Settings: 11
+Coupons: 3
+Seed complete.
+
+$ ls -l db/
+total 308
+-rw-r--r-- 1 pete pete 311296 Nov  9 14:39 custom.db
+
+$ npm run build
+npm notice run ely-beauty@1.0.0 build
+npm notice run node scripts/ensure-build-configs.mjs && next build && mkdir -p public && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/
+▲ Next.js 16.4.5 (Turbopack)
+- Environments: .env
+✓ Running next.config.ts took 33ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 13.6s
+  Running TypeScript ...
+  Finished TypeScript in 13.7s ...
+  Collecting page data using 3 workers ...
+✓ Collecting page data using 3 workers in 1494ms
+  Generating static pages using 3 workers (0/22) ...
+  Generating static pages using 3 workers (5/22)
+  Generating static pages using 3 workers (10/22)
+  Generating static pages using 3 workers (16/22)
+✓ Generating static pages using 3 workers (22/22) in 244ms
+  Finalizing page optimization ...
+✓ Finalizing page optimization in 4.0s
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /about
+├ ƒ /account
+├ ƒ /admin
+├ ƒ /admin/analytics
+├ ƒ /admin/carousel
+├ ƒ /admin/categories
+├ ƒ /admin/coupons
+├ ƒ /admin/orders
+├ ƒ /admin/payments
+├ ƒ /admin/products
+├ ƒ /admin/settings
+├ ƒ /api/addresses
+├ ƒ /api/cart
+├ ƒ /api/cart-summary
+├ ƒ /api/cart/bulk
+├ ƒ /api/checkout
+├ ƒ /api/contact
+├ ƒ /api/coupon/apply
+├ ƒ /api/health
+├ ƒ /api/newsletter
+├ ƒ /api/search
+├ ƒ /api/stripe/payment-intent
+├ ƒ /api/stripe/webhook
+├ ƒ /api/wishlist
+├ ƒ /cart
+├ ƒ /checkout
+├ ƒ /checkout/success
+├ ƒ /contact
+├ ○ /icon.svg
+├ ƒ /legal/[slug]
+├ ƒ /login
+├ ○ /manifest.webmanifest
+├ ƒ /product/[id]
+├ ƒ /register
+├ ○ /robots.txt
+├ ƒ /shop
+├ ○ /sitemap.xml
+├ ƒ /track-order
+└ ƒ /wishlist
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
