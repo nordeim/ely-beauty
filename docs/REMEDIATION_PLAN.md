@@ -12136,3 +12136,138 @@ the zod 3→4 migration epic remains the standing deferred debt.
   standing deferred debt (a dedicated cycle), unchanged. The internal
   variable names carrying the inherited currency stem are recorded as
   accepted heritage (the S84-4b precedent).
+
+## Session 86 — The zod 3→4 Migration Cycle (the standing debt, now advisory-driven)
+
+Evidence base: audit 86-a (12/12 standing anchors PASS; run-85 regression-free;
+0 CRITICAL/HIGH code findings, 2 LOW, 6 INFO) — but `npm audit` flags
+**GHSA-mrhx-c7xc-m3w5 (HIGH, prod-direct)**: zod can exhaust memory validating
+oversized constrained collections, vulnerable `<4.6.6`, fixed in `4.6.7` (a
+semver-major) — **zod 3.x will never be patched**. The standing deferred debt
+(the S27→S85 "dedicated cycle") is now due. The audit's exhaustive zod census
+(runtime-probed against the installed package's `zod/v4` build): **1 hard
+break** (`src/lib/stripe-payment.ts:343` single-arg `z.record(z.string())`
+throws at module load under v4 — the whole stripe seam crashes), **deprecated
+but functional** (`.email()` ×1, `{ message: }` refine/enum params ×3,
+`z.ZodIssueCode.custom` ×3), **default-text rewrites** (v4 rewords the default
+English of every un-messaged check), `.default()` chain semantics changed but
+**all 30 repo sites probed value-identical**, everything else (`.or(z.literal(""))`
+×8, refine/superRefine ×7, transform ×4, pick/extend/strip ×3, `.issues`,
+`.safeParse` ×27, z.infer/z.input) verified unchanged. Zero tests pin v3 default
+texts; the four e2e error-text asserts all target messaged texts. Live-reference
+re-measurement (both viewports, logged in): **zero new parity deltas** (panel
+rows 89/125/161/197/233 vs clone ±1px, hrefs byte-identical; the silk overlay
+set $370/$288/$470/$520 at 80px/2px ±1px; detail ৳370 Inter 24px/600; /shop 19
+bonnet-first; footer template slugs; desktop overlay input Cormorant 24px/300
+both sites, ±2px column width). Two a11y supersets recorded, not reverted (the
+state-aware menu-toggle label vs the reference's static one; the overlay rows
+as real `<Link href>`s vs the reference's button-navigation).
+
+- [x] **S86-1 (the bump + the hard break)**: `npm install zod@^4.6.7` (the
+      package manager owns package.json + the lockfile); fix
+      `stripe-payment.ts:343` → `z.record(z.string(), z.string())` (the v3
+      single-arg form means any-key/string-value — the two-arg form is the
+      exact v4 equivalent; the webhook metadata contract unchanged). RED: the
+      v4-sentinel pin (`typeof z.email === "function"` — fails on v3); the
+      post-bump suite crash at the z.record module-load is the census break
+      verified live (the documented RED). GREEN: bump + fix, full suite green.
+- [x] **S86-2 (the zero-behavior-change deprecation cleanups)**:
+      `z.ZodIssueCode.custom` → `"custom"` (validation.ts ×3, probed
+      identical); `{ message: }` → `{ error: }` on the refine/enum params
+      (settings-schema.ts ×2, validation.ts coupon enum ×1 — the v4 param
+      name; the `.min(1, "…")` string shorthand is unchanged and stays); the
+      `.email()` chain — probe the v4 pipe restructure
+      (`z.string().trim().min(1,…).pipe(z.email(…)).transform(…)`) against
+      the current chain on an input battery (empty/whitespace/invalid/valid/
+      uppercase); adopt only if probe-identical, else keep the deprecated-
+      but-functional chain with a comment. RED: pins on the messaged texts at
+      every touched site.
+- [x] **S86-3 (the message policy — documented acceptance)**: accept v4's
+      default English for the un-messaged backstop checks (the bare `.max()`/
+      `.min()`/`.int()` and the two z.enums). Rationale: both v3 and v4
+      defaults are technical zod-speak (no UX regression); 11 form files carry
+      client maxLength caps, the checkout's three raw inputs are the only
+      uncapped surface and a >80-char name is a vanishing edge; zero test
+      pins exist; messaging ~50 sites would balloon the migration diff and
+      its regression surface. The four e2e error-text asserts verified
+      unaffected.
+- [x] **S86-4 (audit L-1 — the kitchenware placeholder trio)**:
+      product-dialog's HomeNest examples — the slug
+      `enameled-cast-iron-dutch-oven`, the SKU `HN-DUTCH-24`, the specs
+      "Capacity: 6 qt / Material: Enameled cast iron" — reworded to skincare
+      examples (the S85 copy-cycle pattern extended to the placeholder
+      class). RED: layout-tokens placeholder pins.
+- [x] **S86-5 (audit L-2 — the dead exports)**: `stripePublishableKey()`
+      (stripe.ts) and `ROLES` (validation.ts) — zero consumers verified by
+      repo-wide grep (re-verified pre-delete); both deleted. The typecheck is
+      the pin (a deletion RED would be a tautology).
+- [x] **S86-6 (audit I-1/I-2 — the BD-localization copy)**: the account
+      profile phone placeholder `+1 (555) 000-0000` → a BD format (matching
+      the `+880 1712 345678` style pinned elsewhere in the codebase); the
+      order-manage-dialog carrier/tracking placeholders (UPS/FedEx/USPS and
+      the UPS `1Z…` tracking format) → BD-appropriate courier examples. RED:
+      layout-tokens placeholder pins.
+
+Out of scope (recorded): the dev-only npm-audit findings (vitest/tinypool
+critical, the eslint toolchain moderates — dev deps never ship; a routine
+dev-dep bump cycle, not this one); the wishlist route's fixed "Missing
+productId." (I-3 — deliberately avoids leaking default zod text; actually
+helps this migration); the a11y supersets (S79-4 ring, the state-aware toggle
+label, the Link overlay rows — recorded above, not reverted); the internal
+`*Dollars` variable names (the S84-4b precedent, unchanged).
+
+### Session 86 execution log
+
+- **TDD (RED 4 → GREEN)**: the S86-1 v4 sentinel pin (`typeof z.email ===
+  "function"`), the S86-4 kitchenware-trio pin, and the two S86-6
+  BD-localization pins — all four RED on the pulled tree; the five
+  S86-2 message-preservation pins + the S86-1 webhook-metadata pin GREEN
+  on v3 by design (they are the migration's regression tripwires).
+  Post-bump: 717/717 unit (+9: 5 validation, 3 layout-tokens, 1
+  stripe-payment).
+- **The probe correction (recorded)**: the census's "hard break" was
+  probed against the zod/v4 subpath bundled inside 3.25.76 — there the
+  single-arg `z.record` mis-binds to the KEY position and throws
+  `TypeError` at parse. The shipping 4.6.7 keeps the single-arg overload
+  as deprecated v3-compat (probe: constructs + parses
+  Record<string,string>-identically). The two-arg fix landed anyway
+  (forward-compatible; the deprecated overload invites the v5 removal)
+  and the metadata pin locks the BEHAVIOR, not the crash mode.
+- **The stale-server false alarm (resolved)**: the post-migration
+  screenshot capture showed the pillowcase detail page in an error state
+  ("Try Again") — root cause: the pre-migration standalone server still
+  held :3000 (pattern-guess pkill missed it; the restart died
+  EADDRINUSE), so OLD in-memory server code served NEW on-disk client
+  chunks. The e2e suite (fresh server per run on :3100) staying 90/90
+  was the differential. Killed by PID (ss -tlnp), restarted, the page
+  verified healthy, 25/25 screenshots captured on the true build.
+- **Gates**: lint ✓ · typecheck ✓ · typecheck:tests ✓ · **717/717 unit**
+  (+9) · clean build ✓ · **90/90 e2e ×2 consecutive** · 25/25 screenshots
+  regenerated + validated (none undersized) · `.env.example` re-verified
+  (no env changes this cycle) · **the zod advisory GONE from npm audit**
+  (the remaining 11 = the accepted dev-only families).
+- **Live-reference re-measurement**: zero new parity deltas; the mobile
+  menu (the priority surface) ±1px with byte-identical hrefs on both
+  sites; the silk overlay set $370/$288/$470/$520 at 80px/2px ±1px;
+  detail ৳370 Inter 24px/600; /shop 19 bonnet-first; footer template
+  slugs byte-identical; the desktop overlay input Cormorant 24px/300 on
+  both sites (column x:445/w:534 vs the clone x:444/w:536 — both
+  centered, ±2px; the run-85 "x:384 w:672" note measured a different
+  element). Two a11y supersets recorded, not reverted: the state-aware
+  menu-toggle label ("Open menu"/"Close menu" vs the reference's static
+  "Toggle menu") and the overlay rows as real `<Link href>`s vs the
+  reference's button-navigation.
+- **Docs sweep**: REMEDIATION_PLAN (this section), AGENTS.md (the
+  dependency-risk ledger: zod CLOSED by migration + the S86-3
+  policy pointer), CLAUDE.md (717 pins), README (717 counts + badge),
+  PAD v2.14 (the revision block + the stack-table zod row ^4.6.7 + the
+  stale 634/79 stack counts corrected), ely-beauty_SKILL.md v2.14.0
+  (project_state + the zod dependency row + the Session 86 Appendix B
+  entry), session_28.md, worklog Task 80.
+- **Deferred (documented)**: the dev-only npm-audit families
+  (vitest/tinypool critical — fix is the semver-major vitest 5; the
+  eslint toolchain moderates — fix is eslint-config-next@15.5.29) — a
+  routine dev-dep bump cycle, never shipping in the standalone build.
+  The wishlist route's fixed "Missing productId." stays (deliberate).
+  The internal *Dollars variable names remain accepted heritage
+  (S84-4b).

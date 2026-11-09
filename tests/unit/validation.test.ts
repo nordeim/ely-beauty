@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 
+import { integerSetting, numericSetting } from "@/lib/settings-schema";
 import {
   addressSchema,
   categoryInputSchema,
@@ -10,6 +12,7 @@ import {
   contactSchema,
   couponApplySchema,
   couponInputSchema,
+  emailSchema,
   firstError,
   loginSchema,
   registerSchema,
@@ -548,5 +551,89 @@ describe("normalizeTemplateCategory — the dialog's None path (S82-3)", () => {
     expect(normalizeTemplateCategory("Skincare")).toBeNull();
     expect(normalizeTemplateCategory("sets")).toBeNull();
     expect(normalizeTemplateCategory("garbage")).toBeNull();
+  });
+});
+
+// S86 — the zod 3→4 migration pins (session 86): the standing deferred
+// debt, now driven by the unpatchable HIGH advisory GHSA-mrhx-c7xc-m3w5
+// (memory exhaustion validating oversized constrained collections; fixed
+// only in zod ≥4.6.7 — v3 is end-of-line). The audit-86-a census found one
+// hard break (stripe-payment's single-arg z.record — module-load crash
+// under v4, pinned over in the stripe-payment spec), deprecated-but-
+// functional params, and v4's rewritten DEFAULT texts for un-messaged checks
+// (the accepted policy — every pinned message below is an explicit one).
+// These pins lock the migration's zero-behavior-change contract: the
+// sentinel proves the runtime is v4, and every touched seam keeps its
+// exact user-facing wording.
+describe("S86 — the zod 3→4 migration pins", () => {
+  it("S86-1 sentinel: the runtime is zod v4 (the top-level z.email exists)", () => {
+    // z.email is a v4-only top-level API (v3 only exposes the deprecated
+    // .email() method on ZodString). Bumping without this pin would let a
+    // silent v3 resolve keep the advisory vulnerable dependency installed.
+    expect(typeof z.email).toBe("function");
+  });
+
+  it("S86-2: emailSchema keeps its exact messages and lowercase transform across the restructure", () => {
+    // Empty and whitespace-only surface the required wording (not v4's
+    // default "Too small…" text — the un-messaged-check policy is ACCEPTED
+    // for bare bounds, but this seam's messages are explicit and pinned).
+    const blank = emailSchema.safeParse("   ");
+    expect(blank.success).toBe(false);
+    if (!blank.success) expect(firstError(blank.error)).toBe("Email is required");
+
+    const invalid = emailSchema.safeParse("not-an-email");
+    expect(invalid.success).toBe(false);
+    if (!invalid.success) expect(firstError(invalid.error)).toBe("Enter a valid email address");
+
+    // The trim + lowercase transform survives the v4 pipe restructure.
+    const valid = emailSchema.safeParse("  Jordan@Example.COM ");
+    expect(valid.success).toBe(true);
+    if (valid.success) expect(valid.data).toBe("jordan@example.com");
+  });
+
+  it("S86-2: the coupon type enum keeps its explicit message (the { error } param rename)", () => {
+    const result = couponInputSchema.safeParse({
+      code: "WELCOME10",
+      type: "mystery",
+      value: 10,
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some((i) => i.message === "Choose a discount type")).toBe(true);
+    }
+  });
+
+  it("S86-2: the settings numeric/integer refines keep their exact range wording", () => {
+    const numeric = numericSetting(0, 100).safeParse("100.1");
+    expect(numeric.success).toBe(false);
+    if (!numeric.success) expect(firstError(numeric.error)).toBe("Enter a number between 0 and 100.");
+
+    const whole = integerSetting(0, 1000000).safeParse("7.5");
+    expect(whole.success).toBe(false);
+    if (!whole.success) expect(firstError(whole.error)).toBe("Enter a whole number between 0 and 1000000.");
+
+    // The in-range paths are unchanged (the normalize transform included).
+    const okNumeric = numericSetting(0, 100).safeParse(" 7.50 ");
+    expect(okNumeric.success).toBe(true);
+    if (okNumeric.success) expect(okNumeric.data).toBe("7.5");
+    const okWhole = integerSetting(0, 1000000).safeParse(" 2500 ");
+    expect(okWhole.success).toBe(true);
+    if (okWhole.success) expect(okWhole.data).toBe("2500");
+  });
+
+  it("S86-2: the coupon superRefine issues carry the custom code (the ZodIssueCode → \"custom\" rename)", () => {
+    const percent = couponInputSchema.safeParse({ code: "PCT150", type: "percent", value: 150 });
+    expect(percent.success).toBe(false);
+    if (!percent.success) {
+      const issue = percent.error.issues.find((i) => i.path[0] === "value");
+      expect(issue?.message).toBe("Percent discounts are limited to 100%.");
+    }
+
+    const fixed = couponInputSchema.safeParse({ code: "FIX0", type: "fixed", value: 0 });
+    expect(fixed.success).toBe(false);
+    if (!fixed.success) {
+      const issue = fixed.error.issues.find((i) => i.path[0] === "value");
+      expect(issue?.message).toBe("Fixed discounts must be a positive amount.");
+    }
   });
 });

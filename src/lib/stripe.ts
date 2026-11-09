@@ -25,14 +25,6 @@ export function isStripeServerConfigured(): boolean {
   return resolveStripeConfig(process.env).serverConfigured;
 }
 
-/**
- * The publishable key for the client island (null when unconfigured — the
- * page passes it as a prop; the island's mirror check gates loadStripe).
- */
-export function stripePublishableKey(): string | null {
-  return resolveStripeConfig(process.env).publishableKey;
-}
-
 export function getStripe(): Stripe | null {
   if (!isStripeServerConfigured()) return null;
   if (cached) return cached;

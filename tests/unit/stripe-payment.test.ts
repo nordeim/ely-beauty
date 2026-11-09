@@ -298,6 +298,37 @@ describe("parseStripeWebhookEvent", () => {
     expect(parseStripeWebhookEvent("not an object").success).toBe(false);
     expect(parseStripeWebhookEvent(null).success).toBe(false);
   });
+
+  // S86-1 (the zod 3→4 migration): the ONLY hard break the census found —
+  // the metadata record schema. Under v4 the single-arg z.record binds its
+  // argument to the KEY position and leaves the value schema undefined
+  // (constructs silently, then throws TypeError at parse — a DORMANT break,
+  // since no earlier test event carries metadata). The two-arg form
+  // preserves the exact v3 Record<string, string> semantics.
+  it("S86-1: string metadata parses through the record schema; non-string values are rejected", () => {
+    const parsed = parseStripeWebhookEvent({
+      id: "evt_meta",
+      type: "payment_intent.succeeded",
+      data: {
+        object: {
+          id: "pi_1",
+          status: "succeeded",
+          metadata: { cartId: "cart_1", email: "guest@test.dev" },
+        },
+      },
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.data.object.metadata).toEqual({ cartId: "cart_1", email: "guest@test.dev" });
+    }
+
+    const bad = parseStripeWebhookEvent({
+      id: "evt_meta2",
+      type: "payment_intent.succeeded",
+      data: { object: { id: "pi_1", metadata: { count: 3 } } },
+    });
+    expect(bad.success).toBe(false);
+  });
 });
 
 describe("stripeEventIntentId — the honest intent column", () => {

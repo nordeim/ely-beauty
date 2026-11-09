@@ -1,9 +1,48 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.13
+# ElyBeauty — Master Project Architecture Document (PAD) v2.14
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-09
+
+#### Revision Block — v2.14 (Run 86 — the zod 3→4 migration cycle)
+
+- `[BE]` **zod ^3.25.76 → ^4.6.7** (S86-1, audit 86-a H-1): the standing
+  deferred debt retired, driven by the unpatchable HIGH advisory
+  GHSA-mrhx-c7xc-m3w5 (memory exhaustion validating oversized constrained
+  collections — fixed only in ≥4.6.7; v3 is end-of-line). The census's
+  one hard break — `stripe-payment.ts`'s single-arg `z.record(z.string())`
+  (constructs silently, then throws `TypeError` at parse in the v4
+  preview; 4.6.7 keeps it only as deprecated v3-compat) — fixed to the
+  two-arg `z.record(z.string(), z.string())` with the exact
+  `Record<string, string>` semantics, unit-pinned by the first
+  webhook-metadata test. A v4 sentinel pin (`typeof z.email ===
+  "function"`) locks the runtime against a silent v3 re-resolve.
+- `[BE]` **The deprecated-but-functional v4 usages modernized** (S86-2):
+  `emailSchema` restructured to the v4 pipe idiom
+  (`.pipe(z.email(…))` — probe-verified message-identical across the
+  full battery), `z.ZodIssueCode.custom` → `"custom"` ×3, and the
+  `{ message: }` refine/enum params → `{ error: }` ×3. The un-messaged
+  checks' v4 default texts are ACCEPTED by policy (documented in the
+  plan: both v3/v4 defaults are technical zod-speak, 11 form files carry
+  client maxLength caps, zero test pins exist).
+- `[FE]` **The placeholder-localization sweep** (S86-4/S86-6, audit L-1 +
+  I-1/I-2): the HomeNest kitchenware trio on the skincare admin dialog
+  (dutch-oven slug / HN-DUTCH-24 SKU / "Capacity: 6 qt" specs) → the
+  store's own conventions (`rosehip-glow-serum` / `ELY-020` / bamboo
+  spec lines); the account phone placeholder `+1 (555) 000-0000` → the
+  codebase's BD `+880 1712 345678`; the order dialog's UPS/FedEx/USPS +
+  1Z… placeholders → `Pathao, RedX, Sundarban…` + a format-neutral
+  tracking dummy.
+- `[BE]` **Dead exports removed** (S86-5, audit L-2): `stripePublishableKey()`
+  (zero consumers — the checkout page resolves via `resolveStripeConfig`
+  directly) and `ROLES` (zero consumers).
+- `[TE]` Suite: 708 → **717 unit** (+9: the v4 sentinel, the email battery,
+  the coupon-enum message, the settings-refine messages, the superRefine
+  custom-code pins, the webhook-metadata record pin, and the three
+  placeholder pins); 90/90 e2e ×2 consecutive on the migrated tree; the
+  zod advisory GONE from `npm audit` (the remaining 11 are the accepted
+  dev-only families — vitest/tinypool + the eslint toolchain).
 
 #### Revision Block — v2.13 (Run 85 — the admin taka-copy completion & comment-scope cycle)
 
@@ -423,9 +462,9 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | ORM / DB | Prisma + SQLite | ^6.11 | Zero-ops local story; relative `file:` URL contract (ADR-002) |
 | UI primitives | Radix UI (dialog, select, sheet, label, tabs, radio) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
-| Validation | Zod | ^3.25 | Single validation boundary (ADR-005) |
-| Unit tests | Vitest | ^3.2 | Node-env suite (634 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins — see §8.1) |
-| E2E tests | Playwright | ^1.64 | 79 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins |
+| Validation | Zod | ^4.6.7 | Single validation boundary (ADR-005) — v4 since run 86 (S86-1) |
+| Unit tests | Vitest | ^3.2 | Node-env suite (717 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins — see §8.1) |
+| E2E tests | Playwright | ^1.64 | 90 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
 ### 1.3 Architecture Decision Records

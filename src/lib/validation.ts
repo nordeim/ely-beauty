@@ -13,13 +13,16 @@ export const ORDER_STATUSES = ["pending", "processing", "shipped", "delivered", 
 // (src/lib/order-money.ts) — the tier is derived from the address city, so
 // the checkout schema no longer accepts (or exports) a client-sent method.
 export const PAYMENT_METHODS = ["card", "cod"] as const;
-export const ROLES = ["customer", "admin"] as const;
 
+// S86-2 (the zod 3→4 migration): the top-level z.email replaces the
+// deprecated .email() method (removed-ward in v5). The pipe preserves the
+// exact v3 order — trim → required → email → lowercase — probe-verified
+// message-identical on the full battery (empty/whitespace/invalid/valid).
 export const emailSchema = z
   .string()
   .trim()
   .min(1, "Email is required")
-  .email("Enter a valid email address")
+  .pipe(z.email("Enter a valid email address"))
   .transform((v) => v.toLowerCase());
 
 export const passwordSchema = z
@@ -283,7 +286,7 @@ export const couponInputSchema = z
       .min(3, "Code must be at least 3 characters")
       .max(40, "Code must be 40 characters or fewer")
       .regex(/^[A-Za-z0-9-]+$/, "Code can only contain letters, numbers and dashes"),
-    type: z.enum(["percent", "fixed", "free_shipping"], { message: "Choose a discount type" }),
+    type: z.enum(["percent", "fixed", "free_shipping"], { error: "Choose a discount type" }),
     value: z
       .number()
       .int("Value must be a whole number")
@@ -315,14 +318,14 @@ export const couponInputSchema = z
   .superRefine((data, ctx) => {
     if (data.type === "percent" && (data.value > 100 || data.value < 1)) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         path: ["value"],
         message: data.value > 100 ? "Percent discounts are limited to 100%." : "Percent discounts must be positive (1–100%).",
       });
     }
     if (data.type === "fixed" && data.value < 1) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         path: ["value"],
         message: "Fixed discounts must be a positive amount.",
       });
@@ -331,7 +334,7 @@ export const couponInputSchema = z
       // Session-20 S20-6: the free_shipping benefit has no value component —
       // the seed/admin dialog always sends 0.
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         path: ["value"],
         message: "Free shipping coupons take no value.",
       });

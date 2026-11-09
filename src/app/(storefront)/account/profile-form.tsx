@@ -93,7 +93,7 @@ export function ProfileForm({ name, email, phone }: { name: string; email: strin
           type="tel"
           maxLength={40}
           defaultValue={phone ?? ""}
-          placeholder="+1 (555) 000-0000"
+          placeholder="+880 1712 345678"
           autoComplete="tel"
         />
       </div>

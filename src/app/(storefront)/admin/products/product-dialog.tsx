@@ -276,7 +276,7 @@ export function ProductDialogButton({
                   slugTouched.current = true;
                   setField("slug", e.target.value);
                 }}
-                placeholder="enameled-cast-iron-dutch-oven"
+                placeholder="rosehip-glow-serum"
                 required
                 maxLength={120}
               />
@@ -343,7 +343,7 @@ export function ProductDialogButton({
                 id="product-sku"
                 value={form.sku}
                 onChange={(e) => setField("sku", e.target.value)}
-                placeholder="HN-DUTCH-24"
+                placeholder="ELY-020"
                 required
                 maxLength={60}
               />
@@ -476,7 +476,7 @@ export function ProductDialogButton({
               id="product-specs"
               value={form.specsText}
               onChange={(e) => setField("specsText", e.target.value)}
-              placeholder={"Capacity: 6 qt\nMaterial: Enameled cast iron"}
+              placeholder={"Material: Bamboo\nBristle type: Soft"}
               className="min-h-[72px]"
             />
           </div>

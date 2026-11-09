@@ -269,7 +269,7 @@ export function OrderManageButton({ order }: { order: OrderManageData }) {
                 id={`carrier-${order.id}`}
                 value={carrier}
                 onChange={(e) => setCarrier(e.target.value)}
-                placeholder="UPS, FedEx, USPS…"
+                placeholder="Pathao, RedX, Sundarban…"
                 maxLength={60}
               />
             </div>
@@ -279,7 +279,7 @@ export function OrderManageButton({ order }: { order: OrderManageData }) {
                 id={`tracking-${order.id}`}
                 value={trackingNumber}
                 onChange={(e) => setTrackingNumber(e.target.value)}
-                placeholder="1Z999AA10123456784"
+                placeholder="ABC123456789"
                 maxLength={60}
               />
             </div>

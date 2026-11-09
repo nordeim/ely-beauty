@@ -12,7 +12,7 @@ export function numericSetting(min: number, max: number) {
     .string()
     .trim()
     .refine((v) => /^\d+(\.\d+)?$/.test(v) && Number(v) >= min && Number(v) <= max, {
-      message: `Enter a number between ${min} and ${max}.`,
+      error: `Enter a number between ${min} and ${max}.`,
     })
     .transform((v) => String(Number(v)));
 }
@@ -23,7 +23,7 @@ export function integerSetting(min: number, max: number) {
     .string()
     .trim()
     .refine((v) => /^\d+$/.test(v) && Number(v) >= min && Number(v) <= max, {
-      message: `Enter a whole number between ${min} and ${max}.`,
+      error: `Enter a whole number between ${min} and ${max}.`,
     });
 }
 

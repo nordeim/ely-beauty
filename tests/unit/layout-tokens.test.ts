@@ -766,3 +766,45 @@ describe("S85 — the taka-copy completion pins", () => {
     expect(globals).toMatch(/::-webkit-search-cancel-button/);
   });
 });
+
+// S86 — the placeholder-localization pins (session 86): audit 86-a's L-1
+// (the HomeNest kitchenware placeholder trio on the skincare admin dialog —
+// the S85 copy-cycle class, missed because placeholders weren't in the
+// concept sweep) and I-1/I-2 (the US-format phone and carrier/tracking
+// placeholders on a BD store). The S85 lesson carries: sweep the CONCEPT
+// (scaffold-heritage examples), not just currency symbols.
+describe("S86 — the placeholder-localization pins", () => {
+  it("S86-4: the product dialog's placeholder trio is skincare-appropriate (audit L-1)", () => {
+    const dialog = src("app/(storefront)/admin/products/product-dialog.tsx");
+    // The HomeNest kitchenware examples are gone…
+    expect(dialog).not.toMatch(/dutch-oven/i);
+    expect(dialog).not.toMatch(/HN-DUTCH/);
+    expect(dialog).not.toMatch(/6 qt/i);
+    expect(dialog).not.toMatch(/cast iron/i);
+    // …replaced by the store's own conventions: a kebab-case skincare
+    // slug, the seed's ELY-00N SKU family, and label:value spec lines.
+    expect(dialog).toMatch(/placeholder="rosehip-glow-serum"/);
+    expect(dialog).toMatch(/placeholder="ELY-020"/);
+    expect(dialog).toMatch(/Material: Bamboo/);
+    expect(dialog).toMatch(/Bristle type: Soft/);
+  });
+
+  it("S86-6a: the account profile phone placeholder is the codebase's BD format (audit I-1)", () => {
+    const form = src("app/(storefront)/account/profile-form.tsx");
+    // The address dialog's pinned BD example is the single convention —
+    // the US +1 (555) scaffold default has no place on a BD store.
+    expect(form).not.toMatch(/\+1 \(555\)/);
+    expect(form).toMatch(/\+880 1712 345678/);
+  });
+
+  it("S86-6b: the order dialog's carrier/tracking placeholders are BD-appropriate (audit I-2)", () => {
+    const dialog = src("app/(storefront)/admin/orders/order-manage-dialog.tsx");
+    // US carriers and the UPS 1Z… tracking format are scaffold heritage.
+    expect(dialog).not.toMatch(/UPS|FedEx|USPS/);
+    expect(dialog).not.toMatch(/1Z999AA/);
+    // The major BD couriers as examples; a format-neutral alphanumeric
+    // tracking dummy (no real-world format asserted).
+    expect(dialog).toMatch(/Pathao, RedX, Sundarban/);
+    expect(dialog).toMatch(/placeholder="ABC123456789"/);
+  });
+});

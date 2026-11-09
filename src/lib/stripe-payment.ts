@@ -340,7 +340,11 @@ export function isIntentAnchorP2002(error: unknown): boolean {
 /** Re-exported for the route-level retry loops (the tolerant matcher). */
 export { isUniqueViolation };
 
-const metadataSchema = z.record(z.string());
+// S86-1 (the zod 3→4 migration): the two-arg form is the v4 idiom — the
+// single-arg overload is deprecated (it already mis-bound the schema to the
+// KEY position in the zod/v4 preview; 4.6.7 keeps it only as v3-compat).
+// Record<string, string> semantics, unchanged from v3.
+const metadataSchema = z.record(z.string(), z.string());
 
 /**
  * Structural parse of the webhook envelope — defense in depth AFTER
