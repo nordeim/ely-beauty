@@ -68,7 +68,18 @@ export default async function AdminAnalyticsPage() {
   const productRows = referencedIds.length
     ? await db.product.findMany({
         where: { id: { in: referencedIds } },
-        select: { id: true, name: true, categories: { select: { category: { select: { name: true } } } } },
+        // S83-4 (audit 83-a F-2): ordered by the category's sortOrder (the
+        // S82-4 determinism contract) so the categories[0] attribution
+        // below is not row-order dependent — the dual-member product must
+        // always attribute to its FIRST display category.
+        select: {
+          id: true,
+          name: true,
+          categories: {
+            orderBy: [{ category: { sortOrder: "asc" } }, { category: { name: "asc" } }],
+            select: { category: { select: { name: true } } },
+          },
+        },
       })
     : [];
   const productById = new Map(productRows.map((p) => [p.id, p]));
@@ -100,7 +111,7 @@ export default async function AdminAnalyticsPage() {
   const kpis: { label: string; value: string; hint: string; icon: typeof Wallet }[] = [
     {
       label: "Avg Order Value",
-      value: nonCancelledCount === 0 ? "$0.00" : formatMoney(Math.round(totalRevenue / nonCancelledCount)),
+      value: nonCancelledCount === 0 ? formatMoney(0) : formatMoney(Math.round(totalRevenue / nonCancelledCount)),
       hint: `${nonCancelledCount} non-cancelled orders`,
       icon: ReceiptText,
     },

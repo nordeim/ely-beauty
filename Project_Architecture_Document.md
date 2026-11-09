@@ -1,9 +1,52 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.10
+# ElyBeauty — Master Project Architecture Document (PAD) v2.11
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-09
+
+#### Revision Block — v2.11 (Run 83 — the e2e concurrency-isolation & USD-remnant cycle)
+
+- `[TE]` **The catalog-mutating admin spec runs in its own serialized
+  Playwright project** (S83-1, D-83-1): `admin-catalog` — `testMatch:
+  /admin\.spec\.ts/`, `workers: 1`, excluded from `desktop-chromium`.
+  Root-caused from a 2-of-6-runs flake reproduced at the gates: under
+  `fullyParallel`, S81-11's dual-membership window (bestsellers 4→5) and
+  S82-3's template-clear window (skincare 12→11) were observable by
+  parallel storefront count pins, and the two tests full-row-upserted
+  the SAME Gua Sha concurrently (each save silently reverting the
+  other's axis from a stale dialog snapshot). Projects run
+  sequentially — the mutations now execute alone, after every
+  read-only project has finished.
+- `[TE]` **The admin spec's post-search Edit clicks are gated** (S83-2):
+  the shared `searchProductsAndOpenDialog` helper waits for the native
+  GET form's navigation URL + the `html[data-hydrated]` sentinel before
+  clicking the (client-island) Edit button — the old shape clicked
+  mid-navigation, the dialog never opened, and the test aborted
+  MID-MUTATION leaving durable catalog dirt (masked only by the
+  fresh-server restore backstop). `[TE]` The S81-11 opening self-heals
+  leftover dirt (S83-3, the S20-1 discipline) — a reused-server rerun
+  after an aborted revert no longer fails at the seed-shape pin.
+  Verified end-to-end: dirt seeded → the test heals + passes → the
+  post-run state seed-clean. Pinned by
+  `tests/unit/e2e-infrastructure.test.ts` (×3).
+- `[SE]` **The analytics category attribution is deterministic** (S83-4,
+  audit 83-a F-2): `/admin/analytics`'s inline product select gains the
+  S82-4 ordering (`category.sortOrder`, name tie-break) — its
+  `categories[0]` read was the one surface the run-82 determinism fix
+  never reached; the `products.ts` comment corrected to name the real
+  `firstCategoryName` consumers.
+- `[SE]` **The USD/US HomeNest remnants retired** (S83-5, audit F-3 +
+  sweep): the dead `|| "United States"` fallback in the addresses POST
+  (the Zod default "Bangladesh" always wins), the same dead fallback in
+  the account order-history snapshot display (now "Bangladesh"), and
+  the analytics AOV zero-state `"$0.00"` literal (now `formatMoney(0)`).
+- `[TE]` Suite: 691 → **698 unit** (+7: the e2e-infrastructure pins ×3,
+  the analytics/USD-remnant pins ×4) · **90 e2e** (no new specs — the
+  flake fixes harden existing ones; 3× consecutive full-suite greens
+  post-fix). The live reference re-measured: ZERO new parity deltas —
+  the mobile panel ±1px on both sites, the overlay `$X.00` rows
+  byte-exact, the shop/detail/footer surfaces all holding.
 
 #### Revision Block — v2.10 (Run 82 — the overlay price-format parity & admin-undo cycle)
 

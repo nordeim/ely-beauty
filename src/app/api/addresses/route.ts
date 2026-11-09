@@ -60,7 +60,10 @@ export async function POST(request: NextRequest) {
           city: parsed.data.city,
           state: parsed.data.state || parsed.data.city,
           postalCode: parsed.data.postalCode || "",
-          country: parsed.data.country || "United States",
+          // S83-5 (audit 83-a F-3): the Zod schema's default ("Bangladesh")
+          // always produces a non-empty string — the old US-string fallback
+          // here was dead HomeNest heritage, removed.
+          country: parsed.data.country,
           isDefault: count === 0,
         },
         select: { id: true },

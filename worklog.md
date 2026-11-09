@@ -367,3 +367,22 @@ Stage Summary:
 - Every fixed surface pinned: the formatOverlayPrice truth table (×4 unit + the e2e codepoint pin), the None clear path (×3 unit + the e2e clear-and-revert), the ordered include / P2003 mapping / transactional rebuild (source pins).
 - Dev-server screenshots: 25/25 regenerated and validated (dimensions + non-trivial sizes).
 - Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.
+
+---
+
+Task ID: 77
+Agent: run-83 executor (the e2e concurrency-isolation & USD-remnant cycle)
+Task: The full remediation cycle on the SURVIVING workspace (git pull to 3d567ad): docs review → gates re-validation (which surfaced a 2-of-6-runs e2e flake — the cycle's discovery) → deep audit 83-a (read-only subagent: 12/12 anchors PASS, 0 CRITICAL/HIGH/MEDIUM production defects, 1 HIGH test-infra, 1 LOW, 1 INFO) → live-reference re-measurement (ZERO new parity deltas — every pinned surface GREEN on both sites) → the Session 83 plan → TDD remediation (S83-1..S83-5, RED 7 → GREEN) → the self-heal verification → 25 screenshots → the docs sweep → commit + SSH push to main.
+
+Work Log:
+- The flake root-cause (full error evidence on the second reproduction): three modes, one family — the ungated post-search Edit click racing the native-GET navigation + re-hydration (abort mid-mutation → durable dirt), the observable mutation windows (bestsellers 4→5 / skincare 12→11) landing inside parallel storefront count pins, and the same-product full-row-upsert clobber between S81-11 and S82-3 (audit 83-a's extension). CI's workers: 1 masked the class; the fresh-server restore backstop healed the dirt between invocations.
+- The fix set: the serialized admin-catalog Playwright project (workers: 1 — projects run sequentially, mutations execute alone after every reader); the gated searchProductsAndOpenDialog helper (waitForURL + the hydration sentinel before the client-island click); the S81-11 self-heal opening (verified end-to-end: dirt seeded → heals + passes → post-run state seed-clean); the analytics nested orderBy (the S82-4 determinism gap + the comment correction); the USD/US remnant sweep (the dead United States fallbacks ×2, the $0.00 AOV zero-state → formatMoney(0)).
+- The GREEN-phase correction: the S83-5 comment initially quoted the banned literal — the source pin caught its own fixing comment (encoded as SKILL trap 5).
+- The live reference re-measured on both viewports: the mobile panel 89/125/161/197/233 vs the clone's 88/124/160/196/232 (±1px), the overlay $X.00 rows byte-exact (cp 36, two decimals, Cormorant 14px/300; the desktop input 24px/300, column x:384 w:672), the shop 19/19 authored order, the detail ৳370 Inter 24px/600 — ZERO new deltas; the clone's server-side probe 8/8.
+- The operator's standing instructions verified: DATABASE_URL="file:../db/custom.db" with db/ at the repo root (the symlink convergence intact, same inode); vitest + playwright configs complete and green (the playwright config now three projects); the sitemap/robots/JSON-LD/OG/security surfaces verified on the running server; .env.example re-verified 9/9 (committed); the mobile menu — the priority surface — verified working on BOTH sites (geometry ±1px, toggle-close, SEARCH-row → overlay, route-change close; no Tailwind v4 display-toggle anywhere in the contract).
+
+Stage Summary:
+- All gates green: lint · typecheck · typecheck:tests · 698/698 unit (+7) · clean build · 90/90 e2e ×3 consecutive full-suite runs (the flake closed structurally and empirically).
+- Every fixed surface pinned: the e2e-infrastructure pins ×3 (the project split, the gated helper, the self-heal) + the layout-tokens S83 pins ×4 (the analytics orderBy, the comment, the US-fallback ban, the $0.00 ban).
+- Dev-server screenshots: 25/25 regenerated and validated (dimensions + non-trivial sizes).
+- Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.

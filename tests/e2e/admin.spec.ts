@@ -13,6 +13,37 @@ async function loginAsAdmin(page: import("@playwright/test").Page) {
   await expect(page).toHaveURL(/\/(account|admin)/, { timeout: 10_000 });
 }
 
+/**
+ * S83-2: search the admin products table and open a product's edit dialog,
+ * GATED on the navigation + re-hydration. The search is a native GET form
+ * (`<form action="/admin/products" method="get">`) — `press("Enter")`
+ * performs a full navigation, and the old test shape clicked the Edit
+ * button (a client island) while that navigation was still in flight: the
+ * click landed on the outgoing document or on the new one before React
+ * wired its onClick, the dialog never opened, and the test aborted
+ * MID-MUTATION leaving durable catalog dirt behind (the run-83 flake,
+ * mode 1 — reproduced as admin.spec.ts:49 twice in six full-suite runs).
+ * The gate mirrors gotoHydrated's contract: wait for the ?q= URL, then the
+ * html[data-hydrated] sentinel, and only then click.
+ */
+async function searchProductsAndOpenDialog(
+  page: import("@playwright/test").Page,
+  query: string,
+  editButtonName: RegExp | string,
+): Promise<import("@playwright/test").Locator> {
+  const search = page.getByLabel("Search products by name");
+  await search.fill(query);
+  await search.press("Enter");
+  // A form GET encodes spaces as "+" — escape the literal for the URL wait.
+  const urlPart = `q=${query.replace(/ /g, "+")}`;
+  await page.waitForURL(new RegExp(urlPart.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  await page.waitForSelector('html[data-hydrated="true"]', { timeout: 20_000 });
+  await page.getByRole("button", { name: editButtonName }).first().click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  return dialog;
+}
+
 test.describe("admin back office", () => {
   test("a customer account cannot open /admin", async ({ page }) => {
     await gotoHydrated(page, "/login");
@@ -49,17 +80,25 @@ test.describe("admin back office", () => {
   test("admin edits a product's display categories (the S81-11 multi-select)", async ({ page }) => {
     await loginAsAdmin(page);
     await gotoHydrated(page, "/admin/products");
-    const search = page.getByLabel("Search products by name");
-    await search.fill("Gua Sha");
-    search.press("Enter");
-    await page.getByRole("button", { name: /Edit Stainless Steel Gua Sha/i }).first().click();
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
+    let dialog = await searchProductsAndOpenDialog(page, "Gua Sha", /Edit Stainless Steel Gua Sha/i);
 
     // The category editor is a checkbox GROUP — the reference's
     // many-to-many semantics (zero or more display categories per product).
-    const group = dialog.getByRole("group", { name: /display categories/i });
+    let group = dialog.getByRole("group", { name: /display categories/i });
     await expect(group).toBeVisible();
+
+    // S83-3 (the S20-1 self-heal discipline): an aborted prior revert can
+    // leave the dual membership behind (the fresh-server restore heals it;
+    // a reused server does not) — heal to the seed shape BEFORE pinning it.
+    const bestsellers = group.getByRole("checkbox", { name: "Bestsellers" });
+    if (await bestsellers.isChecked()) {
+      await bestsellers.uncheck();
+      await dialog.getByRole("button", { name: "Save Changes" }).click();
+      await expect(dialog).toBeHidden();
+      dialog = await searchProductsAndOpenDialog(page, "Gua Sha", /Edit Stainless Steel Gua Sha/i);
+      group = dialog.getByRole("group", { name: /display categories/i });
+    }
+
     // The Gua Sha ships in exactly one display category (Beauty Tools).
     await expect(group.getByRole("checkbox", { name: "Beauty Tools" })).toBeChecked();
     await expect(group.getByRole("checkbox", { name: "Bestsellers" })).not.toBeChecked();
@@ -77,12 +116,11 @@ test.describe("admin back office", () => {
     await expect(page.getByText("7 products", { exact: true })).toBeVisible();
 
     // Revert (self-cleaning — the e2e suite must stay re-runnable against
-    // the persistent demo DB).
+    // the persistent demo DB). S83-2: the gated helper replaces the bare
+    // post-search click.
     await gotoHydrated(page, "/admin/products");
-    await search.fill("Gua Sha");
-    search.press("Enter");
-    await page.getByRole("button", { name: /Edit Stainless Steel Gua Sha/i }).first().click();
-    await expect(dialog).toBeVisible();
+    dialog = await searchProductsAndOpenDialog(page, "Gua Sha", /Edit Stainless Steel Gua Sha/i);
+    group = dialog.getByRole("group", { name: /display categories/i });
     await group.getByRole("checkbox", { name: "Bestsellers" }).uncheck();
     await dialog.getByRole("button", { name: "Save Changes" }).click();
     await expect(dialog).toBeHidden();
@@ -93,12 +131,7 @@ test.describe("admin back office", () => {
   test("admin clears a product's template category through the None option (S82-3)", async ({ page }) => {
     await loginAsAdmin(page);
     await gotoHydrated(page, "/admin/products");
-    const search = page.getByLabel("Search products by name");
-    await search.fill("Gua Sha");
-    search.press("Enter");
-    await page.getByRole("button", { name: /Edit Stainless Steel Gua Sha/i }).first().click();
-    const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
+    const dialog = await searchProductsAndOpenDialog(page, "Gua Sha", /Edit Stainless Steel Gua Sha/i);
 
     // Audit 82-a L-3: Radix Select cannot deselect — the "None" option is
     // the clear path for a set template category.
@@ -115,15 +148,17 @@ test.describe("admin back office", () => {
     await expect(eyebrow).toHaveText(/Beauty Tools/i);
 
     // Revert (self-cleaning — the e2e suite must stay re-runnable).
+    // S83-2: the gated helper replaces the bare post-search click.
     await gotoHydrated(page, "/admin/products");
-    await search.fill("Gua Sha");
-    search.press("Enter");
-    await page.getByRole("button", { name: /Edit Stainless Steel Gua Sha/i }).first().click();
-    await expect(dialog).toBeVisible();
-    await dialog.getByRole("combobox", { name: "Template category" }).click();
+    const revertDialog = await searchProductsAndOpenDialog(
+      page,
+      "Gua Sha",
+      /Edit Stainless Steel Gua Sha/i,
+    );
+    await revertDialog.getByRole("combobox", { name: "Template category" }).click();
     await page.getByRole("option", { name: "Skincare" }).click();
-    await dialog.getByRole("button", { name: "Save Changes" }).click();
-    await expect(dialog).toBeHidden();
+    await revertDialog.getByRole("button", { name: "Save Changes" }).click();
+    await expect(revertDialog).toBeHidden();
   });
 
   test("orders manager lists orders and opens management", async ({ page }) => {

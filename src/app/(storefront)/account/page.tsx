@@ -392,7 +392,7 @@ function OrdersSection({
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {snapshotString(snapshot.city)}, {snapshotString(snapshot.state)}{" "}
-                    {snapshotString(snapshot.postalCode)}, {snapshotString(snapshot.country) || "United States"}
+                    {snapshotString(snapshot.postalCode)}, {snapshotString(snapshot.country) || "Bangladesh"}
                   </p>
                   {snapshotString(snapshot.phone) ? (
                     <p className="text-sm text-muted-foreground">{snapshotString(snapshot.phone)}</p>

@@ -11614,3 +11614,197 @@ the admin e2e's dialog flow).
   82 Appendix B entry), session_20.md, worklog Task 76, this log.
 - **Deferred (documented)**: the zod 3→4 migration epic — still the
   standing deferred debt (a dedicated cycle), unchanged.
+
+## Session 83 — The E2E Concurrency-Isolation & USD-Remnant Cycle
+
+> **Status:** EXECUTING (this cycle)
+> **Date:** 2026-11-09
+> **Inputs:** the gates re-validation on the pulled tree (3d567ad: lint ✓ ·
+> typecheck ✓ · typecheck:tests ✓ · 691/691 unit ✓ · clean build ✓ · the
+> e2e suite reproduced a 2-failure flake in 2 of 6 full runs — the cycle's
+> discovery) + deep audit 83-a (read-only subagent, web-application +
+> code-review-checklist methodology, skills/ excluded: **12/12 standing
+> anchors PASS, 0 CRITICAL/HIGH in production code, 1 HIGH
+> (test-infrastructure), 1 LOW, 1 INFO**) + the live-reference
+> re-measurement (agent-browser 0.41.1, logged in, mobile 390×844 +
+> desktop 1440×900: **ZERO new parity deltas** — every pinned surface
+> re-verified GREEN on both sites) + the clone-side probe (8/8 server
+> checks; the mobile panel ±1px; the overlay's `$X.00` rows byte-exact).
+
+### Findings feeding this cycle
+
+**D-83-1 (HIGH, test infrastructure) — the e2e concurrency flake class,
+reproduced and root-caused.** Observed twice this session (2 failures ×
+2 of 6 full-suite runs; both victims passing in isolation and on the
+following runs): `admin.spec.ts:49` (S81-11, dialog not found after the
+Edit click while the `?q=Gua+Sha` navigation was still in flight) +
+`storefront.spec.ts:68` (bestsellers "4 products" — seeing S81-11's
+mid-test window); and `admin.spec.ts:93` (S82-3) +
+`storefront.spec.ts:132` (skincare "12 products" — S82-3's
+template-clear window). Three failure modes, all verified by audit 83-a:
+
+1. **The ungated post-search Edit click.** The admin products search is
+   a native GET form; `search.press("Enter")` navigates, and the very
+   next statement clicks the Edit button — a client island whose
+   onClick needs the NEW document's hydration. The click lands on the
+   old document (torn down) or the new one pre-hydration (a no-op) →
+   `expect(dialog).toBeVisible()` times out → the test aborts MID-MUTATION.
+2. **Observable mutation windows.** S81-11 holds bestsellers at 5 (the
+   Gua Sha's added dual membership) and S82-3 holds skincare at 11 (the
+   cleared template category) for the seconds each test spends
+   navigating the public storefront to verify its edit — windows any
+   parallel worker's count assertion can land inside
+   (`fullyParallel: true` runs admin.spec.ts inside desktop-chromium).
+3. **The same-product clobber.** S81-11 and S82-3 both full-row-upsert
+   the SAME Gua Sha through `upsertProductAction` (the action always
+   writes `templateCategory` AND rebuilds the membership junction from
+   the dialog's snapshot) — running concurrently, each save silently
+   reverts the other's axis from its stale snapshot.
+
+An aborted revert leaves the membership/template dirty for the rest of
+the run AND for subsequent runs against a reused server (the
+`restore-demo-stock.ts` backstop only runs at webServer start — CI's
+`workers: 1` masks the whole class, which is why it surfaced on local
+multi-worker runs only).
+
+**Audit 83-a findings folded in:**
+
+- **F-2 (LOW)**: `/admin/analytics` reads `categories[0]` through its
+  own inline unordered select (`analytics/page.tsx:71,84`) — the
+  S82-4 determinism fix never reached this surface, and the
+  `products.ts:137` comment claims analytics attribution flows through
+  `firstCategoryName` (it does not).
+- **F-3 (INFO) + the USD/US remnant sweep**: the dead
+  `parsed.data.country || "United States"` fallback in the addresses
+  POST (`api/addresses/route.ts:63` — the Zod default "Bangladesh"
+  always wins); the same dead US fallback in the account order-history
+  snapshot display (`account/page.tsx:395`); and the `"$0.00"` AOV
+  zero-state literal beside a ৳ formatter (`analytics/page.tsx:103`) —
+  HomeNest heritage remnants (the reference has no admin/account
+  surfaces to contradict).
+
+**The reference (re-measured this session):** the mobile panel rows
+89/125/161/197/233 @390×844 (36px rhythm, 14px/1.4px uppercase), the
+panel ending at ABOUT, toggle-close, SEARCH-row → overlay, route-change
+close; the overlay's "silk" set (Bonnet/Pillowcase/Sandalwood
+Oval/Crystal Hair Remover, `$370.00`-family prices, ASCII cp 36, two
+decimals, Cormorant 14px/300; desktop input 24px/300, column x:384
+w:672); the shop's 19-card one-page grid ("All Products", bonnet-first
+authored order); the detail's ৳370 Inter 24px/600 + "skincare" eyebrow;
+the nav/footer template slugs. **The clone matches every one of these
+(probe-verified this session: panel 88/124/160/196/232 ±1px, the
+overlay rows byte-exact, 8/8 server-side checks).** No parity work
+needed this cycle.
+
+### The work items (S83-1 .. S83-6)
+
+- [x] **S83-1 (D-83-1, root fix)**: `playwright.config.ts` gains an
+      `admin-catalog` project — `testMatch: /admin\.spec\.ts/`,
+      `workers: 1`, Desktop Chrome 1440×900 — and `desktop-chromium`'s
+      `testIgnore` extends to admin.spec.ts. Playwright runs projects
+      sequentially, so the mutation-bearing spec executes alone, after
+      every read-only project has finished: no window is ever
+      observable by a parallel reader, and same-file parallelism (the
+      clobber) is eliminated. RED:
+      `tests/unit/e2e-infrastructure.test.ts` (new source pin: the
+      project split exists with workers 1 + the desktop exclusion).
+- [x] **S83-2 (D-83-1, mode 1)**: the four search-then-click sequences
+      in `admin.spec.ts` route through a shared
+      `searchProductsAndOpenDialog` helper that gates the native-GET
+      navigation (`waitForURL(/\?q=/)` + the `html[data-hydrated]`
+      sentinel — the helpers.ts convention applied to the post-Enter
+      navigation) before the Edit click. RED: a source pin on the
+      helper + its four call sites.
+- [x] **S83-3 (D-83-1, dirt tolerance — the S20-1 discipline)**:
+      S81-11's opening SELF-HEALS a leftover Bestsellers membership
+      (uncheck + save + reopen) before pinning the seed shape — a
+      reused-server rerun after an aborted revert no longer fails at
+      `not.toBeChecked()`. RED: a source pin.
+- [x] **S83-4 (audit F-2)**: the analytics select's nested `categories`
+      gains the S82-4 orderBy (deterministic category attribution for
+      the dual-member product); the `products.ts` comment names the
+      real consumers (JSON-LD, the dashboard low-stock label, the
+      detail eyebrow) and notes analytics owns its ordered select. RED:
+      the layout-tokens pin extension.
+- [x] **S83-5 (audit F-3 + sweep)**: the addresses POST passes the
+      schema country straight through (the dead US fallback removed);
+      the account snapshot display falls back to "Bangladesh"; the
+      analytics AOV zero-state renders `formatMoney(0)` (৳0). RED:
+      source pins (no US-fallback literals in the swept surfaces).
+- [x] **S83-6**: the docs sweep (session_22.md, worklog Task 77,
+      AGENTS.md's process-discipline note for the project split,
+      CLAUDE.md + README counts, PAD v2.11, ely-beauty_SKILL.md
+      v2.11.0) + 25 dev-server screenshots + `.env.example` re-verify +
+      the scratch probe scripts removed + the final full gate chain
+      (the e2e suite ×3 for stability evidence) + commit + SSH-wrapper
+      push to main.
+
+### Validation against the codebase (pre-execution)
+
+Every change site pre-read: `playwright.config.ts:22-38` (the projects
+array — the new project joins after desktop-chromium),
+`tests/e2e/admin.spec.ts:37-127` (the four Enter→click sites :54, :83,
+:98, :120 + the S81-11 opening assertions :60-63),
+`tests/e2e/helpers.ts:12-15` (gotoHydrated's sentinel pattern — the
+helper composes the same gate), `src/app/(storefront)/admin/analytics/
+page.tsx:68-84,103` (the select + the `[0]` read + the zero-state),
+`src/lib/products.ts:135-148` (the comment + the ordered include),
+`src/app/api/addresses/route.ts:63`, `src/app/(storefront)/account/
+page.tsx:395`, `tests/unit/layout-tokens.test.ts:553-612` (the S82
+pin block the extension follows). The pin file naming follows the
+established source-pin pattern (`src()` reader + describe blocks).
+
+### Session 83 execution log
+
+- **Environment**: the surviving workspace (git pull a201bf0 → 3d567ad —
+  the operator's session-log commit); node_modules/db/.env intact; the
+  ambient `DATABASE_URL` shadow converged via the standing symlink (same
+  inode verified); the DB seed-state verified (19 products / 4 categories
+  / 14 memberships / 3 coupons).
+- **Gates on the pulled tree**: lint ✓ · typecheck ✓ · typecheck:tests ✓
+  · 691/691 unit ✓ · clean build ✓ · the e2e suite reproduced the flake
+  in 2 of 6 runs (2 failures each: S81-11/S81-3 once, S81-11/storefront
+  pills once — full error evidence captured on the second reproduction:
+  the dialog-not-found call log mid-navigation + the bestsellers count
+  mismatch inside S81-11's window).
+- **Deep audit 83-a** (read-only subagent): 12/12 standing anchors PASS,
+  run-82 delta 7/7 PASS; 0 CRITICAL/HIGH/MEDIUM production-code defects;
+  1 HIGH test-infrastructure (the flake class — independently verified
+  and EXTENDED with the same-product clobber pair), 1 LOW (F-2), 1 INFO
+  (F-3). No collision pairs outside the admin-catalog family.
+- **Live re-measurement** (agent-browser, logged in): every pinned
+  surface GREEN — the mobile panel rows 89/125/161/197/233 @390×844
+  (14px/1.4px uppercase, panel ending at ABOUT, toggle-close,
+  SEARCH-row → overlay, route-change close), the overlay's "silk" set
+  (4 rows, `$370.00`-family, cp 36, two decimals; desktop input
+  24px/300 Cormorant, column x:384 w:672), the shop 19-card one-page
+  grid + "All Products" + bonnet-first order, the detail ৳370 Inter
+  24px/600 + "skincare" eyebrow, the nav/footer template slugs. ZERO
+  new deltas. The clone probe: 8/8 server-side checks + the panel
+  88/124/160/196/232 (±1px) + the overlay rows byte-exact.
+- **TDD (RED 7 → GREEN)**: the e2e-infrastructure pins ×3 (the project
+  split, the gated helper, the self-heal) + the layout-tokens S83 pins
+  ×4 (the analytics orderBy, the comment correction, the US-fallback
+  ban, the $0.00 ban). One GREEN-phase correction: the S83-5 comment
+  initially quoted the banned `|| "United States"` literal — the pin
+  caught its own fixing comment; reworded.
+- **Self-heal verification (end-to-end)**: the Bestsellers dirt seeded
+  directly into the DB, the S81-11 test run against a REUSED server
+  (no restore backstop) — the heal fired, the test passed, and the
+  post-run state verified seed-clean (template "skincare",
+  memberships ["Beauty Tools"]).
+- **Gates (all observed green)**: lint ✓ · typecheck ✓ ·
+  typecheck:tests ✓ · **698/698 unit** (+7) · clean build ✓ ·
+  **90/90 e2e ×3 consecutive full-suite runs** (the admin spec now
+  running under the `[admin-catalog]` project).
+- **Evidence**: 25 dev-server screenshots regenerated + validated
+  (25/25 dimension/size checks); `.env.example` re-verified against
+  every code-referenced env var (9/9 covered, no new vars); the
+  scratch probe scripts removed.
+- **Docs sweep**: AGENTS.md (the S83 e2e-ordering note + 2..83),
+  CLAUDE.md (698 pins + the E2E-conventions extension), README (698
+  counts + badge), PAD v2.11, ely-beauty_SKILL.md v2.11.0
+  (project_state + the Session 83 Appendix B entry with five encoded
+  traps), session_22.md, worklog Task 77, this log.
+- **Deferred (documented)**: the zod 3→4 migration epic — still the
+  standing deferred debt (a dedicated cycle), unchanged.

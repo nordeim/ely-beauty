@@ -611,3 +611,43 @@ describe("S82 — the overlay price format + audit 82-a pins", () => {
     expect(script).toMatch(/\$transaction/);
   });
 });
+
+// S83 — the audit 83-a pins: F-2 the analytics surface's category read is
+// deterministic (the S82-4 orderBy never reached its inline select, and the
+// products.ts comment overclaimed analytics coverage); F-3 the USD/US
+// HomeNest remnants (the dead United States fallbacks + the $0.00 zero
+// state beside a ৳ formatter).
+describe("S83 — the analytics determinism + USD-remnant pins", () => {
+  it("S83-4: the analytics select orders its nested categories (audit F-2)", () => {
+    const analytics = src("app/(storefront)/admin/analytics/page.tsx");
+    // The nested categories select carries the S82-4 ordering — the
+    // categories[0] attribution must not be row-order dependent.
+    const selectMatch =
+      analytics.match(/categories:\s*\{[\s\S]{0,220}?orderBy[\s\S]{0,120}?sortOrder/) ?? [];
+    expect(selectMatch.length).toBeGreaterThan(0);
+    expect(analytics).toMatch(/categories\[0\]/);
+  });
+
+  it("S83-4b: the productCategoryInclude comment names the real consumers (no analytics overclaim)", () => {
+    const products = src("lib/products.ts");
+    // The comment claims the determinism flows to analytics through
+    // firstCategoryName — analytics owns its own ordered select instead.
+    expect(products).not.toMatch(/analytics attribution through `firstCategoryName`/);
+    expect(products).toMatch(/JSON-LD/);
+  });
+
+  it("S83-5: no dead United States fallbacks in the address surfaces (audit F-3)", () => {
+    const addressesRoute = src("app/api/addresses/route.ts");
+    // The Zod default ("Bangladesh") always wins — the fallback is dead code.
+    expect(addressesRoute).not.toContain('|| "United States"');
+    const account = src("app/(storefront)/account/page.tsx");
+    // The order-history snapshot display falls back to the BD store default.
+    expect(account).not.toContain('|| "United States"');
+  });
+
+  it("S83-5b: the analytics AOV zero state renders through formatMoney (no $ remnant)", () => {
+    const analytics = src("app/(storefront)/admin/analytics/page.tsx");
+    expect(analytics).not.toContain('"$0.00"');
+    expect(analytics).toMatch(/formatMoney/);
+  });
+});

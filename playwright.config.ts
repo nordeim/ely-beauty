@@ -32,7 +32,23 @@ export default defineConfig({
     },
     {
       name: "desktop-chromium",
-      testIgnore: /mobile-navigation\.spec\.ts/,
+      testIgnore: /mobile-navigation\.spec\.ts|admin\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
+    },
+    {
+      // S83-1: admin.spec.ts's catalog mutations (the S81-11 dual-membership
+      // window bestsellers 4→5, the S82-3 template-clear window skincare
+      // 12→11, and the two tests' same-product full-row upserts) were
+      // observable by parallel storefront count pins under fullyParallel —
+      // a 2-of-6-runs flake this cycle root-caused. Projects run
+      // SEQUENTIALLY, so the mutation-bearing spec runs alone, serialized,
+      // after every read-only project has finished: no window is ever
+      // observable by a concurrent reader, and same-file parallelism (the
+      // stale-snapshot clobber) is eliminated. Pinned by
+      // tests/unit/e2e-infrastructure.test.ts.
+      name: "admin-catalog",
+      testMatch: /admin\.spec\.ts/,
+      workers: 1,
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },
   ],

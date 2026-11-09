@@ -135,9 +135,11 @@ export function resolveCategoryFilter(
 /** The display-category include every product-card query shares (S81-1).
  *  S82-4: ordered by the category's sortOrder (name as the tie-break) so
  *  the "first" display category is DETERMINISTIC — the dual-member product
- *  (Bestsellers + Beauty Tools) feeds JSON-LD, the dashboard low-stock
- *  label and analytics attribution through `firstCategoryName`, and an
- *  unordered relation read is row-order dependent (audit 82-a INFO-2).
+ *  (Bestsellers + Beauty Tools) feeds the product page's JSON-LD block and
+ *  detail eyebrow, and the dashboard low-stock label, through
+ *  `firstCategoryName`; an unordered relation read is row-order dependent
+ *  (audit 82-a INFO-2). S83-4: /admin/analytics reads its own inline
+ *  select (not this include) — it carries the same ordering there.
  *  `satisfies` (not `as const` — a readonly orderBy array is rejected by
  *  Prisma's include type) keeps the literal shape while validating it. */
 export const productCategoryInclude = {
