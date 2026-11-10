@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.19.0
+version: 2.20.0
 last_updated: 2026-11-10
-project_state: "758 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-93 (session 42 cycle): the rotation-atomicity & credential-single-sourcing cycle — audit 93-a clean (12/12 anchors, run-92 surface R1–R8 8/8, 0 CRITICAL, 1 MEDIUM + 3 LOW + 4 INFO, all substantive findings remediated); S93-1 the transactional credential rotation (rotateCredentialInTx — the hash write and the session kill commit/roll back together in ONE $transaction, the S13-4 growReviewAggregate precedent; +6 pins); S93-2 capture-screenshots converted to TypeScript and joined the demo-credentials single-source (npx tsx invocation, the restore-demo-stock.ts pattern); S93-3 the SKILL's pre-rename demo-email drift fixed; S93-4 the advisory's TTL-cached negative verdict (60s, positives never cached — +3 pins) — 749 → 758 unit, e2e 92 unchanged ×2 consecutive. PREVIOUS (run-92): the password-change surface + default-credential advisory (S92-2), the production-deploy hardening at jesspete.shop"
+project_state: "764 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-94 (session 44 cycle): the Stripe-replay ownership & SKILL-body de-drift cycle — audit 94-a clean (12/12 anchors, run-93 surface R1–R5 5/5, 0 CRITICAL, 7 LOW + 5 INFO, all LOW remediated); S94-2 the Stripe-intent P2002 replay routed through resolveReplay (the S7-2 ownership gate — a leaked pi_… id alone gets the 409; genuine retries still replay; +3 pins); S94-1 the e2e bundle guard imports the demo pair from the single source (+2 source-scan pins); S94-4 the scrypt hash hoisted above the rotation $transaction (no sync crypto under the SQLite write lock); S94-3/S94-5 this file's five live-tense body drifts fixed (identity, version table, 20 models, ELY-XXXXXXXX, clientIp order, key-files list); S94-6 the demo-credentials lockstep inventory corrected — 758 → 764 unit, e2e 92 unchanged ×2 consecutive. PREVIOUS (run-93): the rotation-atomicity & credential-single-sourcing cycle (S93-1..S93-4)"
 tags:
   - nextjs16
   - react19
@@ -68,22 +68,25 @@ tags:
 
 ## 1. Project Identity & Design Philosophy
 
-**What this is.** HomeNest Kitchen is a production-grade e-commerce storefront
-plus admin back office — a **visual-and-functional superset** of the Base44
-reference app at `https://nest-culinary-hub.base44.app/`. "Superset" is a hard
-requirement: every reference feature exists here (hero carousel, 8 category
-tiles, featured/new-arrival grids, product detail with gallery + specs +
-reviews, guest checkout with 3-step flow, order tracking timeline, About /
-Contact / legal pages), plus features the reference lacks (wishlist, coupons,
+**What this is.** ElyBeauty is a production-grade premium-skincare e-commerce
+storefront plus admin back office — a **visual-and-functional superset** of
+the Base44 reference app at `https://ely-beauty.base44.app/`. "Superset" is
+a hard requirement: every reference feature exists here (hero carousel,
+category tiles for the four seeded families, featured/new-arrival grids,
+product detail with gallery + specs + reviews, guest checkout with the
+reference's single-page flow, order tracking timeline, About / Contact /
+legal pages), plus features the reference lacks (wishlist, coupons,
 order-status workflow with events, addresses book, full admin console,
 sitemap/robots/SEO with schema.org JSON-LD rich results, web manifest +
 branded error boundaries, analytics).
 
-**Design thesis.** Warm, editorial kitchenware aesthetic: cream paper
-background, terracotta-orange primary, serif display headings (Playfair via
-`.font-display`), soft warm borders, generous whitespace. The reference's
+**Design thesis.** Editorial premium-skincare aesthetic: ivory paper
+background, taupe primary (`hsl(30 12% 48%)`), serif display headings
+(Cormorant Garamond via `.font-display`), hairline borders, 0-radius / 2px
+geometry, generous whitespace. The reference's
 sampled pixels are the spec — tokens in `src/app/globals.css` were sampled
-from reference screenshots (primary pinned to `hsl(24 70% 50%)`).
+from reference screenshots (primary pinned to `hsl(30 12% 48%)`, the taupe
+ink the reference renders; background ivory `hsl(30 20% 97%)`).
 
 **Non-negotiable design rules:**
 
@@ -114,13 +117,13 @@ Locked versions (from `package.json` — keep this table in sync when bumping):
 | Language | `typescript` | ^5 | strict, `noUncheckedIndexedAccess`, no `any` |
 | Styling | `tailwindcss` + `@tailwindcss/postcss` | ^4 | CSS-first `@theme inline` in `globals.css`; **no tailwind.config.js** |
 | Animations | `tw-animate-css` | ^1.3.5 | shadcn dialog/sheet/toast keyframes |
-| Data | `prisma` / `@prisma/client` | ^6.11.1 | SQLite, 18 models, relative `file:` URL contract |
-| UI primitives | `@radix-ui/*` (dialog, label, radio-group, select, slot, tabs, toast) | latest | accessible shells |
+| Data | `prisma` / `@prisma/client` | ^6.19.3 | SQLite, 20 models, relative `file:` URL contract |
+| UI primitives | `@radix-ui/*` (dialog, label, select, slot, toast) | latest | accessible shells |
 | Styling utils | `class-variance-authority`, `clsx`, `tailwind-merge` | latest | the `cn()` triad |
 | Icons | `lucide-react` | ^0.525.0 | only icon set |
 | Charts | `recharts` | ^3.1.0 | admin revenue/analytics only |
 | Validation | `zod` | ^4.6.7 | single boundary: `src/lib/validation.ts` (v4 since S86-1; the v4 sentinel + message pins in `tests/unit/validation.test.ts`) |
-| Unit tests | `vitest` + `@testing-library/*` + `jsdom` | ^3.2.4 | `tests/unit/*` |
+| Unit tests | `vitest` + `@testing-library/*` + `jsdom` | ^4.1.12 | `tests/unit/*` |
 | E2E | `@playwright/test` | ^1.64.0 | `tests/e2e/*`, standalone server on :3100 |
 | Lint | `eslint` (flat) + `eslint-config-next` | ^9 | `eslint.config.mjs` |
 
@@ -129,7 +132,7 @@ Locked versions (from `package.json` — keep this table in sync when bumping):
 - Node ≥ 20, npm ≥ 10. Use `npm` — the committed lockfile is `package-lock.json` (a stray `bun.lock` from the old SPA may exist but is not authoritative).
 - The sandbox exports a **global `DATABASE_URL`** that shadows `.env` (§10.4).
 - WebKit is **not installable** in the target sandbox — Playwright's mobile project emulates iPhone 13 on Chromium.
-- Fonts are self-hosted (`Inter` variable via `next/font`, Playfair Display via `.font-display` CSS var) — no external font CDN (CSP).
+- Fonts are self-hosted (`Inter` variable via `next/font`, Cormorant Garamond via `.font-display` CSS var) — no external font CDN (CSP).
 
 ## 3. Bootstrapping & Configuration
 
@@ -177,7 +180,7 @@ Key mechanics:
 - `@custom-variant hover (&:hover)` restores v3 hover semantics so touch
   devices still render hover styles.
 - Typography: `--font-sans` binds the `next/font` Inter variable; headings use
-  `.font-display` (Playfair Display) — the serif look is part of visual parity.
+  `.font-display` (Cormorant Garamond) — the serif look is part of visual parity.
 - Radius/shadow pins: see §1 rule 1.
 
 ## 5. Component Architecture & Patterns
@@ -198,7 +201,7 @@ across all of `src/` (pages' interactive islands included).
 | `src/app/api/` | route handlers | cart, cart-summary, wishlist, checkout, coupon/apply, addresses, contact, newsletter, search, health |
 | `src/lib/` | pure logic + singletons | db, auth, auth-secret, cart, wishlist, money, order-money, coupons, cart-quantity, order-tracking, rate-limit, settings, products, validation, csp, db-path, format, password |
 | `src/lib/actions/` | Server Actions | auth, admin, reviews |
-| `prisma/` | schema + seed | 18 models; seed is idempotent |
+| `prisma/` | schema + seed | 20 models; seed is idempotent |
 | `tests/unit/`, `tests/e2e/` | Vitest / Playwright | helpers: `tests/e2e/helpers.ts` (`gotoHydrated`) |
 
 **The golden rule:** RSC by default; `"use client"` only for interactive
@@ -232,10 +235,11 @@ client islands fetch only through `/api/*` route handlers or Server Actions.
 
 ### 7.1 Schema shape
 
-18 models (`prisma/schema.prisma`): `User`, `Session`, `Category`, `Product`,
-`Review`, `Cart`, `CartItem`, `Wishlist`, `WishlistItem`, `Address`, `Order`,
-`OrderItem`, `OrderEvent`, `Coupon`, `CarouselSlide`, `StoreSetting`,
-`NewsletterSubscriber`, `ContactMessage`.
+20 models (`prisma/schema.prisma`): `User`, `Session`, `Category`,
+`ProductCategory`, `Product`, `Review`, `Cart`, `CartItem`, `Wishlist`,
+`WishlistItem`, `Address`, `Order`, `OrderItem`, `OrderEvent`, `StripeEvent`,
+`Coupon`, `CarouselSlide`, `StoreSetting`, `NewsletterSubscriber`,
+`ContactMessage`.
 
 Conventions:
 - All money columns are **`Int` cents** (`price`, `subtotal`, `shipping`,
@@ -246,8 +250,8 @@ Conventions:
 - Snapshots: `OrderItem` copies `nameSnapshot` / `imageSnapshot` /
   `unitPrice` at purchase time (catalog edits never rewrite history);
   `Order.shippingAddress` is a JSON snapshot string.
-- `Order.number` is `ORD-YYYY-NNN` (sequential, unique); allocation retries on
-  `P2002` (`placeOrderWithRetry`).
+- `Order.number` is `ELY-XXXXXXXX` (crypto-random base36 — the reference's
+  format, run-72); allocation retries on `P2002` (`placeOrderWithRetry`).
 
 ### 7.2 The DB-path contract (pinned by `tests/unit/db-path.test.ts`)
 
@@ -392,7 +396,9 @@ retryAfterSec }`, opportunistic stale-bucket sweep. Single-process by design;
 swap internals for a shared store if the deployment scales out (the sync
 signature is the only coupling — a shared store forces async at all call
 sites). The shared `clientIp()` helper derives the per-IP key from
-`x-forwarded-for` (first hop, trimmed; missing → `"direct"`). Wired into:
+`cf-connecting-ip` first (unless `TRUST_CF_CONNECTING_IP="false"`), then the
+RIGHTMOST `x-forwarded-for` hop (the position the nearest trusted proxy
+appends); missing both → `"direct"`. Wired into:
 `loginAction` (10/min/email **plus 30/min/IP** — the email key alone is
 attacker-chosen, and every attempt burns real scrypt CPU), `registerAction`
 (5/min/email plus 30/min/IP), `submitReviewAction` (5/min per
@@ -563,7 +569,7 @@ Then verify by hand:
 - [ ] Mobile menu opens/closes twice in a row (v4 trap regression)
 - [ ] Login wrong-password **and** unknown-email show the SAME message
 - [ ] `/track-order?number=<valid>` alone shows the alert (no PII)
-- [ ] A guest can add to cart, checkout, and see `ORD-YYYY-NNN`
+- [ ] A guest can add to cart, checkout, and see `ELY-XXXXXXXX`
 - [ ] Admin console loads every section with the admin account
 - [ ] `git status` shows no `.env`, `db/*.db`, keys, or `node_modules`
 - [ ] New external inputs pass through a Zod schema
@@ -4515,7 +4521,7 @@ docs sweep.
    run-70 refs-re-mint rule where they overlap: the named-find for
    toggles stays valid.)
 
-Key files: `scripts/capture-screenshots.mjs` · `docs/session_132.md` ·
+Key files: `scripts/capture-screenshots.ts` · `docs/session_132.md` ·
 `research/parity-grid.mjs` (git-ignored) · `research/a11y-audit.mjs`
 (git-ignored) · `research/agent-browser-crosscheck.sh` (git-ignored)
 

@@ -286,7 +286,20 @@ async function placeOrderWithRetry(args: PlaceOrderArgs): Promise<string> {
         const existing = await db.order.findUnique({
           where: { stripePaymentIntentId: args.stripePaymentIntentId },
         });
-        if (existing) return existing.number;
+        // S94-2 (audit 94-a L-7): ownership-bound like the idempotencyKey
+        // sibling below (S7-2). The webhook backstop places with the SAME
+        // userId/cartToken metadata, so a genuine double-submit still
+        // replays; a caller who merely KNOWS the intent id (log/XSS leak)
+        // gets a 409 instead of the receipt.
+        try {
+          const resolved = resolveReplay(existing, args.userId, args.cartToken);
+          if (resolved) return resolved;
+        } catch (denied) {
+          if (denied instanceof ReplayDeniedError) {
+            throw new CheckoutError(409, "We couldn't verify this checkout retry belongs to you. Please review your cart and try again.");
+          }
+          throw denied;
+        }
       }
       // Session-8 S8-3: tolerant matching — the engine may report the P2002
       // target as a field array (today's SQLite shape) or as the constraint

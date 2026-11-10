@@ -98,4 +98,21 @@ describe("S93-1 — changePasswordAction routes the rotation through the transac
       /await db\.session\.deleteMany\(\{ where: \{ userId: user\.id \} \}\);\s*await createSession/,
     );
   });
+
+  it("computes the scrypt hash BEFORE opening the transaction (S94-4 — no synchronous crypto while holding the SQLite write lock)", () => {
+    // Audit 94-a I-1: scryptHash(parsed.data.newPassword) used to be
+    // evaluated INSIDE the $transaction callback — the synchronous scrypt
+    // burn (~30–80 ms) ran while the SQLite write lock was held, widening
+    // the lock window for every concurrent writer. The hash is a pure
+    // function of the parsed input: hoist it above the transaction and
+    // pass it in (zero behavior change, shorter lock hold).
+    const txMatch = source.match(/await db\.\$transaction\(async \(tx\) => \{[\s\S]*?\n  \}\);/);
+    expect(txMatch).not.toBeNull();
+    expect(txMatch?.[0]).not.toContain("scryptHash(");
+    // The hoisted shape: the hash lands in a const BEFORE the transaction opens.
+    const hoistIdx = source.indexOf("const newHash = scryptHash(parsed.data.newPassword);");
+    const txIdx = source.indexOf("await db.$transaction(async (tx) => {");
+    expect(hoistIdx).toBeGreaterThan(-1);
+    expect(hoistIdx).toBeLessThan(txIdx);
+  });
 });

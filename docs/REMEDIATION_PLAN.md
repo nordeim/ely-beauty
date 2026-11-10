@@ -13224,3 +13224,155 @@ served byte-verifiable chunks (spot-checked on disk).
 - **S93-6 standing verifications:** sitemap **28 `<loc>`, 0 private paths** (curl on the live standalone server; robots 4 disallows + the sitemap pointer) · **25/25 screenshots** regenerated from the live standalone server after the orphan-`next-server` PID-kill ritual (8 changed: the known raster-noise + data-dependent family — product detail, cart coupon hint, five admin/account surfaces on the fresh-reseed data state; 17 byte-identical) · `.env.example` **9/9** (6 active + 3 commented, zero drift vs the codebase's env reads) · `npm audit` **0 vulnerabilities** (prod and full). The two S92-2 surfaces re-verified through the live DOM on the capture server: the dashboard advisory card (role=alert + the /account?tab=profile link) and the password form's current/new fields with correct autocomplete tokens.
 - **Environment notes:** the sandbox workspace survived from run 92 (node_modules + `.env` + the hardlink-converged `db/` shadow — same inode verified); a fresh reseed ran before the capture pass so the admin shots render the pristine 2-user state. The session-43 orphan-server trap recurred ONCE at the clone-side parity pass (the stale port owner from the pre-rebuild session served wiped chunks — the login page hit its error boundary); killed by PID per the documented ritual, then every server-dependent pass ran clean.
 - **Docs:** this execution log · worklog Task 87 · the polished `docs/session_42.md` · README/CLAUDE counts 749 → 758 (badge, table, tree, commands, the CLAUDE pin list) · AGENTS.md (the S93-1 rotation-atomicity contract + the S93-4 TTL note in the password bullet, the capture-script invocation + single-source note, the session range) · PAD **v2.20** · **SKILL v2.19.0** (project_state lockstep).
+
+---
+
+## Session 94 — The Stripe-Replay Ownership & SKILL-Body De-Drift Cycle
+
+**Evidence base:** the operator's standing instruction refreshed the
+workspace (fresh `git clone` at `faab9ce` = run-93 code `f6aba96` + the
+operator's raw-narrative commit adding `docs/session_43.md`). No NEW
+operator-side signal artifact beyond the raw narrative — a standard
+verification/remediation cycle on the mature tree.
+
+**Environment:** a FRESH sandbox workspace (the sandbox was recycled): full
+`npm install` (582 pkgs, 0 vulnerabilities); `.env` written with
+`DATABASE_URL="file:../db/custom.db"` + a generated `AUTH_SECRET`; `db/`
+created at the repo root; the parent-shell `DATABASE_URL` shadow
+(`file:/home/z/my-project/db/custom.db`) converged via the session-63
+symlink BEFORE `db:setup` (both paths resolve to the one repo file);
+`db:setup` green at 19 products / 2 users / 3 coupons / 4 categories / 11
+settings; Playwright chromium headless-shell 1248 installed (the repo's
+playwright-core 1.64.0 revision — the cache's pre-existing 1200 rev belonged
+to another toolchain, the run-88 environmental gap in a new costume).
+
+**Baseline gates on the pulled tree (docs matched reality):** lint ✓ ·
+typecheck ✓ · typecheck:tests ✓ · **758/758 unit** (66 files) ✓.
+
+**Audit 94-a** (read-only subagent, `skills/` excluded, web-application
+methodology): **12/12 standing anchors PASS · R1–R5 (run-93 regression
+surface) PASS · 0 CRITICAL/HIGH/MEDIUM — 7 LOW + 5 INFO.** All five
+docs-drift candidates CONFIRMED with file:line evidence.
+
+**The findings mapped to this plan:**
+
+- **L-6:** the e2e bundle guard (`tests/e2e/auth.spec.ts:195`) hardcodes
+  the two demo password literals — outside `src/lib/demo-credentials.ts`,
+  the S92-2a single-source. A future credential rotation leaves the guard
+  asserting the OLD strings (vacuously green) while a leak of the NEW
+  password into a client chunk would go undetected. → **S94-1** (import
+  the pair; the `helpers.ts` pattern exists).
+- **L-7:** the Stripe-intent P2002 recovery branch
+  (`src/app/api/checkout/route.ts` placeOrderWithRetry) returns the
+  already-placed order's receipt UNCONDITIONALLY — the sibling
+  idempotencyKey branch routes through `resolveReplay` (S7-2) precisely
+  because "a caller who merely KNOWS another client's key must not receive
+  the winner's receipt". A leaked `pi_…` id + a passing amount check would
+  hand over `{orderNumber, token}` (the PII receipt). The webhook-placed
+  backstop carries the same userId/cartToken metadata, so a genuine retry
+  keeps replaying — the gate is safe to mirror. → **S94-2** (TDD).
+- **L-1..L-5:** five CONFIRMED `ely-beauty_SKILL.md` body drifts — §1
+  identity still "HomeNest Kitchen / nest-culinary-hub.base44.app /
+  kitchenware aesthetic / Playfair / 8 category tiles"; §2 version table
+  `prisma ^6.11.1` / `vitest ^3.2.4` / the radix parenthetical listing
+  radio-group+tabs (not installed) / "Playfair Display"; §7.1 "18 models"
+  (schema declares 20; the list omits `ProductCategory` + `StripeEvent`)
+  + "ORD-YYYY-NNN sequential" (actual `ELY-XXXXXXXX` crypto-random);
+  §8.3 clientIp "first hop" (actual cf-connecting-ip → RIGHTMOST XFF →
+  direct, with the `TRUST_CF_CONNECTING_IP` opt-out); §11 checklist
+  "ORD-YYYY-NNN". → **S94-3** (one docs pass; the header/project_state/
+  demo table are current — the body lagged).
+- **I-1:** `scryptHash(parsed.data.newPassword)` is evaluated INSIDE the
+  `$transaction` callback — the sync scrypt (~30–80 ms) runs while the
+  SQLite write lock is held. → **S94-4** (compute the hash before the
+  transaction; zero behavior change, shorter lock hold).
+- **I-2:** stale `.mjs` key-file pointers: the SKILL's key-files list
+  (`scripts/capture-screenshots.mjs` — the file no longer exists) and
+  CLAUDE.md's session-53 note. → **S94-5**.
+- **I-3:** `demo-credentials.ts`'s lockstep inventory lists `.env.example`
+  (which does NOT document the pair) and omits PAD's two narrative sites.
+  → **S94-6**.
+- **I-4 (cookie names) / I-5 (allowScripts):** recorded, no action — the
+  pre-rename `homenest_*` cookie names are deliberately retained (renaming
+  invalidates every live session/cart, self-documented at the read sites)
+  and `allowScripts` is maintained config for an out-of-repo wrapper.
+
+**Live parity (mobile 390×844, reference logged in with the operator
+credentials, clone with the seeded demo customer): zero new deltas** —
+panel rows reference 89/125/161/197/233 vs clone 88/124/160/…/… (−1px
+uniform, hrefs byte-identical) · overlay input Cormorant Garamond 18px/300
+with the 0.6-alpha placeholder both sites · the "silk" set reference
+174/258/342/426 vs clone 173/257/341/425 (−1px ×4, h 80 both) with
+**$370.00/$288.00/$470.00/$520.00 byte-identical** (Cormorant 14px/300) ·
+`/shop` 19 unique cards bonnet-first with h1 "All Products" both sites ·
+the bonnet detail ৳370 Inter 24px/600 with both purchase buttons active.
+**Mobile navigation fully functional — no Tailwind v4 bug** (the panel is
+conditionally mounted; zero `classList` usage in src/, audit-verified; the
+panel → overlay → results → navigation chain exercised live on both sites).
+
+### ToDo
+
+- [x] **S94-1 — the bundle guard joins the credential single-source (L-6):**
+  `tests/e2e/auth.spec.ts` imports `DEMO_ADMIN_PASSWORD` /
+  `DEMO_CUSTOMER_PASSWORD` from `src/lib/demo-credentials` and iterates
+  those; the two literals disappear. Pinned by the existing
+  `credential-rotation`/demo-lockstep convention (a source scan already
+  guards the single-source contract — extend it to cover the e2e spec if
+  it does not).
+- [x] **S94-2 — the Stripe-intent replay is ownership-bound (L-7, TDD):**
+  RED first in a new `tests/unit/checkout-stripe-replay.test.ts` (the
+  api-boundaries route-import + mock conventions): (a) a P2002 on
+  `stripePaymentIntentId` whose already-placed order is owned by ANOTHER
+  client (different userId, different cart token) must 409 with the
+  replay-denied copy and never emit the victim's `{orderNumber, token}`;
+  (b) a genuine retry (same guest cart token) still replays to the
+  winner's receipt; (c) a source pin (the api-boundaries file-reading
+  convention) holding the route's stripe branch composing `resolveReplay`
+  + the `ReplayDeniedError` → 409 mapping. GREEN: route the branch
+  through `resolveReplay(existing, args.userId, args.cartToken)` exactly
+  like the idempotencyKey sibling.
+- [x] **S94-3 — the SKILL body de-drift pass (L-1..L-5):** §1 identity
+  paragraph + design thesis rewritten for ElyBeauty (ely-beauty.base44.app,
+  the skincare aesthetic, Cormorant Garamond, 4 category tiles); §2 table
+  rows refreshed (`prisma ^6.19.3`, `vitest ^4.1.12`, the ACTUAL radix
+  set — dialog/label/select/slot/toast, Playfair → Cormorant Garamond);
+  §7.1 20 models (add `ProductCategory`, `StripeEvent`) + `ELY-XXXXXXXX`
+  crypto-random with the P2002-retry note; §8.3 clientIp corrected to
+  cf-connecting-ip → rightmost XFF → direct + the
+  `TRUST_CF_CONNECTING_IP` opt-out; §11 checklist line fixed. The
+  historical session narrative (:1913, :4518-era) stays untouched except
+  the live-tense key-files list.
+- [x] **S94-4 — the hash leaves the transaction (I-1, TDD):** RED a
+  source pin (the credential-rotation action-pin file-reading convention):
+  `scryptHash` must be evaluated BEFORE `db.$transaction` in
+  `changePasswordAction` (the lock-hold contract). GREEN: hoist
+  `const newHash = scryptHash(parsed.data.newPassword)` above the
+  `$transaction` call and pass it in.
+- [x] **S94-5 — the stale `.mjs` pointers (I-2):** the SKILL key-files
+  list reads `scripts/capture-screenshots.ts`; CLAUDE.md's session-53
+  capture-script mention updated to the `.ts` invocation.
+- [x] **S94-6 — the lockstep inventory correction (I-3):**
+  `demo-credentials.ts`'s header lists the four ACTUAL doc sites
+  (AGENTS/README/SKILL/PAD) — `.env.example` removed, PAD added.
+- [x] **S94-7 — the full gate chain on the final tree:** lint ·
+  typecheck · typecheck:tests · unit (758 + the new pins) · clean build ·
+  e2e ×2 consecutive.
+- [x] **S94-8 — the standing verifications:** sitemap 28 public-only ·
+  25/25 screenshots regenerated from the live standalone server (the
+  orphan-server ritual run FIRST) · `.env.example` 9/9 · `npm audit` 0.
+- [x] **S94-9 — the docs sweep:** this execution log filled · worklog
+  Task 88 · the polished `docs/session_44.md` · README/CLAUDE counts if
+  the suite moves · AGENTS.md (the stripe-replay ownership note) · SKILL
+  version bump (project_state lockstep) · PAD revision block.
+
+### Execution log
+
+- **S94-2 GREEN (the cycle's centerpiece, TDD):** RED 2/3 in the new `tests/unit/checkout-stripe-replay.test.ts` (the api-boundaries route-import + mock conventions; the Stripe verification seams module-mocked so the recovery loop is reached without network) — the deny pin (an already-placed order owned by another client → expected 409 + no receipt; observed 200 + the victim's `{orderNumber, token}`) and the source-composition pin (the route's stripe branch composing `resolveReplay`) both failed; the genuine-retry pin passed pre-fix (the over-block guard). GREEN: the branch routes through `resolveReplay(existing, args.userId, args.cartToken)` with the `ReplayDeniedError` → 409 mapping, exactly the idempotencyKey sibling's composition. One mid-fix lesson root-caused before the workaround: the first RED run returned 400s — the body's `pi_replay_test_1` failed `checkoutBodySchema`'s `^pi_[A-Za-z0-9]{6,}$` (underscores are not in the class); the fixture intent id became `pi_REPLAYTEST1`.
+- **S94-4 GREEN (TDD):** RED the source pin in `credential-rotation.test.ts` (`scryptHash` absent from the `$transaction` block + the hoisted `const newHash` before it — observed the in-transaction call). GREEN: `const newHash = scryptHash(parsed.data.newPassword)` hoisted above the transaction, passed into `rotateCredentialInTx`. The existing six S93-1 pins stayed green throughout (the hoist changes no pinned composition).
+- **S94-1 GREEN:** `tests/e2e/auth.spec.ts` imports `DEMO_ADMIN_PASSWORD`/`DEMO_CUSTOMER_PASSWORD` from the single source (the helpers.ts pattern — plain named string exports, no `import.meta`, so Playwright's CJS transform accepts it); two new source-scan describes in `e2e-infrastructure.test.ts` pin the import shape AND zero password literals across every e2e spec (the single-source contract extended to the e2e tree).
+- **S94-3/S94-5 GREEN (the docs pass):** the SKILL's five live-tense drifts fixed — §1 identity rewritten for ElyBeauty (ely-beauty.base44.app, the skincare aesthetic, Cormorant Garamond, the four seeded category families) with the primary pinned to the actual `hsl(30 12% 48%)` taupe (the follow-on `hsl(24 70% 50%)` terracotta leftover fixed in the same paragraph); §2 table refreshed (`prisma ^6.19.3`, `vitest ^4.1.12`, the installed radix set, Cormorant Garamond in the runtime facts + §4 typography); §7.1 lists all 20 models (`ProductCategory` + `StripeEvent` added) and `ELY-XXXXXXXX` crypto-random; the §6 directory table's "18 models" → 20; §8.3 clientIp corrected to cf-connecting-ip → rightmost XFF → direct with the `TRUST_CF_CONNECTING_IP` opt-out; §11's checklist line fixed; the session-132 key-files list points at `capture-screenshots.ts`. CLAUDE.md's single stale `.mjs` mention annotated. The historical session narrative (e.g. :1913's `^6.11.1` range note, accurate for the S88 era) deliberately untouched.
+- **S94-6 GREEN:** `demo-credentials.ts`'s lockstep inventory lists the four actual doc sites (AGENTS/README/PAD/SKILL) — `.env.example` removed (it deliberately does not document the pair), PAD added; the consumer list notes S94-1's bundle-guard addition.
+- **S94-7 gates, all green on the final tree:** lint ✓ · typecheck ✓ · typecheck:tests ✓ · **764/764 unit** (67 files, +6: 3 stripe-replay + 1 rotation-hoist + 2 single-source scans) · clean build ✓ (11/11 static pages, fresh `.next`) · **e2e 92/92 ×2 consecutive** (2.4m + 2.4m — the checkout flows exercised the ownership-gated recovery branch and the password round-trip the hoisted-hash path, both green in both runs).
+- **S94-8 standing verifications:** sitemap **28 `<loc>`, 0 private paths** (curl on the live standalone server; robots 4 disallows + the sitemap pointer) · **25/25 screenshots** regenerated from the live standalone server (7 changed: the known raster-noise + data-dependent family on the fresh-reseed state — product detail, five admin/account surfaces; 18 byte-identical; all PNGs dimension- and content-verified programmatically) · `.env.example` **9/9** (6 active + 3 commented, zero drift) · `npm audit` **0 vulnerabilities** (prod and full). A fresh reseed ran before the capture pass (19 products / 2 users / 3 coupons / 4 categories / 11 settings).
+- **Environment notes:** a FRESH sandbox workspace (the run-93 node_modules did not survive) — full `npm install`, `.env` written, `db/` created, the parent-shell `DATABASE_URL` shadow converged via the session-63 symlink BEFORE `db:setup` (the shadow pointed outside the repo at `file:/home/z/my-project/db/custom.db`; the symlink resolves both paths to the one repo file). The Playwright cache carried chromium 1200 (a foreign toolchain's revision) while the repo's playwright-core 1.64.0 pins 1248 — `npx playwright install chromium` closed the gap before any browser-dependent pass (the run-88 lesson in a new costume: verify the BROWSER revision, not just the binary's presence). The orphan-server ritual ran before every server-dependent pass (no recurrence this cycle).
+- **Docs:** this execution log · worklog Task 88 · the polished `docs/session_44.md` · README/CLAUDE counts 758 → 764 (badge, table, tree, commands, the CLAUDE pin list) · AGENTS.md (the stripe-replay ownership note in the order bullet, the S94-4 hoist note in the rotation bullet, the session range 2..94) · PAD **v2.21** · **SKILL v2.20.0** (project_state lockstep).

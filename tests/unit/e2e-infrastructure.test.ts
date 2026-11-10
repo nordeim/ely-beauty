@@ -31,7 +31,7 @@
  *                                     after an aborted revert must not
  *                                     fail at not.toBeChecked())
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -122,5 +122,31 @@ describe("S84 — the self-heal-closure pins", () => {
     // shapes), restore Skincare + save + reopen through the gated helper
     // before the flow (the S20-1/S83-3 discipline).
     expect(spec).toMatch(/S84-3[\s\S]{0,700}?Skincare/);
+  });
+});
+
+describe("S94 — the e2e credential single-source pins", () => {
+  it("S94-1: the bundle guard asserts the LIVE pair imported from the single source, never literals", () => {
+    const spec = readRepo("tests/e2e/auth.spec.ts");
+    // The import (the helpers.ts pattern — Playwright CAN import the
+    // module: it is plain named string exports, no import.meta involved).
+    expect(spec).toContain('from "../../src/lib/demo-credentials"');
+    expect(spec).toMatch(/DEMO_ADMIN_PASSWORD/);
+    expect(spec).toMatch(/DEMO_CUSTOMER_PASSWORD/);
+    // The literals are gone from the spec — a future credential rotation
+    // re-binds this guard to the live values instead of rotting green.
+    expect(spec).not.toContain('"Admin123!"');
+    expect(spec).not.toContain('"Demo1234!"');
+  });
+
+  it("S94-1: no e2e spec hardcodes either demo password literal", () => {
+    const e2eDir = path.resolve(import.meta.dirname, "../../tests/e2e");
+    const specs = readdirSync(e2eDir).filter((f) => f.endsWith(".ts"));
+    expect(specs.length).toBeGreaterThan(0);
+    for (const f of specs) {
+      const source = readFileSync(path.join(e2eDir, f), "utf8");
+      expect(source, `${f} hardcodes a demo password`).not.toContain('"Admin123!"');
+      expect(source, `${f} hardcodes a demo password`).not.toContain('"Demo1234!"');
+    }
   });
 });

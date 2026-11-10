@@ -225,8 +225,12 @@ export async function changePasswordAction(formData: FormData): Promise<{ ok: tr
   // session stayed alive. createSession runs AFTER the commit (its row
   // write + cookie are not transactional; a failure there is a benign
   // full sign-out, not a security hole).
+  // S94-4 (audit 94-a I-1): the scrypt hash is a pure function of the
+  // parsed input — compute it BEFORE the transaction so the synchronous
+  // ~30–80 ms burn never runs while the SQLite write lock is held.
+  const newHash = scryptHash(parsed.data.newPassword);
   await db.$transaction(async (tx) => {
-    await rotateCredentialInTx(tx, user.id, scryptHash(parsed.data.newPassword));
+    await rotateCredentialInTx(tx, user.id, newHash);
   });
   await createSession(user.id);
 

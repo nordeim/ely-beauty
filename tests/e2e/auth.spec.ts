@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { gotoHydrated, DEMO_CUSTOMER, addToCartViaDetailPage, PILLOWCASE, openDetailFromShop } from "./helpers";
+import { DEMO_ADMIN_PASSWORD, DEMO_CUSTOMER_PASSWORD } from "../../src/lib/demo-credentials";
 
 /**
  * Auth — demo-account login (success + wrong password), register
@@ -192,7 +193,12 @@ test.describe("auth", () => {
     const bodies = await Promise.all(
       scriptUrls.map((src) => page.request.get(src).then((r) => r.text())),
     );
-    for (const secret of ["Admin123!", "Demo1234!"]) {
+    // S94-1 (audit 94-a L-6): the guard asserts the LIVE pair from the
+    // single source (src/lib/demo-credentials.ts — the S92-2a convention,
+    // the helpers.ts import pattern). Hardcoded literals here would rot
+    // vacuously green on the next credential rotation while a leak of the
+    // NEW password into a client chunk went undetected.
+    for (const secret of [DEMO_ADMIN_PASSWORD, DEMO_CUSTOMER_PASSWORD]) {
       expect(html).not.toContain(secret);
       for (const body of bodies) {
         expect(body).not.toContain(secret);
