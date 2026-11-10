@@ -19,7 +19,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 // ── The single source of truth for the docs' live-tense counts ──────────
-const UNIT_TESTS = 784;
+const UNIT_TESTS = 789;
 const E2E_TESTS = 92;
 const PRISMA_MODELS = 20;
 // ─────────────────────────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ describe("docs-counts lockstep (S95-4) — every live-tense count site carries t
     expect(padBody, "PAD body must not carry the stale 79-test heading").not.toContain("79 tests");
   });
 
-  it("PAD + SKILL: the 20-model claims (the run-94/95 de-drift family)", () => {
+  it("PAD + SKILL + README: the 20-model claims (the run-94/95/97 de-drift family)", () => {
     const pad = read("Project_Architecture_Document.md");
     const padBody = pad.slice(pad.indexOf("## Table of Contents"));
     const skill = read("ely-beauty_SKILL.md");
@@ -71,6 +71,19 @@ describe("docs-counts lockstep (S95-4) — every live-tense count site carries t
     expect(pad, "PAD §12 schema row").toContain(`${PRISMA_MODELS} models / idempotent seed`);
     expect(padBody, "PAD body must not carry the stale 19-models claim").not.toContain("19 models");
     expect(skill, "SKILL §2 stack table model count").toContain(`SQLite, ${PRISMA_MODELS} models`);
+    // S97-2 (audit 97-a N4/D1): README carried the stale "19 models" in its
+    // architecture table AND its file-hierarchy tree while every other doc
+    // said 20 — the lockstep net didn't cover README's model-count sites.
+    // README is fully live-tense (no historical narrative), so the negative
+    // pin scopes to the whole file.
+    const readme = read("README.md");
+    expect(readme, "README architecture table model count").toContain(
+      `Prisma + SQLite | ^6.19 | ${PRISMA_MODELS} models;`,
+    );
+    expect(readme, "README file-hierarchy model count").toContain(
+      `schema.prisma (${PRISMA_MODELS} models)`,
+    );
+    expect(readme, "README must not carry the stale 19-models claim").not.toContain("19 models");
   });
 
   it("ely-beauty_SKILL.md project_state carries the counts", () => {

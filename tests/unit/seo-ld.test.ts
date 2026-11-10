@@ -191,6 +191,18 @@ describe("productMetaDescription — the S96-1 fallback chain", () => {
     expect(both).toBe("Damascus Steel Chef Knife Set — ElyBeauty");
     expect(both.length).toBeGreaterThan(0);
   });
+
+  // S97-3 (audit 97-a N6): a whitespace-only field is truthy in the || chain
+  // and would ship as the meta. The schema trims upstream, but the helper
+  // owns the never-empty invariant — so it trims its own terms.
+  it("treats a whitespace-only shortDescription as empty (falls through to the description)", () => {
+    expect(productMetaDescription({ ...PRODUCT, shortDescription: "   " })).toBe(PRODUCT.description);
+  });
+
+  it("renders the name-based line when both fields are whitespace-only", () => {
+    const ws = productMetaDescription({ ...PRODUCT, shortDescription: " \t ", description: "  " });
+    expect(ws).toBe("Damascus Steel Chef Knife Set — ElyBeauty");
+  });
 });
 
 describe("buildProductJsonLd — the S96-1 description fallback", () => {

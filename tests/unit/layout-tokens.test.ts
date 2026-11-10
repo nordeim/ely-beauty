@@ -827,18 +827,36 @@ describe("S96 — the admin accent-color reskin completion", () => {
   it("no admin dialog hardcodes the pre-re-skin terracotta accent literal", () => {
     for (const file of adminDialogs) {
       const source = src(file);
-      expect(source, `${file} still carries the terracotta accent`).not.toContain("hsl(24_70%_50%");
+      // S97-4: both underscore/space variants of the hsl literal plus the
+      // hex form — the negative net covers every spelling of the retired
+      // terracotta accent.
+      expect(source, `${file} still carries the terracotta accent (underscore)`).not.toContain(
+        "hsl(24_70%_50%",
+      );
+      expect(source, `${file} still carries the terracotta accent (space)`).not.toContain(
+        "hsl(24 70% 50%",
+      );
+      expect(source, `${file} still carries the terracotta accent (hex)`).not.toContain("#d96e26");
     }
   });
 
   it("every checkbox in those dialogs rides the token palette's accent-foreground", () => {
     for (const file of adminDialogs) {
       const source = src(file);
-      const checkboxes = source.match(/<input[^>]*type="checkbox"[^>]*>/g) ?? [];
-      const accented = source.match(/accent-foreground/g) ?? [];
-      // Every checkbox input's className includes accent-foreground (the
-      // className follows the type attribute in these dialogs' layout).
-      expect(accented.length, `${file}: ${checkboxes.length} checkboxes but ${accented.length} accent-foreground tokens`).toBeGreaterThanOrEqual(checkboxes.length);
+      // S97-4 (audit 97-a N5): per-tag assertion — every checkbox input's
+      // own tag must carry accent-foreground (the count heuristic could be
+      // satisfied by a non-checkbox element gaining the class while a
+      // checkbox lost it). The tag match spans to the self-closing slash:
+      // an onChange arrow function contains ">" (=>), so a [^>]* pattern
+      // truncates mid-tag and misses a className that follows the handler.
+      const inputs = source.match(/<input\b[\s\S]*?\/>/g) ?? [];
+      const checkboxes = inputs.filter((tag) => tag.includes('type="checkbox"'));
+      expect(checkboxes.length, `${file}: no checkboxes found to pin`).toBeGreaterThan(0);
+      for (const tag of checkboxes) {
+        expect(tag, `${file}: a checkbox is missing accent-foreground`).toContain(
+          "accent-foreground",
+        );
+      }
     }
   });
 });

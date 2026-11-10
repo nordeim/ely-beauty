@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.22.0
+version: 2.23.0
 last_updated: 2026-11-10
-project_state: "784 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-96 (session 47 cycle): the SEO-fallback completion & full-stack doc-de-drift cycle — audit 96-a clean (12/12 anchors, run-95 surface R1–R7 7/7, 0 CRITICAL/HIGH/MEDIUM, 10 LOW + 6 INFO, all substantive LOW remediated); S96-1 the productMetaDescription three-term fallback chain (the run-95 content resync left the bamboo oval with BOTH copy fields empty — the two-term S76-8 chain shipped an empty meta/OG/JSON-LD description; the name-based third term restores the never-empty invariant, shared by generateMetadata AND buildProductJsonLd); S96-2 the admin accent-color reskin completion (six terracotta accent-[hsl(24_70%_50%)] checkbox literals → accent-foreground, pinned); S96-3..S96-8 the doc-de-drift family (the S95-1 search-contract texts in CLAUDE/AGENTS/search-overlay comment, the SKILL §19 color table rebuilt from the live globals.css taupe palette + the §2 Stripe row + the §5 counts 144/15+10/41, the PAD §4.3 seed reality 7-3-4/all-positive-stock/run-95 content + the §8.2 globalSetup mechanism wording, the SKILL session-record boundary note for runs 89+) — 777 → 784 unit (+7: 5 seo-ld fallback pins + 2 layout-tokens accent pins), e2e 92 unchanged. PREVIOUS (run-95): the reference-content resync & PAD-body de-drift cycle (S95-1..S95-6)"
+project_state: "789 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-97 (session 48 cycle): the auth-secret hardening & doc-de-drift completion cycle — audit 97-a clean (12/12 anchors, run-96 surface R1–R8 8/8, 0 CRITICAL/HIGH/MEDIUM, 18 LOW + 3 INFO, all substantive LOW remediated); S97-1 the AUTH_SECRET minimum-length floor (a 1-char non-fallback secret used to pass the production gate — now <32 chars throws, the README's `openssl rand -hex 32` guidance enforced, pinned 3x); S97-2 the docs-counts README model-count net (the lockstep now pins README's architecture table + tree to 20 models — the '19 models' drift fails the gate BY NAME); S97-3 the productMetaDescription whitespace hardening (each term trims — a whitespace-only field can no longer ship as the meta, pinned 2x); S97-4 the S96-2 accent pin hardened to per-tag assertions (an onChange arrow contains >, so a [^>]* regex truncates mid-tag and misses a className that follows the handler — the lesson encoded in the pin); S97-5..S97-8 the doc-de-drift completion family (README/PAD/SKILL stack tables carry the installed Radix set dialog/label/select/slot/toast + the real 9-file ui inventory; SKILL §1's radius pins + mobile-menu anatomy → the S73-4/S74-2 reality — aria-current only, no in-panel close button; §6 searchOverlayOpen; §8.3's limiter grid completed with changePassword/addresses/cart-bulk/cart-summary/stripe-intent + the review two-tier; §2's §9.3 cross-ref; §3's typecheck:tests row; PAD §4.1's ER diagram gains the ProductCategory junction + StripeEvent; §1.4's 19-product mirror + guest-checkout reality; §6's two $queryRaw sites + order numbers; §8.2's one-page grid; §2's 13-route topology) — 784 → 789 unit (+5: 3 auth-secret floor pins + 2 whitespace pins), e2e 92 unchanged. PREVIOUS (run-96): the SEO-fallback completion & full-stack doc-de-drift cycle (S96-1..S96-11)"
 tags:
   - nextjs16
   - react19
@@ -92,11 +92,15 @@ ink the reference renders; background ivory `hsl(30 20% 97%)`).
 
 1. **Never "improve" the pinned tokens.** `--shadow-sm` is pinned to v3
    geometry; the radius scale is pinned to the reference's measured px
-   (`rounded-xl`=12px, `2xl`=16px, `3xl`=24px). v4 shifted both — the pins are
+   (`--radius-sm` 2px · md 4px · lg 6px · `xl` 8px · `2xl` 12px · `3xl` 16px
+   — the §19 table is the authoritative copy). v4 shifted both — the pins are
    intentional.
-2. **The mobile menu is a push-down panel**, conditionally mounted, with the
-   green circular close button and the `bg-primary` active pill. It is never a
-   slide-over, and never toggled via a `hidden` class (see §9.1).
+2. **The mobile menu is a push-down panel**, conditionally mounted inside the
+   fixed header element (S75-2), trimmed to the SEARCH row + the four links
+   (S74-2 — no in-panel close button). It closes via the header toggle AND on
+   route change; the active link carries `aria-current` ONLY — the reference
+   renders no visible active treatment (S73-4). It is never a slide-over, and
+   never toggled via a `hidden` class (see §9.1).
 3. **No generic Bootstrap-style UI.** All primitives are shadcn-style
    (`src/components/ui/`) themed through the CSS-first token layer.
 4. **Demo honesty.** The payment step is a clearly labeled demo (no real
@@ -131,7 +135,7 @@ Locked versions (from `package.json` — keep this table in sync when bumping):
 **Runtime environment facts:**
 
 - Node ≥ 20, npm ≥ 10. Use `npm` — the committed lockfile is `package-lock.json` (a stray `bun.lock` from the old SPA may exist but is not authoritative).
-- The sandbox exports a **global `DATABASE_URL`** that shadows `.env` (§10.4).
+- The sandbox exports a **global `DATABASE_URL`** that shadows `.env` (§9.3).
 - WebKit is **not installable** in the target sandbox — Playwright's mobile project emulates iPhone 13 on Chromium.
 - Fonts are self-hosted (`Inter` variable via `next/font`, Cormorant Garamond via `.font-display` CSS var) — no external font CDN (CSP).
 
@@ -153,6 +157,7 @@ npm run dev                # http://localhost:3000 (logs tee'd to dev.log)
 | `start` | `NODE_ENV=production node .next/standalone/server.js` — reads `PORT` (default 3000); **`.env` is copied into `standalone/` at build time**, so env changes require a rebuild |
 | `db:setup` | `db push --accept-data-loss` + `tsx prisma/seed.ts` (idempotent: upserts by slug/email) |
 | `test` | Vitest, node env, `tests/unit/*` |
+| `typecheck:tests` | `tsc -p tsconfig.tests.json --noEmit` — the unit/e2e/seed sources are type-checked too (part of the gate chain) |
 | `test:e2e` | Playwright — `webServer` boots the **standalone** build on :3100 and waits for `/api/health`; run `build` first or you test stale code |
 | `lint` / `typecheck` | ESLint 9 flat / `tsc --noEmit` — both must exit 0 |
 
@@ -197,7 +202,7 @@ across all of `src/` (pages' interactive islands included).
 
 | Folder | Role | Examples |
 |---|---|---|
-| `src/components/ui/` | shadcn-style primitives (theme-aware) | button, input, dialog, select, sheet, tabs, toast primitives |
+| `src/components/ui/` | shadcn-style primitives (theme-aware) | badge, button, dialog, input, label, select, textarea, toast-primitives, toaster |
 | `src/components/store/` | storefront chrome + islands | header, footer, mobile-nav, hero-carousel, product-card, store-chrome (drawer), store-provider, quantity-stepper, star-rating |
 | `src/app/(storefront)/` | public pages (RSC, `force-dynamic` via layout) | home, products, product/[id], cart, checkout, track-order, account, admin/*, about, contact, legal/[slug] |
 | `src/app/(auth)/` | login/register (layout awaits `connection()` — §8.2) | |
@@ -214,7 +219,7 @@ client islands fetch only through `/api/*` route handlers or Server Actions.
 ## 6. State & Data-Flow Deep Dive
 
 - **Global client store** (`src/components/store/store-provider.tsx`): a
-  single React context carrying `mobileNavOpen`, `searchOpen`,
+  single React context carrying `mobileNavOpen`, `searchOverlayOpen`,
   `cartDrawerOpen`, `cartCount`. It also sets `document.documentElement.dataset.hydrated`
   — the **hydration sentinel** every e2e test waits for (`gotoHydrated()` in
   `tests/e2e/helpers.ts`). Clicks before the sentinel fall back to native form
@@ -404,11 +409,17 @@ RIGHTMOST `x-forwarded-for` hop (the position the nearest trusted proxy
 appends); missing both → `"direct"`. Wired into:
 `loginAction` (10/min/email **plus 30/min/IP** — the email key alone is
 attacker-chosen, and every attempt burns real scrypt CPU), `registerAction`
-(5/min/email plus 30/min/IP), `submitReviewAction` (5/min per
-**IP+product+author**), `/api/contact` (5/min/IP), `/api/newsletter`
+(5/min/email plus 30/min/IP), `changePasswordAction` (10/min/email plus
+30/min/IP — the S92-2f rotation surface), `submitReviewAction` (**two-tier**:
+a per-IP 20/min ceiling above the 5/min per-author tier — the shared-IP
+classroom case), `/api/contact` (5/min/IP), `/api/newsletter`
 (5/min/IP), `/api/coupon/apply` (30/min/IP), `/api/checkout` (20/min/IP),
 `/track-order` lookups (30/min/IP), `/api/cart` POST + PATCH + DELETE and
-`/api/wishlist` POST (60/min/IP — guest-reachable writes), `/api/search`
+`/api/wishlist` POST (60/min/IP — guest-reachable writes), `/api/cart/bulk`
+(10/min/IP — the batch write), `/api/cart-summary` GET (120/min/IP — the
+badge's per-navigation refresh), `/api/addresses` POST + PATCH + DELETE
+(60/min/IP), `/api/stripe/payment-intent` (10 per 10 min, keyed user-or-IP),
+and `/api/search`
 GET (120/min/IP — per-keystroke typeahead). Limits are deliberately generous
 so humans and the e2e suite are unaffected.
 
@@ -764,8 +775,10 @@ kitchen era):
 | Radius pins | sm 2px · md 4px · lg 6px · **xl 8px · 2xl 12px · 3xl 16px** |
 | `--shadow-sm` | `0 1px 2px 0 rgb(0 0 0 / 0.05)` (v3 geometry pin) |
 
-The mobile-menu close button's green (`bg-emerald-500`-family) is a
-reference-matched utility class, not a token — do not tokenize it away.
+The header family's only `rounded-full bg-primary` element is the cart-count
+badge — a reference-matched utility-class pair, not a token; do not tokenize
+it away. (The panel's green circular close button was the pre-S74-2 anatomy;
+the trimmed panel closes via the header toggle.)
 
 ## 20. The Complete TypeScript Interface Reference
 

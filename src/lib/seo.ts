@@ -104,7 +104,12 @@ export function productMetaDescription(product: {
   shortDescription: string | null;
   description: string;
 }): string {
-  return product.shortDescription || product.description || `${product.name} — ElyBeauty`;
+  // S97-3: trim each term — a whitespace-only field is truthy in a bare ||
+  // chain and would ship as the meta (the schema trims upstream, but this
+  // helper owns the never-empty invariant).
+  return (
+    product.shortDescription?.trim() || product.description.trim() || `${product.name} — ElyBeauty`
+  );
 }
 
 /** schema.org/Product node for a product detail page. */
