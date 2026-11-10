@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.23.0
+version: 2.24.0
 last_updated: 2026-11-10
-project_state: "789 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-97 (session 48 cycle): the auth-secret hardening & doc-de-drift completion cycle — audit 97-a clean (12/12 anchors, run-96 surface R1–R8 8/8, 0 CRITICAL/HIGH/MEDIUM, 18 LOW + 3 INFO, all substantive LOW remediated); S97-1 the AUTH_SECRET minimum-length floor (a 1-char non-fallback secret used to pass the production gate — now <32 chars throws, the README's `openssl rand -hex 32` guidance enforced, pinned 3x); S97-2 the docs-counts README model-count net (the lockstep now pins README's architecture table + tree to 20 models — the '19 models' drift fails the gate BY NAME); S97-3 the productMetaDescription whitespace hardening (each term trims — a whitespace-only field can no longer ship as the meta, pinned 2x); S97-4 the S96-2 accent pin hardened to per-tag assertions (an onChange arrow contains >, so a [^>]* regex truncates mid-tag and misses a className that follows the handler — the lesson encoded in the pin); S97-5..S97-8 the doc-de-drift completion family (README/PAD/SKILL stack tables carry the installed Radix set dialog/label/select/slot/toast + the real 9-file ui inventory; SKILL §1's radius pins + mobile-menu anatomy → the S73-4/S74-2 reality — aria-current only, no in-panel close button; §6 searchOverlayOpen; §8.3's limiter grid completed with changePassword/addresses/cart-bulk/cart-summary/stripe-intent + the review two-tier; §2's §9.3 cross-ref; §3's typecheck:tests row; PAD §4.1's ER diagram gains the ProductCategory junction + StripeEvent; §1.4's 19-product mirror + guest-checkout reality; §6's two $queryRaw sites + order numbers; §8.2's one-page grid; §2's 13-route topology) — 784 → 789 unit (+5: 3 auth-secret floor pins + 2 whitespace pins), e2e 92 unchanged. PREVIOUS (run-96): the SEO-fallback completion & full-stack doc-de-drift cycle (S96-1..S96-11)"
+project_state: "798 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-98 (session 52 cycle): the enumeration-lockstep & payment-prose de-drift cycle — audit 98-a clean (12/12 anchors, run-97 surface R1–R8 8/8, 0 CRITICAL/HIGH/MEDIUM, 2 LOW + 2 INFO; the untouched-surface scan found zero defects); S98-1 the enumeration-lockstep net (the docs' route/admin ENUMERATIONS were rotting while the count net pinned only numbers — CLAUDE 11-of-13 routes + 8-of-9 admin pages, SKILL §5 10-of-13, AGENTS 9-of-13 contradicting its own 'all 13 route files'; docs-counts.test.ts now derives both inventories from the FILESYSTEM and set-equals the four enumeration sites against them, RED 7 pins → GREEN 14/14, missing OR phantom entries fail by name; lessons: ASCII '-' (45) sorts before '/' (47) so the set pin must reuse the derivation's sort, and match() captures are string | undefined under noUncheckedIndexedAccess — m?.[1] ?? '' passes the type gate while the preceding toBeTruthy() keeps the failure loud); S98-2/S98-3 the enumeration + payment-prose sweep (AGENTS's route list → all 13 with the scope honestly widened to 'client-island fetches and the Stripe webhook'; CLAUDE's admin list → the 9 pages; CLAUDE's api list + SKILL §5's row → all 13; CLAUDE's stale 'demo payment (no processor)' sentence → the session-61 reality — COD default byte-identical + real Stripe behind keys + STRIPE_BDT_PER_USD, the guard on the non-existent 'no real charge' notices removed, negative-pinned); S98-4 the signpost de-drift (the Appendix B session-record boundary 'runs 89–96 (v2.17–v2.23)' → 'runs 89–97 (v2.17–v2.24)' with run 97 joining the trail; the project_state label corrected to 'session 50 cycle' for run-97); S98-5 AGENTS's dangling docs/session_114.md pointer (HomeNest-era, dropped run-72) → docs/DEPLOYMENT.md §4, negative-pinned; S98-6 the AUTH_SECRET command single-sourced on openssl rand -hex 32 (the S97-1 error's own command) across .env.example + DEPLOYMENT.md ×2 — 789 → 798 unit (+9: 2 derivation + 3 route-set + 1 admin-set + 3 negatives), e2e 92 unchanged. PREVIOUS (run-97): the auth-secret hardening & doc-de-drift completion cycle (S97-1..S97-11)"
 tags:
   - nextjs16
   - react19
@@ -206,7 +206,7 @@ across all of `src/` (pages' interactive islands included).
 | `src/components/store/` | storefront chrome + islands | header, footer, mobile-nav, hero-carousel, product-card, store-chrome (drawer), store-provider, quantity-stepper, star-rating |
 | `src/app/(storefront)/` | public pages (RSC, `force-dynamic` via layout) | home, products, product/[id], cart, checkout, track-order, account, admin/*, about, contact, legal/[slug] |
 | `src/app/(auth)/` | login/register (layout awaits `connection()` — §8.2) | |
-| `src/app/api/` | route handlers | cart, cart-summary, wishlist, checkout, coupon/apply, addresses, contact, newsletter, search, health |
+| `src/app/api/` | route handlers | cart, cart/bulk, cart-summary, wishlist, checkout, coupon/apply, addresses, contact, newsletter, search, health, stripe/payment-intent, stripe/webhook |
 | `src/lib/` | pure logic + singletons | db, auth, auth-secret, cart, wishlist, money, order-money, coupons, cart-quantity, order-tracking, rate-limit, settings, products, validation, csp, db-path, format, password |
 | `src/lib/actions/` | Server Actions | auth, admin, reviews |
 | `prisma/` | schema + seed | 20 models; seed is idempotent |
@@ -5173,15 +5173,16 @@ Key files: `scripts/capture-screenshots.ts` · `docs/session_132.md` ·
   cycles still deserve the full parity re-measurement — 19 byte-identical
   screenshots are the cheapest drift alarm there is.
 
-- **Session-record boundary (S96-8): runs 89–96 live in the PAD revision
+- **Session-record boundary (S96-8): runs 89–97 live in the PAD revision
   blocks.** This appendix's per-session trail ends at Session 88 (run 88);
   from run 89 onward the per-run record moved to the PAD's append-only
-  revision blocks (v2.17–v2.23) + `docs/REMEDIATION_PLAN.md`'s session
+  revision blocks (v2.17–v2.24) + `docs/REMEDIATION_PLAN.md`'s session
   sections + the `docs/session_NN.md` logs — the trail continues there
   (run 89: the worklog/docs-verification consolidation; 90: the
   coupon-label format cycle; 91: the API force-dynamic cycle; 92: the
   production-deploy hardening; 93: rotation atomicity; 94: stripe-replay
   ownership; 95: the reference-content resync; 96: the SEO-fallback
-  completion + this doc-de-drift cycle). This note is the signpost so a
+  completion + the run-96 doc-de-drift cycle; 97: the auth-secret hardening
+  + the doc-de-drift completion cycle). This note is the signpost so a
   future reader knows where the trail continues — the historical entries
   above are deliberately left in their era-accurate wording.

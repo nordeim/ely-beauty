@@ -1,9 +1,16 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.24
+# ElyBeauty — Master Project Architecture Document (PAD) v2.25
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-10
+
+#### Revision Block — v2.25 (Run 98 — the enumeration-lockstep & payment-prose de-drift cycle)
+
+- `[TEST]` **The enumeration-lockstep net (S98-1, audit 98-a D1/D2/D4/N2, TDD — the cycle's centerpiece)**: the docs' route/admin ENUMERATIONS were rotting silently — the count net above pins numbers, not inventories (CLAUDE listed 11-of-13 routes and 8-of-9 admin pages; SKILL §5 listed 10-of-13; AGENTS listed 9-of-13 while its own next sentence said "all 13 route files"). `docs-counts.test.ts` now derives the 13-route inventory from the filesystem (the api-boundaries S91-1 recursive-readdir convention) and the 9-page admin inventory from `src/app/(storefront)/admin` (the dashboard IS the admin root `page.tsx` — no `dashboard/` folder), then set-equals AGENTS's architecture-invariants enumeration, CLAUDE's api + admin enumerations, and SKILL §5's api row against them — a missing OR phantom entry fails by name. RED 7 pins observed → GREEN 14/14. Two lessons encoded: a set-equality pin must use the derivation's own sort (ASCII `-` (45) sorts before `/` (47) — `cart-summary` precedes `cart/bulk`); and `match()` captures are `string | undefined` under `noUncheckedIndexedAccess` — `m?.[1] ?? ""` passes the type gate while the preceding `toBeTruthy()` keeps the failure loud.
+- `[DOCS]` **The enumeration + payment-prose sweep (S98-2/S98-3, audit 98-a D1/D2/D3/D4)**: AGENTS's route enumeration → all 13 exact paths (scope honestly widened to "client-island fetches and the Stripe webhook"); CLAUDE's admin list → the 9 pages (the mid-list S19-5 annotation retired from the live-tense inventory); CLAUDE's api list + SKILL §5's row → all 13; CLAUDE's stale "demo payment (no processor)" sentence → the session-61 reality (COD default byte-identical + real Stripe behind keys + `STRIPE_BDT_PER_USD`), with the guard on the non-existent "no real charge" notices removed and the whole class negative-pinned.
+- `[DOCS]` **The signpost + pointer + command fixes (S98-4/S98-5/S98-6, audit 98-a D5/D6/N1/N3)**: the SKILL Appendix B session-record signpost "runs 89–96 (v2.17–v2.23)" → "runs 89–97 (v2.17–v2.24)" with run 97 joining the trail; the project_state label "(session 48 cycle)" → "(session 50 cycle)" (the off-by-two run-96 inherited); AGENTS's dangling `docs/session_114.md` pointer (a HomeNest-era file dropped in the run-72 docs reset) → `docs/DEPLOYMENT.md` §4; the AUTH_SECRET generation command single-sourced on `openssl rand -hex 32` (the S97-1 error's own command) across `.env.example` + `DEPLOYMENT.md` ×2.
+- `[VERIFY]` **Audit 98-a clean, parity zero-delta on every pinned surface**: 12/12 standing anchors PASS, the run-97 regression surface R1–R8 8/8, 0 CRITICAL/HIGH/MEDIUM — 2 LOW + 2 INFO (6 drift leads CONFIRMED, D7/D8 REFUTED; N4 the `homenest_*` cookie names recorded no-action — documented and deliberate). The untouched-surface scan (csp/proxy/rate-limit/stripe/wishlist/order-status/coupons/settings/cart/admin-payments/analytics/demo-mode/search/health/checkout-success) found zero defects. Gates green (798/798 unit +9 in 68 files, 92/92 e2e ×2, npm audit 0/0, sitemap 28 public-only, robots 4 disallows, .env.example 9/9, 25/25 screenshots). Live parity measured on both sites logged in at 390×844: the panel rows Search/Shop/Beauty Tools/Brush & Combs/About at reference 89/125/161/197/233 vs clone 88/124/160/196/232 (−1px uniform, hrefs AND labels byte-identical), the overlay input Cormorant 18px/300 both, the silk rows byte-identical copies at −1px with $370.00/$288.00/$470.00/$520.00 Cormorant 14px/300 both, /shop 19 cards bonnet-first "All Products" both, the first-card detail ৳370 Inter 24px/600 with both purchase buttons active — and the mobile nav fully functional on both sites (no Tailwind v4 bug).
 
 #### Revision Block — v2.24 (Run 97 — the auth-secret hardening & doc-de-drift completion cycle)
 
@@ -580,7 +587,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, label, select, slot, toast) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^4.6.7 | Single validation boundary (ADR-005) — v4 since run 86 (S86-1) |
-| Unit tests | Vitest | ^4.1.12 | Node-env suite (789 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
+| Unit tests | Vitest | ^4.1.12 | Node-env suite (798 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
 | E2E tests | Playwright | ^1.64 | 92 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins + the S92-2f password-change round-trip |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
@@ -830,7 +837,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 789 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 798 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -1107,7 +1114,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
 | `prisma/schema.prisma` / `seed.ts` | 20 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 789 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
+| `tests/unit/*` · `tests/e2e/*` | 798 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---

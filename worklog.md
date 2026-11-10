@@ -666,3 +666,24 @@ Stage Summary:
 - Parity: zero new deltas on every pinned surface; the S97-3 fallback verified live on the oval.
 - Standing verifications: sitemap 28 public-only · robots 4 disallows · 25/25 screenshots (7 changed: 03 the review-ID/date band, 12/13/14/17/19 the known admin/account raster-noise family, 15b the coupons surface) · .env.example 9/9 · npm audit 0.
 - Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.
+
+---
+
+Task ID: 92
+Agent: run-98 executor (the enumeration-lockstep & payment-prose de-drift cycle)
+Task: The full remediation cycle on the SURVIVED workspace (git pull 9bfd120→0dfcf29 fast-forward = run-97 code + the operator's raw-narrative commit adding docs/session_51.md; no new operator signal — a standard verification cycle): docs review (five core docs + session_50/51, PAD/SKILL/CLAUDE digested via a subagent) → baseline gates green (789/789 unit — docs matched reality on every count) → audit 98-a (read-only, skills/ excluded — 12/12 anchors, R1–R8 8/8, 0 C/H/M, 2 LOW + 2 INFO, 6 drift leads CONFIRMED) → the live parity pass (zero new deltas, mobile 390×844 both sites logged in) → the Session 98 plan (S98-1..S98-9) → TDD execution → gates ×2 → standing verifications → the docs sweep → the SSH-wrapper push.
+
+Work Log:
+- The cycle's code centerpiece (S98-1, TDD — audit D1/D2/D4/N2): the docs' route/admin ENUMERATIONS were rotting while the docs-counts net pinned only numbers. New pins in tests/unit/docs-counts.test.ts: the 13-route inventory derived from the filesystem (the S91-1 convention) + the 9-page admin inventory (the dashboard IS the admin root page.tsx — a discovery the derivation pin itself forced when the assumed dashboard/ folder rejected) + set-equality pins on the four enumeration sites (AGENTS architecture-invariants, CLAUDE api, CLAUDE admin, SKILL §5 row). RED 7 pins by name → GREEN 14/14 after the sweep. Two RED-phase lessons encoded: the set pin must reuse the derivation's sort (ASCII '-' before '/'), and match() captures are string | undefined under noUncheckedIndexedAccess (m?.[1] ?? "" shape).
+- S98-2/S98-3 (the sweep): AGENTS's route list → all 13 exact paths (scope widened to "client-island fetches and the Stripe webhook"); CLAUDE's admin list → the 9 pages; CLAUDE's api list + SKILL §5's row → all 13; CLAUDE's stale "demo payment (no processor)" sentence → the session-61 Stripe reality, the "no real charge" guard on a non-existent surface removed, negative-pinned.
+- S98-4/S98-5/S98-6: the SKILL signpost "runs 89–96 (v2.17–v2.23)" → "runs 89–97 (v2.17–v2.24)" + run 97 in the trail; the project_state label "(session 48 cycle)" → "(session 50 cycle)"; AGENTS's dangling session_114.md pointer → DEPLOYMENT.md §4, negative-pinned; the AUTH_SECRET command single-sourced on openssl rand -hex 32 across .env.example + DEPLOYMENT.md ×2, pinned.
+- The count-lockstep fired exactly as designed: the +9 move (789 → 798) tripped the README/CLAUDE/PAD/SKILL sites BY NAME (4 failing pins observed) and the one-pass sweep brought them all green; the PAD's append-only v2.24 revision block deliberately keeps its historical 789/789.
+- The parity pass (mobile 390×844, both sites logged in): every pinned surface HOLDS — panel rows (the direct probe) reference 89/125/161/197/233 vs clone 88/124/160/196/232 (−1px uniform, hrefs+labels byte-identical); the overlay input Cormorant 18px/300; the silk rows byte-identical ×4 with $370/$288/$470/$520 at Cormorant 14px/300; /shop 19 bonnet-first "All Products"; the first-card detail ৳370 Inter 24px/600 both buttons active; mobile nav fully functional (no Tailwind v4 bug; zero classList in src/, the conditional-mount pattern holding).
+- Environment: the orphan-server ritual ran BEFORE the screenshot capture (the :3000 parity server had survived the rebuild as the renamed next-server; killed by port owner PID 32579 — zero ChunkLoadErrors in the 25-shot capture). xxd is absent in this sandbox — the PNG signature check moved to Python (the first check false-failed every file).
+
+Stage Summary:
+- All gates green: lint · typecheck · typecheck:tests · 798/798 unit (+9, 68 files) · clean build · 92/92 e2e ×2 consecutive (2.4m + 2.3m).
+- Audit 98-a: 12/12 standing anchors · R1–R8 (the run-97 regression surface) 8/8 · 0 CRITICAL/HIGH/MEDIUM — 2 LOW + 2 INFO; all 6 CONFIRMED drift leads + both LOW remediated (N4 the homenest_* cookie names recorded no-action).
+- Parity: zero new deltas on every pinned surface.
+- Standing verifications: sitemap 28 public-only · robots 4 disallows · 25/25 screenshots (7 changed: the documented families) · .env.example 9/9 · npm audit 0.
+- Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.
