@@ -88,6 +88,25 @@ function availabilityFor(stock: number): string {
   return stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock";
 }
 
+/**
+ * The product meta/OG/JSON-LD description (S96-1, audit 96-a L-8) — the
+ * three-term fallback chain: shortDescription → description → a name-based
+ * line. The run-95 content resync (S95-2) left the bamboo oval with BOTH
+ * copy fields empty (the reference's owner ships it with no copy at all),
+ * which exhausted the two-term S76-8 chain and shipped an empty-string
+ * meta — the name-based third term restores the "never an empty-string
+ * meta" invariant. The reference itself ships a GENERIC meta on every
+ * product page ("Product Detail on ElyBeauty. A high-fashion…"), so the
+ * clone's per-product descriptions remain a deliberate SEO superset.
+ */
+export function productMetaDescription(product: {
+  name: string;
+  shortDescription: string | null;
+  description: string;
+}): string {
+  return product.shortDescription || product.description || `${product.name} — ElyBeauty`;
+}
+
 /** schema.org/Product node for a product detail page. */
 export function buildProductJsonLd(product: ProductJsonLdInput): JsonLdObject {
   const images = parseImageList(product.images).map((img) => absolutizeImage(new URL(product.url).origin, img));
@@ -96,7 +115,7 @@ export function buildProductJsonLd(product: ProductJsonLdInput): JsonLdObject {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
-    description: product.shortDescription || product.description,
+    description: productMetaDescription(product),
     image: images,
     sku: product.sku,
     category: product.categoryName,

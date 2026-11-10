@@ -19,7 +19,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 // ── The single source of truth for the docs' live-tense counts ──────────
-const UNIT_TESTS = 777;
+const UNIT_TESTS = 784;
 const E2E_TESTS = 92;
 const PRISMA_MODELS = 20;
 // ─────────────────────────────────────────────────────────────────────────

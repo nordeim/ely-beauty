@@ -808,3 +808,37 @@ describe("S86 — the placeholder-localization pins", () => {
     expect(dialog).toMatch(/placeholder="ABC123456789"/);
   });
 });
+
+// --- S96-2: the admin accent-color reskin completion (audit 96-a L-10) -----
+// Six admin-dialog checkboxes still hardcoded the pre-re-skin terracotta
+// accent (accent-[hsl(24_70%_50%)] — the kitchen era's primary) while the
+// token palette ships taupe; product-dialog's own category checkbox already
+// uses accent-foreground, so the dialogs were inconsistent even internally.
+// The L-1/L-2 precedent (no #d96e26 in Stripe appearance / admin charts)
+// extends to the accent utilities: the terracotta literal is gone.
+describe("S96 — the admin accent-color reskin completion", () => {
+  const adminDialogs = [
+    "app/(storefront)/admin/products/product-dialog.tsx",
+    "app/(storefront)/admin/carousel/slide-dialog.tsx",
+    "app/(storefront)/admin/categories/category-dialog.tsx",
+    "app/(storefront)/admin/coupons/coupon-dialog.tsx",
+  ];
+
+  it("no admin dialog hardcodes the pre-re-skin terracotta accent literal", () => {
+    for (const file of adminDialogs) {
+      const source = src(file);
+      expect(source, `${file} still carries the terracotta accent`).not.toContain("hsl(24_70%_50%");
+    }
+  });
+
+  it("every checkbox in those dialogs rides the token palette's accent-foreground", () => {
+    for (const file of adminDialogs) {
+      const source = src(file);
+      const checkboxes = source.match(/<input[^>]*type="checkbox"[^>]*>/g) ?? [];
+      const accented = source.match(/accent-foreground/g) ?? [];
+      // Every checkbox input's className includes accent-foreground (the
+      // className follows the type attribute in these dialogs' layout).
+      expect(accented.length, `${file}: ${checkboxes.length} checkboxes but ${accented.length} accent-foreground tokens`).toBeGreaterThanOrEqual(checkboxes.length);
+    }
+  });
+});

@@ -127,9 +127,12 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  // Debounced typeahead against /api/search (the S77-4 fields: name,
-  // shortDescription, tags AND the long description — the reference's
-  // coverage). S78-2 (D-2, measured live): the floor is ONE character —
+  // Debounced typeahead against /api/search (the S95-1 fields: name,
+  // shortDescription, tags ONLY — re-measured live at run-95 after the
+  // reference's owner moved the marketing copy into short_description;
+  // description-only words return ZERO rows on the reference, so the
+  // S77-4 description clause was dropped as an over-match).
+  // S78-2 (D-2, measured live): the floor is ONE character —
   // the reference returns its capped 8-row set for a 1-char query ("e");
   // empty still renders nothing (the endpoint's own `!q` gate mirrors
   // this, checked inside the timer so the effect never calls setState

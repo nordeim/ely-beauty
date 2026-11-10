@@ -488,7 +488,7 @@ export function ProductDialogButton({
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 accent-[hsl(24_70%_50%)]"
+                  className="h-4 w-4 accent-foreground"
                   checked={form.isFeatured}
                   onChange={(e) => setField("isFeatured", e.target.checked)}
                 />
@@ -497,7 +497,7 @@ export function ProductDialogButton({
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 accent-[hsl(24_70%_50%)]"
+                  className="h-4 w-4 accent-foreground"
                   checked={form.isNewArrival}
                   onChange={(e) => setField("isNewArrival", e.target.checked)}
                 />
@@ -506,7 +506,7 @@ export function ProductDialogButton({
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 accent-[hsl(24_70%_50%)]"
+                  className="h-4 w-4 accent-foreground"
                   checked={form.isActive}
                   onChange={(e) => setField("isActive", e.target.checked)}
                 />

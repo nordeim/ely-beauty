@@ -4,6 +4,7 @@ import {
   buildOrganizationJsonLd,
   buildProductJsonLd,
   buildWebsiteJsonLd,
+  productMetaDescription,
   siteBaseUrl,
 } from "@/lib/seo";
 import type { JsonLdObject } from "@/lib/seo";
@@ -159,5 +160,46 @@ describe("siteBaseUrl (session-6)", () => {
   it("trims surrounding whitespace before composing the base (S92-1)", () => {
     expect(siteBaseUrl("  https://shop.example.com  ")).toBe("https://shop.example.com");
     expect(siteBaseUrl(" https://shop.example.com/ ")).toBe("https://shop.example.com");
+  });
+});
+
+// --- S96-1: the meta-description fallback chain (audit 96-a L-8) ------------
+// The run-95 content resync left natural-bamboo-hair-brush-oval with BOTH
+// shortDescription AND description empty (the reference's owner ships the
+// oval with no copy at all) — the detail page's two-term chain
+// `shortDescription || description` then shipped an EMPTY meta/OG/Twitter/
+// JSON-LD description, exhausting the S76-8 "never an empty-string meta"
+// invariant. The reference itself ships a GENERIC meta ("Product Detail on
+// ElyBeauty. A high-fashion…") on every product page, so the clone's
+// per-product metas are a superset; the invariant is restored with a
+// name-based third term rather than regressing to the generic.
+describe("productMetaDescription — the S96-1 fallback chain", () => {
+  it("prefers the short description when present", () => {
+    expect(productMetaDescription(PRODUCT)).toBe(PRODUCT.shortDescription);
+  });
+
+  it("falls back to the long description when the short is empty", () => {
+    expect(productMetaDescription({ ...PRODUCT, shortDescription: "" })).toBe(PRODUCT.description);
+  });
+
+  it("treats a null shortDescription the same as an empty one", () => {
+    expect(productMetaDescription({ ...PRODUCT, shortDescription: null })).toBe(PRODUCT.description);
+  });
+
+  it("falls back to the name-based line when BOTH fields are empty (the oval reality)", () => {
+    const both = productMetaDescription({ ...PRODUCT, shortDescription: "", description: "" });
+    expect(both).toBe("Damascus Steel Chef Knife Set — ElyBeauty");
+    expect(both.length).toBeGreaterThan(0);
+  });
+});
+
+describe("buildProductJsonLd — the S96-1 description fallback", () => {
+  it("renders the name-based fallback when both copy fields are empty (not an empty string)", () => {
+    const empty = buildProductJsonLd({
+      ...PRODUCT,
+      shortDescription: "",
+      description: "",
+    }) as JsonLdObject;
+    expect(empty.description).toBe("Damascus Steel Chef Knife Set — ElyBeauty");
   });
 });

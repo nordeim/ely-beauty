@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { formatDate } from "@/lib/format";
 import { formatMoney } from "@/lib/money";
 import { firstCategoryName, parseColors, parseImages, parseSizes, productCategoryInclude, toCardData } from "@/lib/products";
-import { buildProductJsonLd, jsonLdScript, siteBaseUrl } from "@/lib/seo";
+import { buildProductJsonLd, jsonLdScript, productMetaDescription, siteBaseUrl } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
 import { getCurrentUser } from "@/lib/auth";
 import { getWishlistIds } from "@/lib/wishlist";
@@ -29,10 +29,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     select: { name: true, shortDescription: true, description: true, images: true },
   });
   if (!product) return { title: "Product not found" };
-  // S76-8: the six reference-true no-card-copy products ship an empty
-  // shortDescription — their meta description falls back to the long copy
-  // (mirrors seo.ts's builder rule; never an empty-string meta).
-  const metaDescription = product.shortDescription || product.description;
+  // S76-8 → S96-1: the meta description rides the shared three-term chain
+  // (shortDescription → description → a name-based line). The run-95
+  // content resync left the bamboo oval with BOTH copy fields empty — the
+  // old two-term chain shipped an empty-string meta there; the name-based
+  // third term (productMetaDescription in seo.ts, the same helper
+  // buildProductJsonLd rides) restores the never-empty invariant.
+  const metaDescription = productMetaDescription(product);
   // First product image as the share card (root-relative store path — the
   // only form imageUrlSchema accepts since S7-6). metadataBase resolves the
   // relative path to an absolute URL for crawlers. External hosts would need

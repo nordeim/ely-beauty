@@ -620,3 +620,25 @@ Stage Summary:
 - Parity: the content resync closes the copy gap — the overlay rows + card desc lines byte-match; all measured pins within the recorded −1px tolerances.
 - Standing verifications: sitemap 28 public-only · 25/25 screenshots (8 changed: the content-resync family + the known raster-noise/admin surfaces) · .env.example 9/9 · npm audit 0.
 - Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.
+
+---
+
+Task ID: 90
+Agent: run-96 executor (the SEO-fallback completion & full-stack doc-de-drift cycle)
+Task: The full remediation cycle on a FRESH-sandbox clone (git clone at 5fcf72b = run-95 code + the operator's raw-narrative commit adding docs/session_47.md; no new operator signal — a standard verification cycle): environment rebuild (install + .env + db/ + the session-63 symlink convergence + chromium 1248 re-pair) → docs review → baseline gates green (777/777 unit — docs matched reality) → audit 96-a (read-only, skills/ excluded) → the live parity pass (zero new deltas) → the Session 96 plan (S96-1..S96-11) → TDD execution → gates ×2 → standing verifications → the docs sweep → the SSH-wrapper push.
+
+Work Log:
+- The cycle's driver finding (audit 96-a L-8, a run-95 follow-on): the S95-2 content resync left the bamboo oval with BOTH shortDescription and description empty — the detail page's two-term S76-8 chain then shipped an EMPTY meta/OG/Twitter/JSON-LD description. Reference-side investigation (headless browser): the reference ships a GENERIC meta ("Product Detail on ElyBeauty. A high-fashion…") on every product page — per-product metas are the clone's deliberate SEO superset, so the fix restores the never-empty invariant with a name-based third term instead of regressing to the generic.
+- S96-1 (TDD): NEW shared productMetaDescription() in src/lib/seo.ts (shortDescription → description → `${name} — ElyBeauty`), composed into BOTH generateMetadata and buildProductJsonLd. RED 5 pins → GREEN 19/19; live-verified (all four of the oval's description surfaces render "Natural Bamboo Hair Brush - Oval — ElyBeauty").
+- S96-2 (TDD): six admin-dialog checkboxes still hardcoded the pre-re-skin terracotta accent-[hsl(24_70%_50%)] — all six → accent-foreground (product-dialog ×3, slide-dialog, category-dialog, coupon-dialog), pinned by the new S96 describes in layout-tokens.test.ts (RED 2 → GREEN 77/77). The mid-fix lesson: the tool pipeline strips `[h` in rendered output — byte-level verification (pickaxe + raw-pattern counts) proved the class bytes valid all along; trust the count, not the display.
+- S96-3..S96-8 (the doc-de-drift family, all 10 LOW + 4 of 6 INFO remediated): the S95-1 search-contract texts de-drifted in CLAUDE.md, AGENTS.md, and search-overlay.tsx's comment; CLAUDE.md's homenest-era catalog gloss → the 19/4/7-3-4 reality; SKILL §19's color table rebuilt from the live globals.css taupe palette + the §2 Stripe row + the §5 counts (144/15+10/41, re-derived with the documented commands); PAD §4.3's three stale seed claims + §8.2's globalSetup mechanism wording fixed; the SKILL session-record boundary note (runs 89+ → the PAD revision blocks).
+- The count-lockstep fired exactly as designed: the +7 unit move (777 → 784) tripped the README/CLAUDE/PAD/SKILL sites BY NAME and the sweep brought them all green in one pass.
+- The parity pass (mobile 390×844, both sites logged in): every pinned surface HOLDS — panel rows −1px uniform with byte-identical hrefs+labels; overlay input Cormorant 18px/300; the silk rows byte-identical ×4 with $370/$288/$470/$520 at Cormorant 14px/300; /shop 19 bonnet-first "All Products"; the bonnet detail ৳370 Inter 24px/600 both buttons active; mobile nav fully functional (no Tailwind v4 bug; zero classList in src/). Two parity-script lessons: the reference login's first submit is "Continue with Google" (target the native Log in button); scope panel-link locators to :visible (a bare first-match resolves to the below-fold footer link).
+- Recorded no-action (INFO): the howToUse/ingredients admin-editing gap (seed-only content, preserved by upserts — a deferred enhancement, not a defect); the menu button's state-dependent aria-label (the documented a11y-superset tolerance); the replay-branch file attribution nuance (the invariant held).
+
+Stage Summary:
+- All gates green: lint · typecheck · typecheck:tests · 784/784 unit (+7, 68 files) · clean build · 92/92 e2e ×2 consecutive (2.5m + 2.4m).
+- Audit 96-a: 0 CRITICAL/HIGH/MEDIUM; the 10 LOW all remediated (6 INFO: four fixed as S96-6/S96-8, two recorded no-action).
+- Parity: zero new deltas on every pinned surface; the S96-1 fix verified live on the oval's four description surfaces.
+- Standing verifications: sitemap 28 public-only · 25/25 screenshots (6 changed: the known family + the accent-foreground delta on 15b) · .env.example 9/9 · npm audit 0.
+- Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.

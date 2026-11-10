@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.21.0
+version: 2.22.0
 last_updated: 2026-11-10
-project_state: "777 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-95 (session 45 cycle): the reference-content resync & PAD-body de-drift cycle — audit 95-a clean (12/12 anchors, run-94 surface R1–R5 5/5, 0 CRITICAL/HIGH/MEDIUM, 6 LOW + 5 INFO, all LOW remediated); S95-1 the /api/search OR clause resynced to the reference's run-95 measured matching (title + short_description + tags — description dropped; "Silkfare"/"Nano" return 0 on the reference); S95-2 the seed content resync (the reference's owner restructured the catalog: paragraphs to short_description, feature-list/null descriptions, how_to_use empty reference-wide, the Ice Bowl ingredients, the authored quirks verbatim — bastseller/Lovender/Marron/Biege/Navy blue) + the detail-page sections all-conditional; S95-3 the PAD live-tense body de-drift (counts, 20 models, the 3-project e2e reality, crypto-random order numbers, the 68-suite table); S95-4 the NEW docs-counts.test.ts count-lockstep pin (the neo-crm mechanism — a stale count anywhere fails the unit gate by name); S95-5/S95-6 the advisory inventory comment + cosmetics — 764 → 777 unit (+13: 4 seed-content pins, 5 docs-counts pins, 1 advisory-inventory pin, 3 validation copy-bound pins; the search-route pin rewritten in place), e2e 92 unchanged. PREVIOUS (run-94): the Stripe-replay ownership & SKILL-body de-drift cycle (S94-1..S94-6)"
+project_state: "784 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-96 (session 47 cycle): the SEO-fallback completion & full-stack doc-de-drift cycle — audit 96-a clean (12/12 anchors, run-95 surface R1–R7 7/7, 0 CRITICAL/HIGH/MEDIUM, 10 LOW + 6 INFO, all substantive LOW remediated); S96-1 the productMetaDescription three-term fallback chain (the run-95 content resync left the bamboo oval with BOTH copy fields empty — the two-term S76-8 chain shipped an empty meta/OG/JSON-LD description; the name-based third term restores the never-empty invariant, shared by generateMetadata AND buildProductJsonLd); S96-2 the admin accent-color reskin completion (six terracotta accent-[hsl(24_70%_50%)] checkbox literals → accent-foreground, pinned); S96-3..S96-8 the doc-de-drift family (the S95-1 search-contract texts in CLAUDE/AGENTS/search-overlay comment, the SKILL §19 color table rebuilt from the live globals.css taupe palette + the §2 Stripe row + the §5 counts 144/15+10/41, the PAD §4.3 seed reality 7-3-4/all-positive-stock/run-95 content + the §8.2 globalSetup mechanism wording, the SKILL session-record boundary note for runs 89+) — 777 → 784 unit (+7: 5 seo-ld fallback pins + 2 layout-tokens accent pins), e2e 92 unchanged. PREVIOUS (run-95): the reference-content resync & PAD-body de-drift cycle (S95-1..S95-6)"
 tags:
   - nextjs16
   - react19
@@ -122,6 +122,7 @@ Locked versions (from `package.json` — keep this table in sync when bumping):
 | Styling utils | `class-variance-authority`, `clsx`, `tailwind-merge` | latest | the `cn()` triad |
 | Icons | `lucide-react` | ^0.525.0 | only icon set |
 | Charts | `recharts` | ^3.1.0 | admin revenue/analytics only |
+| Payments | `stripe` + `@stripe/react-stripe-js` + `@stripe/stripe-js` | ^23.0.0 / ^7.0.0 / ^10.1.0 | the Stripe retrofit (PAY-STRIPE-1): OFF by default — 3 env vars + `STRIPE_BDT_PER_USD` gate the Card option; §7.4 carries the contract |
 | Validation | `zod` | ^4.6.7 | single boundary: `src/lib/validation.ts` (v4 since S86-1; the v4 sentinel + message pins in `tests/unit/validation.test.ts`) |
 | Unit tests | `vitest` + `@testing-library/*` + `jsdom` | ^4.1.12 | `tests/unit/*` |
 | E2E | `@playwright/test` | ^1.64.0 | `tests/e2e/*`, standalone server on :3100 |
@@ -185,11 +186,13 @@ Key mechanics:
 
 ## 5. Component Architecture & Patterns
 
-127 tracked TS files (reproducible count:
+144 tracked TS files (reproducible count:
 `git ls-files src/ | grep -E '\.(ts|tsx)$'` — a `src/**/*.ts` GLOB
-pathspec misses `src/proxy.ts` at the src root; use the ls-files form).
+pathspec misses `src/proxy.ts` at the src root; use the ls-files form —
+count refreshed S96-6 after the run-89..95 growth left the table at 127).
 Component split in `src/components/`:
-**13 client** (`"use client"`) and **9 server** components; 38 client files
+**15 client** (`"use client"`) and **10 server** components (25 `.tsx`
+total); 41 client files
 across all of `src/` (pages' interactive islands included).
 
 | Folder | Role | Examples |
@@ -735,26 +738,30 @@ Rule: overlays are portal-rendered at `z-50`; nothing custom above `z-[100]`.
 
 ## 19. Color Reference (Complete)
 
-From `src/app/globals.css` `@theme inline` (all values exact):
+From `src/app/globals.css` `@theme inline` (all values exact — the ElyBeauty
+re-skin palette, S96-6 resync after the table had frozen at the pre-re-skin
+kitchen era):
 
 | Token | Value |
 |---|---|
-| `--color-background` | `hsl(30 20% 98%)` (warm cream) |
-| `--color-foreground` | `hsl(20 14% 12%)` |
-| `--color-card` / popover | `hsl(0 0% 100%)` |
-| `--color-primary` | **`hsl(24 70% 50%)`** (terracotta) |
-| `--color-primary-foreground` | `hsl(0 0% 100%)` |
-| `--color-secondary` / muted | `hsl(36 16% 94%)` |
-| `--color-muted-foreground` | `hsl(25 9% 45%)` |
-| `--color-accent` | `hsl(24 70% 96%)` (soft orange wash) |
-| `--color-accent-foreground` | `hsl(24 70% 35%)` |
-| `--color-destructive` | `hsl(0 72% 51%)` |
-| `--color-border` | `hsl(33 15% 90%)` |
-| `--color-input` | `hsl(33 15% 88%)` |
-| `--color-ring` | `hsl(24 70% 50%)` |
-| `--color-badge-sale` | `hsl(0 72% 61%)` |
-| `--color-badge-featured` | `hsl(24 70% 60%)` |
-| Radius pins | sm 6px · md 8px · lg 10px · **xl 12px · 2xl 16px · 3xl 24px** |
+| `--color-background` | `hsl(30 20% 97%)` (ivory paper) |
+| `--color-foreground` | `hsl(0 0% 10%)` |
+| `--color-card` | `hsl(30 20% 97%)` / `--color-card-foreground` `hsl(0 0% 10%)` |
+| `--color-popover` / popover-foreground | `hsl(0 0% 100%)` / `hsl(0 0% 10%)` |
+| `--color-primary` | **`hsl(30 12% 48%)`** (taupe) |
+| `--color-primary-foreground` | `hsl(30 20% 97%)` |
+| `--color-secondary` | `hsl(30 15% 93%)` / secondary-foreground `hsl(0 0% 10%)` |
+| `--color-muted` | `hsl(30 10% 94%)` / `--color-muted-foreground` `hsl(0 0% 40%)` |
+| `--color-accent` | `hsl(30 15% 93%)` (soft warm wash) |
+| `--color-accent-foreground` | `hsl(0 0% 10%)` |
+| `--color-destructive` | `hsl(0 84.2% 60.2%)` / destructive-foreground `hsl(0 0% 98%)` |
+| `--color-border` | `hsl(30 10% 88%)` |
+| `--color-input` | `hsl(30 10% 88%)` |
+| `--color-ring` | `hsl(30 12% 48%)` |
+| `--color-success` | `hsl(140 20% 33%)` / success-foreground `hsl(0 0% 98%)` |
+| `--color-badge-sale` | `hsl(0 84.2% 60.2%)` (reference red) |
+| `--color-badge-featured` | `hsl(0 0% 10%)` (BESTSELLER near-black) |
+| Radius pins | sm 2px · md 4px · lg 6px · **xl 8px · 2xl 12px · 3xl 16px** |
 | `--shadow-sm` | `0 1px 2px 0 rgb(0 0 0 / 0.05)` (v3 geometry pin) |
 
 The mobile-menu close button's green (`bg-emerald-500`-family) is a
@@ -5152,3 +5159,16 @@ Key files: `scripts/capture-screenshots.ts` · `docs/session_132.md` ·
   dependency touch, including your own fixes); and dependency-only
   cycles still deserve the full parity re-measurement — 19 byte-identical
   screenshots are the cheapest drift alarm there is.
+
+- **Session-record boundary (S96-8): runs 89–96 live in the PAD revision
+  blocks.** This appendix's per-session trail ends at Session 88 (run 88);
+  from run 89 onward the per-run record moved to the PAD's append-only
+  revision blocks (v2.17–v2.23) + `docs/REMEDIATION_PLAN.md`'s session
+  sections + the `docs/session_NN.md` logs — the trail continues there
+  (run 89: the worklog/docs-verification consolidation; 90: the
+  coupon-label format cycle; 91: the API force-dynamic cycle; 92: the
+  production-deploy hardening; 93: rotation atomicity; 94: stripe-replay
+  ownership; 95: the reference-content resync; 96: the SEO-fallback
+  completion + this doc-de-drift cycle). This note is the signpost so a
+  future reader knows where the trail continues — the historical entries
+  above are deliberately left in their era-accurate wording.

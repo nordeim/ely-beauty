@@ -328,7 +328,7 @@ export function CouponDialogButton({
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
-              className="h-4 w-4 accent-[hsl(24_70%_50%)]"
+              className="h-4 w-4 accent-foreground"
               checked={form.isActive}
               onChange={(e) => setField("isActive", e.target.checked)}
             />
