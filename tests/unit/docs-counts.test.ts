@@ -19,7 +19,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 // ── The single source of truth for the docs' live-tense counts ──────────
-const UNIT_TESTS = 811;
+const UNIT_TESTS = 814;
 const E2E_TESTS = 92;
 const PRISMA_MODELS = 20;
 // ─────────────────────────────────────────────────────────────────────────
@@ -398,5 +398,65 @@ describe("S100-1 — stale-existence-claim net: session-range claims stay true a
     // its existence claims are about NOW, not about the cited eras.
     const note = skill.slice(skill.indexOf("**Docs-reset boundary"));
     expect(staleSessionExistenceClaims(note), "boundary-note stale existence claims").toEqual([]);
+  });
+});
+
+// ── S101-1 — the plan-range lockstep net (audit 101-a INFO-1) ──────────────
+// AGENTS.md's architecture bullet carried "docs/REMEDIATION_PLAN.md records
+// the session-2..100 security/parity audits" — a bounded-range claim about
+// the PLAN's session sections. It sat OUTSIDE the S100-1 net's grammar
+// (that net bounds docs/session_*.md FILES; this bounds plan SECTIONS), and
+// it is the standing off-by-one shape runs 96–99 fixed repeatedly: accurate
+// the cycle it is written in, stale the moment the plan grows. The net
+// derives the plan's session headings from the FILESYSTEM and pins that
+// every `session-2..N` literal in the seven live-tense scopes carries N ==
+// the plan's CURRENT tail — a stale bound fails BY NAME with the scope
+// named, and a non-vacuity floor keeps the literal from silently vanishing
+// into a false green. The plan's heading history is deliberately NOT
+// assumed contiguous (H1/H2/H3 mixed with HomeNest-era gaps and duplicate
+// sub-headings — only the MAX is stable), so only the MAX is pinned.
+const PLAN_SESSION_NUMBERS = [...read("docs/REMEDIATION_PLAN.md").matchAll(/^#{1,3}\s+Session\s+(\d+)\b/gm)]
+  .map((m) => Number(m[1]))
+  .sort((a, b) => a - b);
+const MAX_PLAN_SESSION = PLAN_SESSION_NUMBERS[PLAN_SESSION_NUMBERS.length - 1] ?? 0;
+
+/** Stale `session-2..N` plan-range literals in `text` (N != the plan tail). */
+const stalePlanRangeLiterals = (text: string): string[] =>
+  [...text.matchAll(/session-2\.\.(\d+)/g)]
+    .filter((m) => Number(m[1]) !== MAX_PLAN_SESSION)
+    .map((m) => `session-2..${m[1]}`);
+
+describe("S101-1 — plan-range lockstep: the docs' plan-range literals track the REMEDIATION_PLAN tail", () => {
+  it("derives the plan's session headings from the file (the append-only tail grows every cycle)", () => {
+    expect(PLAN_SESSION_NUMBERS.length, "the plan corpus is non-trivial").toBeGreaterThanOrEqual(100);
+    // Lower bound only — never an upper bound (the S100-1 lesson: an
+    // existence claim over a bounded range goes stale by construction the
+    // moment the range grows; a lower bound cannot).
+    expect(MAX_PLAN_SESSION, "the plan tail has reached Session 101 (this cycle)").toBeGreaterThanOrEqual(101);
+  });
+
+  it("no live-tense scope carries a stale session-2..N plan-range literal", () => {
+    const skill = read("ely-beauty_SKILL.md");
+    const pad = read("Project_Architecture_Document.md");
+    const scopes: Record<string, string> = {
+      "AGENTS.md": read("AGENTS.md"),
+      "CLAUDE.md": read("CLAUDE.md"),
+      "README.md": read("README.md"),
+      ".env.example": read(".env.example"),
+      "docs/DEPLOYMENT.md": read("docs/DEPLOYMENT.md"),
+      "SKILL live body": skill.slice(0, skill.indexOf("## Appendix A")),
+      "PAD live body": pad.slice(pad.indexOf("## Table of Contents")),
+    };
+    for (const [scope, text] of Object.entries(scopes)) {
+      expect(stalePlanRangeLiterals(text), `${scope} stale plan-range literals`).toEqual([]);
+    }
+  });
+
+  it("the plan-range literal survives somewhere live-tense (the non-vacuity floor)", () => {
+    // If every `session-2..N` literal were deleted from the live-tense
+    // scopes, the class scan above would green vacuously — this floor
+    // fails loudly instead, keeping the net honest about its own shape.
+    const agents = read("AGENTS.md");
+    expect([...agents.matchAll(/session-2\.\.(\d+)/g)].length, "AGENTS.md keeps the plan-range literal").toBeGreaterThan(0);
   });
 });

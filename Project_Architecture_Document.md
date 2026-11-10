@@ -1,9 +1,15 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.27
+# ElyBeauty — Master Project Architecture Document (PAD) v2.28
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-10
+
+#### Revision Block — v2.28 (Run 101 — the plan-range lockstep net cycle)
+
+- `[TEST]` **The plan-range lockstep class net (S101-1, audit 101-a INFO-1, TDD — the cycle's centerpiece)**: AGENTS.md's architecture bullet carried a bounded-range claim about the REMEDIATION_PLAN's session sections (the plan-range literal, e.g. "records the session-2..N security/parity audits") — accurate the cycle it was written in, stale the moment the plan grows, and OUTSIDE the S100-1 net's grammar (that net bounds the numbered session files under docs/; this bounds plan sections). It is the standing off-by-one shape runs 96–99 fixed repeatedly, surfaced this cycle by audit 101-a as INFO-1 with the recommendation to pin it. `docs-counts.test.ts` now derives the plan's session headings from the FILESYSTEM — the heading level is historically mixed (H1/H2/H3 with HomeNest-era gaps and duplicate sub-headings), so only the MAX is stable and only the MAX is pinned (a lower-bound sanity; never an upper bound, the S100-1 lesson) — then three pins: the tail sanity (≥100 headings; the tail has reached Session 101), the seven-scope class scan (every plan-range literal carries the plan's CURRENT tail — a stale bound fails BY NAME with the scope named), and the non-vacuity floor (at least one plan-range literal survives in AGENTS.md — the shape cannot silently vanish into a false green). **RED 1 pin observed by name** (AGENTS.md's literal still carried the run-100 tail while the plan's had already grown) → **GREEN 30/30** after the bump.
+- `[DOCS]` **The GREEN sweep (S101-2)**: AGENTS.md's plan-range literal bumped to the run-101 tail (session-2..101); then the count-lockstep sequence — `UNIT_TESTS` moved 811 → 814 (+3: the S101-1 pins), the lockstep fired BY NAME on exactly the four predicted doc-site pins (README badge/table/tree/commands, CLAUDE's pin line, PAD §1.2/§8.1/§12, SKILL project_state), and the one-pass sweep brought them all green (the PAD's append-only v2.27 revision block keeps its historical 811s).
+- `[VERIFY]` **Audit 101-a clean, parity zero-delta on every pinned surface**: 12/12 standing anchors PASS, 0 CRITICAL/HIGH/MEDIUM/LOW — 2 INFO (INFO-1 the plan-range lockstep obligation, adopted as the S101-1 centerpiece; INFO-2 the operator's raw session log — the expected interleaved artifact, credential-clean, no code, no-action). Zero code defects: `src/` verified byte-frozen since run-97 — the exact tree audits 97-a…100-a plus this cycle's baseline gates already cover; the run-100 change-set re-verified line-by-line with no test weakening; both class nets (S99-1 dangling-pointer, S100-1 stale-existence-claim) re-probed non-vacuous with synthetic inputs. Gates green (814/814 unit in 68 files, 92/92 e2e, npm audit 0/0, sitemap 28 public-only, robots 4 disallows, .env.example 9/9, 25/25 screenshots — 8 changed, the documented raster-noise families). Live parity measured on both sites at 390×844 (the reference logged in): the panel rows Search/Shop/Beauty Tools/Brush & Combs/About at reference 89/125/161/197/233 vs clone 88/124/160/196/232 (−1px uniform, hrefs AND labels byte-identical), the overlay input Cormorant Garamond 18px/300 with "Search products..." both, the silk rows reference 174/258/342/426 vs clone 173/257/341/425 (h=80) with all four row copies BYTE-IDENTICAL and $370.00/$288.00/$470.00/$520.00 at Cormorant 14px/300 both, /shop h1 "All Products" with 19 unique cards bonnet-first both, the no-results copy byte-identical — and the mobile nav fully functional on both sites (the panel → link → navigation chain exercised live; no Tailwind v4 bug). Environment: the workspace survived the sandbox recycle; the session-63 `DATABASE_URL` convergence held via the HARD link (one inode, two paths), with the platform's per-invocation env injection the documented shadow.
 
 #### Revision Block — v2.27 (Run 100 — the stale-existence-claim net & citation-hygiene cycle)
 
@@ -600,7 +606,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, label, select, slot, toast) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^4.6.7 | Single validation boundary (ADR-005) — v4 since run 86 (S86-1) |
-| Unit tests | Vitest | ^4.1.12 | Node-env suite (811 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
+| Unit tests | Vitest | ^4.1.12 | Node-env suite (814 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
 | E2E tests | Playwright | ^1.64 | 92 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins + the S92-2f password-change round-trip |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
@@ -850,7 +856,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 811 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 814 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -1127,7 +1133,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
 | `prisma/schema.prisma` / `seed.ts` | 20 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 811 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
+| `tests/unit/*` · `tests/e2e/*` | 814 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---
