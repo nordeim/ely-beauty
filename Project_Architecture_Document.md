@@ -1,9 +1,15 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.26
+# ElyBeauty — Master Project Architecture Document (PAD) v2.27
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-10
+
+#### Revision Block — v2.27 (Run 100 — the stale-existence-claim net & citation-hygiene cycle)
+
+- `[TEST]` **The stale-existence-claim class net (S100-1, audit 100-a LOW-1, TDD — the cycle's centerpiece)**: the S99-4 Appendix B "Docs-reset boundary" note claimed a bounded range of session files as ALL that exist — falsified by the same `c3db704` commit that added it (run-99's own `session_54.md`) and widened by the operator's `session_55.md`; the note's HomeNest-era cite range (`session_54`–`session_132`) now numerically collides with the live post-reset files, so a reader following an appendix cite lands on a wrong-era file. The S99-1 dangling-pointer net deliberately exempts Appendix B, so nothing caught the class. `docs-counts.test.ts` now derives the session-file numbers from the FILESYSTEM and pins that no live-tense scope (the S99-1 seven) — NOR the boundary-note bullet itself, present-tense inventory guidance located by its `**Docs-reset boundary` marker with its own survival pin — carries a bounded-range existence claim whose bound sits below the highest session file on disk. RED 2 pins observed by name → GREEN 27/27. Lessons encoded: an existence claim over a bounded range goes stale by construction the moment the range grows — describe the two series instead of bounding them; and the rewording must PARAPHRASE the stale claim, never re-quote it (the S99-1 lesson generalized from dangling paths to stale claims).
+- `[DOCS]` **The boundary-note two-series rewrite + the citation hygiene (S100-2, audit 100-a LOW-1 + INFO-2)**: the boundary note now describes the pre-reset survivors (`session_1..53.md`) and the post-reset ElyBeauty series (resumed at `session_54.md`, run-99, and continuing forward — run logs + operator raw narratives interleaved) with the explicit collision warning (an appendix cite of "session_54" is NOT a pointer to today's `session_54.md`); the SKILL project_state's stale literal paraphrased away in the v2.26.0 bump. Citation hygiene: CLAUDE's checkout bullet and the PAD lessons row 15's guarded-`updateMany` coupon-increment citation `couponRedemptionWhere` → `couponRedemptionFilter` — the composed filter the placement actually invokes (`src/lib/order-placement.ts:191`); both identifiers are real exports and `coupons.test.ts` directly tests the cap-clause builder, so the class is imprecision, not falsehood — recorded fixed-without-pin.
+- `[VERIFY]` **Audit 100-a clean, parity zero-delta on every pinned surface**: 12/12 standing anchors PASS, 0 CRITICAL/HIGH/MEDIUM — 1 LOW + 4 INFO (INFO-1 the Prisma-8-RC banner recorded no-action — the repo pins `^6.19.3` deliberately; INFO-3 the operator's raw session log, expected artifact; INFO-4 the class net's documented residuals — probed non-vacuous this audit). Gates green (811/811 unit +3 in 68 files, 92/92 e2e ×2 consecutive (2.5m + 2.6m), npm audit 0/0, sitemap 28 public-only, robots 4 disallows, .env.example 9/9, 25/25 screenshots — 7 changed, the documented raster-noise families). Live parity measured on both sites logged in at 390×844: the panel rows Search/Shop/Beauty Tools/Brush & Combs/About at reference 89/125/161/197/233 vs clone 88/124/160/196/232 (−1px uniform, hrefs AND labels byte-identical), the overlay input Cormorant 18px/300 with "Search products..." both, the silk rows reference 174/258/342/426 vs clone 173/257/341/425 (h=80) with all four row copies BYTE-IDENTICAL and $370.00/$288.00/$470.00/$520.00 at Cormorant 14px/300 both, /shop h1 "All Products" with 19 unique cards bonnet-first both, the no-results copy byte-identical — and the mobile nav fully functional on both sites (the panel → link → navigation chain exercised live; no Tailwind v4 bug). Environment note: this sandbox generation blocks symlinks — the session-63 `DATABASE_URL` convergence took the HARD-LINK form (`<parent>/db/custom.db` and `<repo>/db/custom.db` share one inode), with the platform's per-invocation env injection the documented shadow.
 
 #### Revision Block — v2.26 (Run 99 — the dangling-pointer class net & payment-prose completion cycle)
 
@@ -594,7 +600,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, label, select, slot, toast) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^4.6.7 | Single validation boundary (ADR-005) — v4 since run 86 (S86-1) |
-| Unit tests | Vitest | ^4.1.12 | Node-env suite (808 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
+| Unit tests | Vitest | ^4.1.12 | Node-env suite (811 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
 | E2E tests | Playwright | ^1.64 | 92 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins + the S92-2f password-change round-trip |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
@@ -844,7 +850,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 808 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 811 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -1012,7 +1018,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | 12 | Fixed (session 3) + hardened (session 6) | No checkout idempotency key | `Order.idempotencyKey @unique`; replays return the original receipt; P2002-on-key resolves to the winner. Session 6 additionally binds replays to the placing client (`Order.cartToken` + `replayAuthorized`): a leaked key alone reveals nothing. See `docs/REMEDIATION_PLAN.md` S3-5/S6-8. |
 | 13 | Fixed (session 6) | Per-IP limiter buckets were attacker-chosen behind an appending proxy | `clientIp(Headers)` now prefers `cf-connecting-ip` (edge-set, not client-feedable) and otherwise takes the RIGHTMOST `x-forwarded-for` hop; all five historical inline `split(",")[0]` copies route through the helper (unit-pinned). Shared-store swap remains the scale-out path. |
 | 14 | Fixed (session 4) | Login/register rate budgets keyed only by attacker-chosen email | Per-IP `login-ip:`/`register-ip:` budgets added alongside the per-email budgets; shared `clientIp()` helper. |
-| 15 | Fixed (session 4) | Coupon redemption cap had a read-then-write TOCTOU window | In-tx increment is now a guarded `updateMany` (`couponRedemptionWhere`); count 0 → 409 rollback. |
+| 15 | Fixed (session 4) | Coupon redemption cap had a read-then-write TOCTOU window | In-tx increment is now a guarded `updateMany` (`couponRedemptionFilter`); count 0 → 409 rollback. |
 | 16 | Fixed (session 4) | First real review collapsed the seeded parity counts | `mergeReviewAggregate` grows the baseline (weighted average + count increment) instead of recomputing from stored rows. |
 | 17 | Fixed (session 4) | Sitemap listed noindex/private routes; robots allowed the admin surface | Sitemap reduced to public catalog/content routes; robots disallows `/admin`, `/account`, `/checkout`, `/api`. Pinned by `tests/unit/seo-routes.test.ts`. |
 | 18 | Fixed (session 6) | Account orders & product-reviews lists are unpaginated | Honest server-rendered pagination: product reviews `?reviews=N` (5/page), account orders `?page=N` (5/page), real totals, out-of-range pages snap back to 1. |
@@ -1121,7 +1127,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
 | `prisma/schema.prisma` / `seed.ts` | 20 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 808 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
+| `tests/unit/*` · `tests/e2e/*` | 811 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---

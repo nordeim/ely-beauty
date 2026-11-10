@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.25.0
+version: 2.26.0
 last_updated: 2026-11-10
-project_state: "808 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-99 (session 54 cycle): the dangling-pointer class net & payment-prose completion cycle — audit 99-a clean (12/12 anchors, run-98 surface R1–R8 8/8, 0 CRITICAL/HIGH/MEDIUM, 7 LOW + 4 INFO — all documentation drift, zero code defects; every live-tense count claim re-verified against the filesystem/vitest run); S99-1 the dangling-doc-pointer CLASS net (S98-5's file-specific negative caught ONE dangling pointer; audit 99-a found three MORE of the same class in sibling live-tense docs — this SKILL's §7.4 heading and CLAUDE's testing bullet both pointed at the run-72-dropped session_113.md, AGENTS's build-config section at a never-committed build_error.txt — so docs-counts.test.ts now derives the real docs/ inventory from the FILESYSTEM and pins that every docs/<path> reference in each live-tense scope (AGENTS/CLAUDE/README whole, .env.example, DEPLOYMENT, this SKILL's pre-Appendix-A body, the PAD's post-ToC body) resolves on disk; a dangle fails BY NAME; RED 5 pins → GREEN 24/24; lessons: a fix that removes a phrase from ONE doc must sweep the sibling live-tense docs in the same commit, and a quoted dangling path inside a live-tense state string — project_state narrating a prior fix — is itself a drift vector, paraphrase don't quote; plus a derivation lesson: the strip regex must carry the SAME extension as the filter — page\.ts$ silently no-ops on page.tsx, the x breaks the $); S99-2/S99-3 the pointer + payment-prose completion (§7.4's heading → docs/DEPLOYMENT.md §4; CLAUDE's citation → the run-63 cycle by name; AGENTS's build_error.txt → tests/unit/build-config-resilience.test.ts; the S98-3 payment-prose class finished across siblings — §7.3's client-never-sends-an-amount-except-cardLast4 → the S73-8 intent-derived reality, §7.4's demo-card-wizard/PayPal/COD → the COD-only unconfigured reality, §13's demo-payment-stores-cardLast4 → PCI SAQ-A, PAD ADR-005's alternatives annotated with the session-61 supersession — SKILL/PAD live-body negative pins added so the class cannot recur); S99-4 the hygiene family (the schema comment paypal → card | cod comment-only, the @default recorded no-action — never materialized; CLAUDE's placeOrderTx location → src/lib/order-placement.ts; the ADMIN_PAGES derivation made recursive; the Appendix B docs-reset boundary note — only session_1..53.md exist, the HomeNest-era cites are era-accurate) — 798 → 808 unit (+10: 8 class-net + 2 payment-prose negatives; the count-lockstep fired BY NAME on exactly the four predicted doc-site pins, one-pass sweep), e2e 92 unchanged. PREVIOUS (run-98): the enumeration-lockstep & payment-prose de-drift cycle (S98-1..S98-6)"
+project_state: "811 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-100 (session 56 cycle): the stale-existence-claim net & citation-hygiene cycle — audit 100-a clean (12/12 anchors, 0 CRITICAL/HIGH/MEDIUM, 1 LOW + 4 INFO — the LOW was documentation drift: the S99-4 Appendix B docs-reset boundary note's bounded-range existence claim about the surviving session files was falsified by the post-reset log series the same commit began (run-99's own session log and the operator's raw log landed as session_54/55 while the note pinned the survivors at 53), and the HomeNest-era cite range session_54..132 now numerically collides with the live post-reset files; zero code defects; every live-tense count claim re-verified against the filesystem/vitest run); S100-1 the stale-existence-claim CLASS net in docs-counts.test.ts (derives the session-file numbers from the FILESYSTEM and pins that no live-tense scope — the S99-1 seven — nor the Appendix B boundary-note bullet, present-tense inventory guidance located by its marker with its own survival pin, carries a bounded-range session-file existence claim whose bound sits below the highest session file on disk; RED 2 pins observed by name → GREEN 27/27; lessons: an existence claim over a bounded range goes stale by construction the moment the range grows — describe the two series instead of bounding them; and the rewording must paraphrase the stale claim, never re-quote it — the S99-1 lesson generalized from paths to claims); S100-2 the GREEN sweep (the boundary note rewritten to the two-series reality — pre-reset survivors session_1..53, post-reset series resumed at session_54.md (run-99) and continues forward, the HomeNest-era cites collide numerically with the live files rather than pointing at them; the project_state narrative paraphrased; CLAUDE's checkout bullet and the PAD lessons row 15's guarded-updateMany citation couponRedemptionWhere → couponRedemptionFilter — the composed filter the placement actually calls, the audit's INFO-2 hygiene, recorded fixed-without-pin since both identifiers are real exports and coupons.test.ts directly tests the cap-clause builder) — 808 → 811 unit (+3: the inventory sanity pin, the seven-scope scan, the boundary-note marker pin; the count-lockstep fired BY NAME on exactly the four predicted doc-site pins, one-pass sweep), e2e 92 unchanged. PREVIOUS (run-99): the dangling-pointer class net & payment-prose completion cycle (S99-1..S99-4)"
 tags:
   - nextjs16
   - react19
@@ -5193,11 +5193,21 @@ Key files: `scripts/capture-screenshots.ts` · `docs/session_132.md` ·
   payment-prose completion cycle). This note is the signpost so a
   future reader knows where the trail continues — the historical entries
   above are deliberately left in their era-accurate wording.
-- **Docs-reset boundary (S99-4, audit 99-a D2): only `docs/session_1..53.md`
-  exist.** The HomeNest-era session files this appendix's narratives cite
-  (`session_54`–`session_90`, `session_100`–`session_132`, …) were dropped
-  in the run-72 ElyBeauty re-skin docs reset; the pointers were valid when
-  written and the narratives are era-accurate history. Follow a dangling
-  appendix pointer to `docs/REMEDIATION_PLAN.md`'s session sections (the
-  surviving full trail) — and to the live-tense docs' pointers, which the
-  S99-1 class net pins to files that exist.
+- **Docs-reset boundary (S99-4, audit 99-a D2; reworded S100-1 — the
+  original note's bounded-range existence claim about the surviving
+  session files was falsified by the post-reset log series the very
+  cycle that added it): the pre-reset survivors are
+  `docs/session_1..53.md`; the post-reset ElyBeauty log series resumed
+  at `session_54.md` (run-99) and continues forward — each cycle's run
+  log and the operator's raw narratives land interleaved, so the
+  series' tail grows every cycle.** The HomeNest-era session files this
+  appendix's narratives cite (`session_54`–`session_90`,
+  `session_100`–`session_132`, …) were dropped in the run-72 ElyBeauty
+  re-skin docs reset — those numbers now collide with the LIVE
+  post-reset files of the same name, so an appendix cite of
+  "session_54" is NOT a pointer to today's `session_54.md`; the
+  pointers were valid when written and the narratives are era-accurate
+  history. Follow a dangling appendix pointer to
+  `docs/REMEDIATION_PLAN.md`'s session sections (the surviving full
+  trail) — and to the live-tense docs' pointers, which the S99-1 class
+  net pins to files that exist.

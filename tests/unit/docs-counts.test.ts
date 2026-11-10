@@ -19,7 +19,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 // ── The single source of truth for the docs' live-tense counts ──────────
-const UNIT_TESTS = 808;
+const UNIT_TESTS = 811;
 const E2E_TESTS = 92;
 const PRISMA_MODELS = 20;
 // ─────────────────────────────────────────────────────────────────────────
@@ -318,5 +318,85 @@ describe("S99-3 — stale payment-prose negatives (the S98-3 class finished)", (
     const pad = read("Project_Architecture_Document.md");
     const padBody = pad.slice(pad.indexOf("## Table of Contents"));
     expect(padBody, "no 'the demo payment' in the PAD live body").not.toContain("the demo payment");
+  });
+});
+
+// ── S100-1 — the stale-existence-claim net (audit 100-a LOW-1) ─────────────
+// The S99-4 boundary note claimed "only docs/session_1..53.md exist" —
+// falsified by the SAME commit that added it (c3db704 also added
+// session_54.md, run-99's own log) and widened by the operator's
+// session_55.md. The class: a LIVE-TENSE existence claim over a bounded
+// session-file range goes stale the moment the post-reset series grows
+// past its bound — and the note's HomeNest-era cite range
+// (session_54..132) then NUMERICALLY COLLIDES with the live post-reset
+// files, so a reader following an appendix cite lands on a wrong-era file.
+// The net derives the session-file numbers from the FILESYSTEM and pins
+// that no live-tense scope (the S99-1 seven) — nor the Appendix-B
+// boundary-note bullet, which is present-tense guidance about the file
+// inventory — carries an "only … session_A..B.md … exist" claim whose B is
+// below the highest session number on disk. A stale claim fails BY NAME.
+// The rewording must PARAPHRASE the stale claim, never re-quote it (the
+// S99-1 lesson: a quoted stale claim inside a live-tense string is
+// itself a drift vector).
+const SESSION_NUMBERS = [...DOCS_FILES]
+  .map((name) => /^session_(\d+)\.md$/.exec(name)?.[1])
+  .filter((n): n is string => typeof n === "string")
+  .map(Number)
+  .sort((a, b) => a - b);
+const MAX_SESSION_NUMBER = SESSION_NUMBERS[SESSION_NUMBERS.length - 1] ?? 0;
+
+/**
+ * Stale "only … session_A..B.md … exist" claims in `text`: every claim
+ * whose B bound is below the highest session number on disk is stale (the
+ * post-reset series has grown past the claimed bound). The gap window
+ * (≤ 12 chars) tolerates the line-wrapped "…md`\n  exist." form.
+ */
+const staleSessionExistenceClaims = (text: string): string[] => {
+  const stale: string[] = [];
+  for (const m of text.matchAll(/only\s+`?(?:docs\/)?session_(\d+)\.\.(\d+)\.md`?[\s\S]{0,12}exist/gi)) {
+    const bound = Number(m[2]);
+    if (MAX_SESSION_NUMBER > bound) stale.push(m[0].replace(/\s+/g, " "));
+  }
+  return stale;
+};
+
+describe("S100-1 — stale-existence-claim net: session-range claims stay true against the disk", () => {
+  it("derives the session-file inventory from docs/ (the pre + post-reset series)", () => {
+    expect(SESSION_NUMBERS.length, "the session corpus is non-trivial").toBeGreaterThanOrEqual(50);
+    expect(SESSION_NUMBERS[0], "the pre-reset series starts at 1").toBe(1);
+    // The post-reset ElyBeauty series resumed at session_54.md (run-99's
+    // log) — the numerical collision the boundary note must acknowledge,
+    // never deny.
+    expect(
+      MAX_SESSION_NUMBER,
+      "the post-reset series exists on disk (run-99's log and beyond)",
+    ).toBeGreaterThanOrEqual(54);
+  });
+
+  it("no live-tense scope carries a stale session-file existence claim", () => {
+    const skill = read("ely-beauty_SKILL.md");
+    const pad = read("Project_Architecture_Document.md");
+    const scopes: Record<string, string> = {
+      "AGENTS.md": read("AGENTS.md"),
+      "CLAUDE.md": read("CLAUDE.md"),
+      "README.md": read("README.md"),
+      ".env.example": read(".env.example"),
+      "docs/DEPLOYMENT.md": read("docs/DEPLOYMENT.md"),
+      "SKILL live body": skill.slice(0, skill.indexOf("## Appendix A")),
+      "PAD live body": pad.slice(pad.indexOf("## Table of Contents")),
+    };
+    for (const [scope, text] of Object.entries(scopes)) {
+      expect(staleSessionExistenceClaims(text), `${scope} stale existence claims`).toEqual([]);
+    }
+  });
+
+  it("the Appendix B boundary note survives (the marker pin) and claims nothing stale", () => {
+    const skill = read("ely-beauty_SKILL.md");
+    expect(skill, "the boundary-note bullet survives").toContain("**Docs-reset boundary");
+    // The note is present-tense guidance about the CURRENT inventory —
+    // scanned even though Appendix B is otherwise exempt (era-history):
+    // its existence claims are about NOW, not about the cited eras.
+    const note = skill.slice(skill.indexOf("**Docs-reset boundary"));
+    expect(staleSessionExistenceClaims(note), "boundary-note stale existence claims").toEqual([]);
   });
 });
