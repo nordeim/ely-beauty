@@ -44,27 +44,27 @@ Seed complete.
 $ ls -l db/
 total 312
 -rw-r--r-- 1 pete pete 315392 Nov 10 12:31 custom.db
- 
+
 $ npm run build
 npm notice run ely-beauty@1.0.0 build
 npm notice run node scripts/ensure-build-configs.mjs && next build && mkdir -p public && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/
 ▲ Next.js 16.4.5 (Turbopack)
 - Environments: .env
-✓ Running next.config.ts took 35ms
+✓ Running next.config.ts took 62ms
 
   Creating an optimized production build ...
-✓ Compiled successfully in 13.2s
+✓ Compiled successfully in 16.4s
   Running TypeScript ...
-  Finished TypeScript in 13.8s ...
+  Finished TypeScript in 13.2s ...
   Collecting page data using 3 workers ...
-✓ Collecting page data using 3 workers in 1182ms
+✓ Collecting page data using 3 workers in 1318ms
   Generating static pages using 3 workers (0/11) ...
   Generating static pages using 3 workers (2/11) 
   Generating static pages using 3 workers (5/11) 
   Generating static pages using 3 workers (8/11) 
-✓ Generating static pages using 3 workers (11/11) in 182ms
+✓ Generating static pages using 3 workers (11/11) in 189ms
   Finalizing page optimization ...
-✓ Finalizing page optimization in 3.6s
+✓ Finalizing page optimization in 4.2s
 
 Route (app)
 ┌ ƒ /
@@ -122,5 +122,5 @@ npm notice run NODE_ENV=production node .next/standalone/server.js 2>&1 | tee se
 - Local:         http://localhost:3000
 - Network:       http://0.0.0.0:3000
 ✓ Ready in 0ms
-✓ Running next.config took 5ms
+✓ Running next.config took 7ms
  
