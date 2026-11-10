@@ -19,7 +19,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 // ── The single source of truth for the docs' live-tense counts ──────────
-const UNIT_TESTS = 798;
+const UNIT_TESTS = 808;
 const E2E_TESTS = 92;
 const PRISMA_MODELS = 20;
 // ─────────────────────────────────────────────────────────────────────────
@@ -109,13 +109,16 @@ const API_ROUTES = readdirSync(API_ROUTE_DIR, { recursive: true })
 
 const ADMIN_DIR = resolve(import.meta.dirname, "../../src/app/(storefront)/admin");
 // The dashboard IS the admin root page (admin/page.tsx renders the KPI
-// surface — there is no dashboard/ folder); nested pages are one dir deep.
-const ADMIN_PAGES = [
-  ...(existsSync(join(ADMIN_DIR, "page.tsx")) ? ["dashboard"] : []),
-  ...readdirSync(ADMIN_DIR, { withFileTypes: true })
-    .filter((d) => d.isDirectory() && existsSync(join(ADMIN_DIR, d.name, "page.tsx")))
-    .map((d) => d.name),
-].sort();
+// surface — there is no dashboard/ folder). N9 (audit 99-a): the derivation
+// RECURSES like the API-route one above — a future second-level
+// admin/<section>/<sub>/page.tsx can no longer evade the pin silently.
+const ADMIN_PAGES = readdirSync(ADMIN_DIR, { recursive: true })
+  .filter((f): f is string => typeof f === "string" && f.endsWith("page.tsx"))
+  // RED-phase lesson: the strip regex must carry the SAME extension as the
+  // filter — `page\.ts$` silently no-ops on "page.tsx" (the x breaks the $)
+  // and the derivation yields "analytics/page.tsx" literals.
+  .map((f) => (f === "page.tsx" ? "dashboard" : f.replace(/[/\\]page\.tsx$/, "")))
+  .sort();
 
 /** Split a doc's parenthetical/table-cell enumeration into a sorted list. */
 const enumerate = (raw: string): string[] =>
@@ -217,5 +220,103 @@ describe("S98-3 — stale-claim negatives (audit 98-a D3/N1/N3)", () => {
     expect(deployment).not.toContain("openssl rand -base64 32");
     expect(envExample, ".env.example teaches the hex form").toContain("openssl rand -hex 32");
     expect(deployment, "DEPLOYMENT.md teaches the hex form").toContain("openssl rand -hex 32");
+  });
+});
+
+// ── S99-1 — the dangling-doc-pointer class net (audit 99-a D1/N1/N2) ──────
+// S98-5 fixed ONE dangling pointer (AGENTS's docs/session_114.md) with a
+// file-specific negative; audit 99-a found three MORE of the same class
+// surviving in sibling live-tense docs (SKILL §7.4's heading → session_113.md,
+// CLAUDE's testing bullet → session_113.md, AGENTS's build-config section →
+// build_error.txt) — single-file negatives cannot see the class. The net
+// derives the real docs/ inventory from the FILESYSTEM and pins that every
+// docs/<path> reference in each LIVE-TENSE scope resolves on disk; a dangle
+// fails BY NAME in the assertion diff. Historical scopes (SKILL Appendix
+// B's era-accurate narratives, the PAD's append-only revision blocks) are
+// deliberately exempt — the S96-8 boundary note documents the dropped files.
+const DOCS_DIR = resolve(import.meta.dirname, "../../docs");
+const DOCS_FILES = new Set(
+  readdirSync(DOCS_DIR, { withFileTypes: true })
+    .filter((e) => e.isFile())
+    .map((e) => e.name),
+);
+const DOCS_DIRS = new Set(
+  readdirSync(DOCS_DIR, { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .map((e) => e.name),
+);
+
+/** Every docs/<path> reference in `text` that does not resolve on disk. */
+const danglingDocRefs = (text: string): string[] => {
+  const danglers = new Set<string>();
+  for (const m of text.matchAll(/docs\/([A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*)/g)) {
+    const ref = (m[1] ?? "").replace(/\/+$/, "");
+    if (ref && !existsSync(join(DOCS_DIR, ref))) danglers.add(ref);
+  }
+  return [...danglers].sort();
+};
+
+describe("S99-1 — dangling-doc-pointer class net: live-tense docs reference only real docs/ files", () => {
+  it("derives the docs/ inventory from the filesystem (session logs + guides + screenshots dir)", () => {
+    expect(DOCS_FILES.size, "the docs corpus is non-trivial").toBeGreaterThanOrEqual(70);
+    expect(DOCS_FILES.has("session_1.md")).toBe(true);
+    expect(DOCS_FILES.has("DEPLOYMENT.md")).toBe(true);
+    expect(DOCS_DIRS.has("screenshots")).toBe(true);
+  });
+
+  it("AGENTS.md references no missing docs/ file", () => {
+    expect(danglingDocRefs(read("AGENTS.md")), "AGENTS dangling docs/ refs").toEqual([]);
+  });
+
+  it("CLAUDE.md references no missing docs/ file", () => {
+    expect(danglingDocRefs(read("CLAUDE.md")), "CLAUDE dangling docs/ refs").toEqual([]);
+  });
+
+  it("README.md references no missing docs/ file", () => {
+    expect(danglingDocRefs(read("README.md")), "README dangling docs/ refs").toEqual([]);
+  });
+
+  it(".env.example references no missing docs/ file", () => {
+    expect(danglingDocRefs(read(".env.example")), ".env.example dangling docs/ refs").toEqual([]);
+  });
+
+  it("docs/DEPLOYMENT.md references no missing docs/ file", () => {
+    expect(danglingDocRefs(read("docs/DEPLOYMENT.md")), "DEPLOYMENT dangling docs/ refs").toEqual([]);
+  });
+
+  it("SKILL live body (frontmatter + §1–§20, pre-Appendix-A) references no missing docs/ file", () => {
+    const skill = read("ely-beauty_SKILL.md");
+    const liveBody = skill.slice(0, skill.indexOf("## Appendix A"));
+    expect(danglingDocRefs(liveBody), "SKILL live-body dangling docs/ refs").toEqual([]);
+  });
+
+  it("PAD live body (post-Table-of-Contents) references no missing docs/ file", () => {
+    const pad = read("Project_Architecture_Document.md");
+    const padBody = pad.slice(pad.indexOf("## Table of Contents"));
+    expect(danglingDocRefs(padBody), "PAD live-body dangling docs/ refs").toEqual([]);
+  });
+});
+
+// ── S99-3 — stale payment-prose negatives (audit 99-a N3–N6) ───────────────
+// The S98-3 sweep fixed CLAUDE.md's "demo payment (no processor)" sentence
+// but scoped its negative pin to CLAUDE.md only; the same era's prose
+// survived in the SKILL live body (§7.3, §7.4, §13) and the PAD's ADR-005
+// alternatives. Since session-61/S73-8 there is no demo payment: card
+// payments require a verified Stripe PaymentIntent and cardLast4 is read
+// from the intent, never client-sent. The negatives scope to the LIVE
+// bodies (the SKILL's Appendix B and the PAD's revision blocks quote the
+// removed phrases as era-history — deliberately exempt).
+describe("S99-3 — stale payment-prose negatives (the S98-3 class finished)", () => {
+  it("SKILL live body carries no 'demo payment'/'demo card wizard' prose (post session-61)", () => {
+    const skill = read("ely-beauty_SKILL.md");
+    const liveBody = skill.slice(0, skill.indexOf("## Appendix A"));
+    expect(liveBody, "no 'demo payment' in the SKILL live body").not.toContain("demo payment");
+    expect(liveBody, "no 'demo card wizard' in the SKILL live body").not.toContain("demo card wizard");
+  });
+
+  it("PAD live body carries no stale 'the demo payment' clause (ADR-005 annotated, not stale)", () => {
+    const pad = read("Project_Architecture_Document.md");
+    const padBody = pad.slice(pad.indexOf("## Table of Contents"));
+    expect(padBody, "no 'the demo payment' in the PAD live body").not.toContain("the demo payment");
   });
 });

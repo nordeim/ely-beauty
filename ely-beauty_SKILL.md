@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.24.0
+version: 2.25.0
 last_updated: 2026-11-10
-project_state: "798 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-98 (session 52 cycle): the enumeration-lockstep & payment-prose de-drift cycle — audit 98-a clean (12/12 anchors, run-97 surface R1–R8 8/8, 0 CRITICAL/HIGH/MEDIUM, 2 LOW + 2 INFO; the untouched-surface scan found zero defects); S98-1 the enumeration-lockstep net (the docs' route/admin ENUMERATIONS were rotting while the count net pinned only numbers — CLAUDE 11-of-13 routes + 8-of-9 admin pages, SKILL §5 10-of-13, AGENTS 9-of-13 contradicting its own 'all 13 route files'; docs-counts.test.ts now derives both inventories from the FILESYSTEM and set-equals the four enumeration sites against them, RED 7 pins → GREEN 14/14, missing OR phantom entries fail by name; lessons: ASCII '-' (45) sorts before '/' (47) so the set pin must reuse the derivation's sort, and match() captures are string | undefined under noUncheckedIndexedAccess — m?.[1] ?? '' passes the type gate while the preceding toBeTruthy() keeps the failure loud); S98-2/S98-3 the enumeration + payment-prose sweep (AGENTS's route list → all 13 with the scope honestly widened to 'client-island fetches and the Stripe webhook'; CLAUDE's admin list → the 9 pages; CLAUDE's api list + SKILL §5's row → all 13; CLAUDE's stale 'demo payment (no processor)' sentence → the session-61 reality — COD default byte-identical + real Stripe behind keys + STRIPE_BDT_PER_USD, the guard on the non-existent 'no real charge' notices removed, negative-pinned); S98-4 the signpost de-drift (the Appendix B session-record boundary 'runs 89–96 (v2.17–v2.23)' → 'runs 89–97 (v2.17–v2.24)' with run 97 joining the trail; the project_state label corrected to 'session 50 cycle' for run-97); S98-5 AGENTS's dangling docs/session_114.md pointer (HomeNest-era, dropped run-72) → docs/DEPLOYMENT.md §4, negative-pinned; S98-6 the AUTH_SECRET command single-sourced on openssl rand -hex 32 (the S97-1 error's own command) across .env.example + DEPLOYMENT.md ×2 — 789 → 798 unit (+9: 2 derivation + 3 route-set + 1 admin-set + 3 negatives), e2e 92 unchanged. PREVIOUS (run-97): the auth-secret hardening & doc-de-drift completion cycle (S97-1..S97-11)"
+project_state: "808 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-99 (session 54 cycle): the dangling-pointer class net & payment-prose completion cycle — audit 99-a clean (12/12 anchors, run-98 surface R1–R8 8/8, 0 CRITICAL/HIGH/MEDIUM, 7 LOW + 4 INFO — all documentation drift, zero code defects; every live-tense count claim re-verified against the filesystem/vitest run); S99-1 the dangling-doc-pointer CLASS net (S98-5's file-specific negative caught ONE dangling pointer; audit 99-a found three MORE of the same class in sibling live-tense docs — this SKILL's §7.4 heading and CLAUDE's testing bullet both pointed at the run-72-dropped session_113.md, AGENTS's build-config section at a never-committed build_error.txt — so docs-counts.test.ts now derives the real docs/ inventory from the FILESYSTEM and pins that every docs/<path> reference in each live-tense scope (AGENTS/CLAUDE/README whole, .env.example, DEPLOYMENT, this SKILL's pre-Appendix-A body, the PAD's post-ToC body) resolves on disk; a dangle fails BY NAME; RED 5 pins → GREEN 24/24; lessons: a fix that removes a phrase from ONE doc must sweep the sibling live-tense docs in the same commit, and a quoted dangling path inside a live-tense state string — project_state narrating a prior fix — is itself a drift vector, paraphrase don't quote; plus a derivation lesson: the strip regex must carry the SAME extension as the filter — page\.ts$ silently no-ops on page.tsx, the x breaks the $); S99-2/S99-3 the pointer + payment-prose completion (§7.4's heading → docs/DEPLOYMENT.md §4; CLAUDE's citation → the run-63 cycle by name; AGENTS's build_error.txt → tests/unit/build-config-resilience.test.ts; the S98-3 payment-prose class finished across siblings — §7.3's client-never-sends-an-amount-except-cardLast4 → the S73-8 intent-derived reality, §7.4's demo-card-wizard/PayPal/COD → the COD-only unconfigured reality, §13's demo-payment-stores-cardLast4 → PCI SAQ-A, PAD ADR-005's alternatives annotated with the session-61 supersession — SKILL/PAD live-body negative pins added so the class cannot recur); S99-4 the hygiene family (the schema comment paypal → card | cod comment-only, the @default recorded no-action — never materialized; CLAUDE's placeOrderTx location → src/lib/order-placement.ts; the ADMIN_PAGES derivation made recursive; the Appendix B docs-reset boundary note — only session_1..53.md exist, the HomeNest-era cites are era-accurate) — 798 → 808 unit (+10: 8 class-net + 2 payment-prose negatives; the count-lockstep fired BY NAME on exactly the four predicted doc-site pins, one-pass sweep), e2e 92 unchanged. PREVIOUS (run-98): the enumeration-lockstep & payment-prose de-drift cycle (S98-1..S98-6)"
 tags:
   - nextjs16
   - react19
@@ -283,7 +283,9 @@ through untouched. `db/` is git-ignored (recreate with `db:setup`).
   rows, re-validates the coupon (`isCouponRedeemable` — active, unexpired,
   under its `maxRedemptions` cap; `timesUsed` increments with the order),
   derives subtotal from those snapshots and computes shipping/tax/total via
-  `computeOrderMoney`. The client never sends an amount except `cardLast4`.
+  `computeOrderMoney`. The client never sends an amount; card receipts
+  derive from the verified PaymentIntent (the order's `cardLast4` is read
+  from the intent server-side — S73-8 — never client-sent).
   Pre-transaction reads are a fast-fail UX path only — never the authority.
 - Placement is **idempotent**: the client sends one `idempotencyKey`
   (`crypto.randomUUID()` per checkout visit, `Order.idempotencyKey` unique
@@ -294,13 +296,14 @@ through untouched. `db/` is git-ignored (recreate with `db:setup`).
 - Stock is reserved with a **conditional atomic decrement** (`updateMany`
   with `stock: { gte: qty }`, rollback when `count === 0`) — see §8.4.
 
-### 7.4 Stripe payments (the session-61 retrofit — see docs/session_113.md)
+### 7.4 Stripe payments (the session-61 retrofit — see docs/DEPLOYMENT.md §4)
 
 Proper Stripe Payment functionality, ported from the `ecommerce-store`
 reference and adapted to this repo's money model. **OFF by default**: with
-no `STRIPE_SECRET_KEY` the demo card wizard, PayPal, and COD render
-byte-identically to the pre-retrofit state (the e2e suite runs
-unconfigured and stays green untouched); Stripe is a superset activation.
+no `STRIPE_SECRET_KEY` the checkout renders the Cash-on-Delivery flow
+byte-identically — no Card option at all (`resolveStripeConfig().cardEnabled`
+gates it; the e2e suite runs unconfigured and stays green untouched);
+Stripe is a superset activation.
 
 - **Config (the sentinel mirror)**: `src/lib/stripe-config.ts` is the ONE
   client-safe truth table both sides derive "configured" from —
@@ -630,7 +633,9 @@ Then verify by hand:
   paths — the build copies `.env`; runtime CWD is `.next/standalone`.
 - Don't return rich error detail from auth (enumeration), and don't skip the
   dummy-hash burn because tests "feel" slower.
-- Don't store full card data — the demo payment stores `cardLast4` only.
+- Don't store full card data — card data never touches this app (PCI SAQ-A
+  via the Payment Element); the order stores only the intent-derived
+  `cardLast4`.
 - Don't commit `.env`, `db/*.db`, `*.key`, `ssh-key.txt` (gitignore enforces).
 - Don't create feature branches — `main` only, Conventional Commits, atomic.
 
@@ -5173,16 +5178,26 @@ Key files: `scripts/capture-screenshots.ts` · `docs/session_132.md` ·
   cycles still deserve the full parity re-measurement — 19 byte-identical
   screenshots are the cheapest drift alarm there is.
 
-- **Session-record boundary (S96-8): runs 89–97 live in the PAD revision
+- **Session-record boundary (S96-8): runs 89–99 live in the PAD revision
   blocks.** This appendix's per-session trail ends at Session 88 (run 88);
   from run 89 onward the per-run record moved to the PAD's append-only
-  revision blocks (v2.17–v2.24) + `docs/REMEDIATION_PLAN.md`'s session
+  revision blocks (v2.17–v2.26) + `docs/REMEDIATION_PLAN.md`'s session
   sections + the `docs/session_NN.md` logs — the trail continues there
   (run 89: the worklog/docs-verification consolidation; 90: the
   coupon-label format cycle; 91: the API force-dynamic cycle; 92: the
   production-deploy hardening; 93: rotation atomicity; 94: stripe-replay
   ownership; 95: the reference-content resync; 96: the SEO-fallback
   completion + the run-96 doc-de-drift cycle; 97: the auth-secret hardening
-  + the doc-de-drift completion cycle). This note is the signpost so a
+  + the doc-de-drift completion cycle; 98: the enumeration-lockstep &
+  payment-prose de-drift cycle; 99: the dangling-pointer class net &
+  payment-prose completion cycle). This note is the signpost so a
   future reader knows where the trail continues — the historical entries
   above are deliberately left in their era-accurate wording.
+- **Docs-reset boundary (S99-4, audit 99-a D2): only `docs/session_1..53.md`
+  exist.** The HomeNest-era session files this appendix's narratives cite
+  (`session_54`–`session_90`, `session_100`–`session_132`, …) were dropped
+  in the run-72 ElyBeauty re-skin docs reset; the pointers were valid when
+  written and the narratives are era-accurate history. Follow a dangling
+  appendix pointer to `docs/REMEDIATION_PLAN.md`'s session sections (the
+  surviving full trail) — and to the live-tense docs' pointers, which the
+  S99-1 class net pins to files that exist.

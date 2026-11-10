@@ -222,7 +222,7 @@ model Order {
   couponCode      String?
   shippingMethod  String       @default("standard") // standard | express
   shippingAddress String // JSON snapshot of the checkout address
-  paymentMethod   String       @default("card") // card | paypal | cod
+  paymentMethod   String       @default("card") // card | cod (the Zod enum in src/lib/validation.ts is the authority)
   cardLast4       String?
   // Stripe payments (retrofit, PAY-STRIPE-1 — ported from the reference
   // implementation). stripePaymentIntentId is UNIQUE: the placement

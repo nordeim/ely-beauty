@@ -1,9 +1,16 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.25
+# ElyBeauty — Master Project Architecture Document (PAD) v2.26
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-10
+
+#### Revision Block — v2.26 (Run 99 — the dangling-pointer class net & payment-prose completion cycle)
+
+- `[TEST]` **The dangling-doc-pointer CLASS net (S99-1, audit 99-a D1/N1/N2, TDD — the cycle's centerpiece)**: S98-5 fixed ONE dangling pointer (AGENTS's `docs/session_114.md`) with a file-specific negative; audit 99-a found three MORE of the same class surviving in sibling live-tense docs (the SKILL §7.4 heading → `session_113.md`, CLAUDE's testing bullet → `session_113.md`, AGENTS's build-config section → `build_error.txt`) — single-file negatives cannot see the class. `docs-counts.test.ts` now derives the real `docs/` inventory from the filesystem and pins that every `docs/<path>` reference in each live-tense scope resolves on disk — AGENTS (whole), CLAUDE (whole), README (whole), `.env.example`, `docs/DEPLOYMENT.md`, the SKILL's pre-Appendix-A body, and the PAD's post-ToC body; a dangle fails BY NAME in the assertion diff. RED 5 pins observed → GREEN after the sweep (24/24 in the file). RED-phase lesson encoded: a derivation's strip regex must carry the SAME extension as its filter — `page\.ts$` silently no-ops on `page.tsx` (the x breaks the `$`), so the now-recursive admin derivation first yielded `analytics/page.tsx` literals.
+- `[DOCS]` **The pointer + payment-prose completion sweep (S99-2/S99-3, audit 99-a D1/N1–N6)**: the SKILL §7.4 heading → `docs/DEPLOYMENT.md §4`; CLAUDE's citation rephrased to name the run-63 cycle (no file path); AGENTS's `build_error.txt` parenthetical → `tests/unit/build-config-resilience.test.ts`; the project_state's two quoted drift vectors paraphrased (a quoted dangling path in a live-tense state string is itself a drift vector). The S98-3 payment-prose class finished across the sibling docs: SKILL §7.3's "client never sends an amount except `cardLast4`" → the S73-8 reality (intent-derived, never client-sent); SKILL §7.4's "demo card wizard, PayPal, and COD" → the COD-only unconfigured reality (`cardEnabled`); SKILL §13's "the demo payment stores `cardLast4`" → PCI SAQ-A; ADR-005's alternatives annotated with the session-61 supersession — with SKILL/PAD live-body negative pins so the class cannot recur silently.
+- `[DOCS]` **The hygiene family (S99-4, audit 99-a N7/N8/N9/D2)**: the schema comment `// card | paypal | cod` → `// card | cod` (comment-only; the `@default("card")` recorded no-action — never materialized); CLAUDE's `placeOrderTx` location → `src/lib/order-placement.ts`; the ADMIN_PAGES derivation made recursive (the N9 blind spot closed); the Appendix B docs-reset boundary note added (only `session_1..53.md` exist — the HomeNest-era cites are era-accurate history).
+- `[VERIFY]` **Audit 99-a clean, parity zero-delta on every pinned surface**: 12/12 standing anchors PASS, the run-98 regression surface R1–R8 8/8, 0 CRITICAL/HIGH/MEDIUM — 7 LOW + 4 INFO (all documentation drift; zero code defects; the untouched-surface spot check of csp/proxy/rate-limit/stripe-webhook/wishlist/order-status found zero defects). Gates green (808/808 unit +10 in 68 files, 92/92 e2e ×2, npm audit 0/0, sitemap 28 public-only, robots 4 disallows, .env.example 9/9, 25/25 screenshots). Live parity measured on both sites logged in at 390×844: the panel rows Search/Shop/Beauty Tools/Brush & Combs/About at reference 89/125/161/197/233 vs clone 88/124/160/196/232 (−1px uniform, hrefs AND labels byte-identical), the overlay input Cormorant 18px/300 both, the silk rows reference 174/258/342/426 vs clone 173/257/341/425 with all four row copies BYTE-IDENTICAL and $370.00/$288.00/$470.00/$520.00 Cormorant 14px/300 both, /shop 19 cards bonnet-first "All Products" both, the no-results copy byte-identical — and the mobile nav fully functional on both sites (the panel → link → navigation chain exercised live; no Tailwind v4 bug).
 
 #### Revision Block — v2.25 (Run 98 — the enumeration-lockstep & payment-prose de-drift cycle)
 
@@ -587,7 +594,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, label, select, slot, toast) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^4.6.7 | Single validation boundary (ADR-005) — v4 since run 86 (S86-1) |
-| Unit tests | Vitest | ^4.1.12 | Node-env suite (798 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
+| Unit tests | Vitest | ^4.1.12 | Node-env suite (808 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
 | E2E tests | Playwright | ^1.64 | 92 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins + the S92-2f password-change round-trip |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
@@ -630,7 +637,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 - **Decision:** Every monetary column is INTEGER cents. `src/lib/order-money.ts#computeOrderMoney` is the single source of truth: `taxable = max(0, subtotal − discount)`, free shipping when `taxable ≥ freeShippingThresholdCents` (both methods — the threshold is a spend gate), `tax = round(taxable × rate / 100)`, `total = taxable + shipping + tax`. `/api/checkout` re-derives everything **inside the placement transaction** — the product rows are re-read there, the coupon is re-validated (`isCouponRedeemable`: active, unexpired, under its redemption cap) and its `timesUsed` incremented, and the stock reservation runs via conditional atomic decrements — one `db.$transaction` also writing order + items + `placed` event, clearing cart items, and optionally saving the address. The order is **idempotent**: a client-generated `idempotencyKey` (unique, nullable column) short-circuits replays to the already-placed order's receipt.
 - **Rationale:** The checkout route can never be talked into a wrong total, a lost response can never double-order, and a concurrent price edit can never desync `total` from Σ(unitPrice×qty); `tests/unit/order-money.test.ts` pins the arithmetic including threshold edge cases.
 - **Consequences:** (+) Order numbers are `ELY-XXXXXXXX` (8 crypto-random base36 chars, `src/lib/order-number.ts`) with P2002 retry inside the transaction (number collisions only — an idempotency-key collision resolves to the winner). (−) The client renders mirror totals only — UI must not pretend to be authoritative.
-- **Alternatives rejected:** Stripe-backed pricing (no processor in scope; the demo payment is clearly labeled); trusting client totals (the vulnerability); deriving money from the pre-transaction cart summary (a TOCTOU window closed in session 3).
+- **Alternatives rejected:** Stripe-backed pricing (no processor in scope at decision time — superseded by the session-61 Stripe retrofit, which added real card payments behind configuration without ever making Stripe the money authority; see §9 + AGENTS.md "Stripe payments"); trusting client totals (the vulnerability); deriving money from the pre-transaction cart summary (a TOCTOU window closed in session 3).
 
 **ADR-006: Per-request CSP nonces via `src/proxy.ts`, and the prerender trap it creates.**
 
@@ -837,7 +844,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 798 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 808 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -1114,7 +1121,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
 | `prisma/schema.prisma` / `seed.ts` | 20 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 798 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
+| `tests/unit/*` · `tests/e2e/*` | 808 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---
