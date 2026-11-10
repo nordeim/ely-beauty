@@ -19,7 +19,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 // ── The single source of truth for the docs' live-tense counts ──────────
-const UNIT_TESTS = 822;
+const UNIT_TESTS = 826;
 const E2E_TESTS = 92;
 const PRISMA_MODELS = 20;
 // ─────────────────────────────────────────────────────────────────────────
@@ -352,21 +352,31 @@ const SESSION_NUMBERS = [...DOCS_FILES]
   .map(Number)
   .sort((a, b) => a - b);
 const MAX_SESSION_NUMBER = SESSION_NUMBERS[SESSION_NUMBERS.length - 1] ?? 0;
+// S104-1 (audit 104-a F-2): the corpus FLOOR — the pre-reset series starts
+// at session_1.md (pinned by the S100-1 inventory test), and the corpus is
+// append-only, so the floor is derivable-stable exactly like the max. The
+// two-sided canonical grammar pins both ends against it.
+const SESSION_CORPUS_FLOOR = SESSION_NUMBERS[0] ?? 1;
 
 /**
  * Stale CANONICAL "only … session_A..B.md … exist" claims in `text` (the
  * S100-1 grammar — used by the Appendix B boundary-note marker pin, whose
  * two-series description carries a CLOSED pre-reset sub-series range
- * deliberately below the disk max): every claim whose B bound is below the
- * highest session number on disk is stale (the post-reset series has grown
- * past the claimed bound). The gap window (≤ 12 chars) tolerates the
+ * deliberately below the disk max). TWO-SIDED since S104-1 (audit 104-a
+ * F-2): the S102-1 convention makes the "only…exist" wrapper the
+ * whole-corpus DISCRIMINATOR, so an "only A..B exist" claim asserts BOTH
+ * that A is the corpus floor AND that B is the highest session number on
+ * disk — a WRONG-LOWER-BOUND claim (denying real files below A) and an
+ * OVER-CLAIM (citing phantom files past B) are both stale, exactly as an
+ * under-claim always was. The gap window (≤ 12 chars) tolerates the
  * line-wrapped "…md`\n  exist." form.
  */
 const staleCanonicalExistenceClaims = (text: string): string[] => {
   const stale: string[] = [];
   for (const m of text.matchAll(/only\s+`?(?:docs\/)?session_(\d+)\.\.(\d+)\.md`?[\s\S]{0,12}exist/gi)) {
+    const floor = Number(m[1]);
     const bound = Number(m[2]);
-    if (MAX_SESSION_NUMBER > bound) stale.push(m[0].replace(/\s+/g, " "));
+    if (bound !== MAX_SESSION_NUMBER || floor !== SESSION_CORPUS_FLOOR) stale.push(m[0].replace(/\s+/g, " "));
   }
   return stale;
 };
@@ -466,20 +476,26 @@ const PLAN_START_SESSION = 2;
 
 /**
  * Stale plan-range literals in `text` — the S102-1 paraphrase-proof
- * grammar, made LOWER-BOUND-GENERALIZED by S103-1 (audit 103-a F-2): any
+ * grammar, made LOWER-BOUND-GENERALIZED by S103-1 (audit 103-a F-2) and
+ * BACKTRACKING-PROOF by S104-1 (audit 104-a F-1): any
  * `session(s) N <sep> M` range literal (the canonical `session-2..N` dots
  * plus the paraphrased `Sessions 2 through N` / `session 2–N` separator and
  * case variants) whose (N, M) pair is not exactly (the plan's first
  * recorded session, the plan's CURRENT tail) is stale — the plan is
  * append-only, so any other pair under-claims (a bound below the tail),
  * over-claims (a bound past the tail — sections that do not exist), or
- * mis-anchors the corpus start. The `.md` lookahead keeps session-FILE
- * ranges (S100-1's domain) out of the plan net. The MATCH TEXT (not a
- * reconstructed literal) is reported so a failure names the exact drifting
- * shape.
+ * mis-anchors the corpus start. The `(?!\d)` guard pins the captured bound
+ * to the FULL digit run — without it the greedy capture backtracked under
+ * the `.md` lookahead, surrendering trailing digits until the lookahead
+ * succeeded, so a session-FILE range in prose flagged a TRUNCATED match
+ * (`session_1..5` from `session_1..53.md`) and a TRUE file range at the
+ * disk max false-flagged this net; with it the lookahead genuinely keeps
+ * session-FILE ranges (S100-1's domain) out of the plan net. The MATCH
+ * TEXT (not a reconstructed literal) is reported so a failure names the
+ * exact drifting shape.
  */
 const stalePlanRangeLiterals = (text: string): string[] =>
-  [...text.matchAll(/sessions?[-_ ]?(\d+)\s*(?:\.{2}|…|–|—|-|through|to)\s*(\d+)(?!\s*\.md\b)/gi)]
+  [...text.matchAll(/sessions?[-_ ]?(\d+)\s*(?:\.{2}|…|–|—|-|through|to)\s*(\d+)(?!\d)(?!\s*\.md\b)/gi)]
     .filter((m) => Number(m[1]) !== PLAN_START_SESSION || Number(m[2]) !== MAX_PLAN_SESSION)
     .map((m) => m[0].replace(/\s+/g, " "));
 
@@ -620,5 +636,75 @@ describe("S103-1 — two-sided bounds: the scanners flag over-claims, wrong lowe
       "a sentence-final period is not part of the ref",
     ).toEqual([]);
     expect(danglingDocRefs("ends at docs/screenshots. too"), "a trailing-dot directory cite resolves").toEqual([]);
+  });
+});
+
+// ── S104-1 — the backtracking-proof, two-sided canonical net (audit 104-a ────
+// INFO-1/INFO-2). Two residuals of the same run-103 lesson ("a widened bound
+// owns only the side it was widened to"), one run later again:
+//   F-1: the S103-1 plan-range grammar's `.md` lookahead was DEFEATED BY
+//        BACKTRACKING — the greedy second `(\d+)` surrenders trailing digits
+//        until the lookahead succeeds, so a session-FILE range in prose
+//        flagged a TRUNCATED match with a mangled bound (`session_1..5`
+//        from `era session_1..53.md files`), and a TRUE session-file range
+//        at the disk max false-flagged the plan net (`session_1..6`) — the
+//        documented exclusion invariant ("the lookahead keeps session-FILE
+//        ranges out of the plan net") was false as written. The `(?!\d)`
+//        guard pins the captured bound to the full digit run: backtracking
+//        dies at the digit boundary, and the lookahead now genuinely
+//        excludes the file-range shape (both probes below pin the clean
+//        exclusion AND the un-mangled match text).
+//   F-2: the S100-1 canonical grammar (`staleCanonicalExistenceClaims`, the
+//        ONLY scanner applied to the Appendix-B boundary-note slice) still
+//        flagged only UNDER-claims (bound < disk max): a whole-corpus
+//        "only … exist" claim with a WRONG LOWER BOUND (denying real files)
+//        or an OVER-CLAIM (citing phantom files) passed green. The S102-1
+//        convention makes the "only…exist" wrapper the whole-corpus
+//        DISCRIMINATOR, so an "only A..B exist" claim asserts BOTH that A is
+//        the corpus floor and that B is the disk max — the grammar now owns
+//        both sides of both dimensions.
+//   F-3 (INFO-3, no-action): the S103-1 session-file scan's own LOWER-bound
+//        side stays deliberately unowned — the documented sub-series
+//        trade-off (the grammar cannot distinguish a whole-corpus claim
+//        from a legitimate closed-sub-series cite; live-scope sub-series
+//        cites use the word-separated form, and the boundary note's slice
+//        is covered by the canonical grammar). Recorded here in the class
+//        table so future audits do not re-derive it as novel.
+// The fixtures are SYNTHETIC (the shape of the drift class, never a real
+// doc's bytes — the S99-1 convention); computed bounds keep the stale
+// shapes stale and the true shapes true as the corpora grow.
+describe("S104-1 — backtracking-proof exclusion + the two-sided canonical bound", () => {
+  it("the plan-range grammar EXCLUDES a session-file range in prose, cleanly (audit 104-a F-1)", () => {
+    // RED against the pre-S104-1 grammar: the greedy backtrack surrendered
+    // the trailing digit and flagged the truncated `session_1..5`. The
+    // clean exclusion means NO match at all — the shape is S100-1's domain.
+    expect(stalePlanRangeLiterals("era session_1..53.md files"), "a session-file range in prose is not a plan range").toEqual([]);
+  });
+
+  it("the plan-range grammar excludes a TRUE file range at the disk max — un-mangled (audit 104-a F-1)", () => {
+    // The sharpest probe: the TRUE session-file range (upper bound exactly
+    // the disk max — green under the S103-1 session-file scan) must not
+    // false-flag the plan net with a truncated bound. Computed so the shape
+    // stays true as the corpus grows.
+    expect(
+      stalePlanRangeLiterals(`era session_1..${MAX_SESSION_NUMBER}.md files`),
+      "a true file range at the disk max stays out of the plan net",
+    ).toEqual([]);
+  });
+
+  it("the canonical grammar flags a WRONG-LOWER-BOUND whole-corpus claim (audit 104-a F-2)", () => {
+    // "only A..B exist" asserts A is the corpus floor: this claim denies
+    // every file below 54 that exists on disk, with a TRUE upper bound.
+    expect(
+      staleCanonicalExistenceClaims("only session_54..63.md exist"),
+      "a whole-corpus claim with a wrong floor is stale even at a true bound",
+    ).toEqual(["only session_54..63.md exist"]);
+  });
+
+  it("the canonical grammar flags an OVER-CLAIM past the disk max (audit 104-a F-2)", () => {
+    // Computed phantom bound: the claim cites files that do not exist
+    // (the S99-1 dangle class's canonical whole-corpus form).
+    const overClaim = `only session_1..${MAX_SESSION_NUMBER + 36}.md exist`;
+    expect(staleCanonicalExistenceClaims(overClaim), "an over-claim past the disk max is stale").toEqual([overClaim]);
   });
 });
