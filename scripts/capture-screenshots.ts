@@ -272,8 +272,9 @@ async function main() {
     await page.waitForLoadState("networkidle");
   });
   await shoot(browser, desktop, "23-checkout-success-locked", "viewport", async (page) => {
-    // S3-1 access contract, visually: a guessed sequential order number without
-    // its token renders the same not-found shell — no receipt, no PII.
+    // S3-1 access contract, visually: a guessed crypto-random order number
+    // (ELY-XXXXXXXX — no sequence to enumerate) without its token renders
+    // the same not-found shell — no receipt, no PII.
     await page.goto("/checkout/success?order=ELY-AAAAAAAA");
     await page.waitForLoadState("networkidle");
   });

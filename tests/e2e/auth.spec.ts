@@ -4,9 +4,9 @@ import { DEMO_ADMIN_PASSWORD, DEMO_CUSTOMER_PASSWORD } from "../../src/lib/demo-
 
 /**
  * Auth — demo-account login (success + wrong password), register
- * validation, and the account dashboard. Credentials come from the seed:
- *   admin@elybeauty.com / Admin123!
- *   demo@elybeauty.com / Demo1234!
+ * validation, and the account dashboard. Credentials come from the seed
+ * and live in the single source src/lib/demo-credentials.ts (imported
+ * above — the S94-1 rotation-proof convention; never re-inline them).
  */
 
 /** Heart a product from its detail page; returns the product's name. */

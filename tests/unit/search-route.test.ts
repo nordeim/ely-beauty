@@ -1,5 +1,5 @@
-// Session 77 S77-4 — /api/search matches the reference's field coverage,
-// result order, and row payload.
+// Session 77 S77-4, resynced run 95 S95-1 — /api/search matches the
+// reference's field coverage, result order, and row payload.
 //
 // The run-77 live re-measurement: "silk" returns FOUR rows on the reference
 // (the Sandalwood Paddle Hairbrush matches only through "silky" in its LONG
@@ -8,6 +8,16 @@
 // the seed's backdated order) while the clone ordered by rating. The payload
 // also swaps `category` for `description` — the reference's rows show the
 // product's shortDescription line, not a category label.
+//
+// The run-95 re-measurement (S95-1): the reference's owner RESTRUCTURED the
+// product content since run 77 — the marketing paragraphs now live in
+// short_description and description holds feature lists (or nothing), and
+// the reference's overlay matches title + short_description + tags ONLY.
+// Measured live: "Silkfare" (only in the massager's description) → 0 rows;
+// "Nano" (only in the Crystal's description) → 0; "spa-like"
+// (short_description) → 1; "bastseller" (tag) → 2; "SILK" → 4
+// (case-insensitive). The S77-4 description clause would now OVER-match
+// against the resynced content ("Silkfare" → the massager), so it is gone.
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -29,8 +39,8 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe("GET /api/search — the S77 reference parity (D-3 + D-4)", () => {
-  it("searches the long description too (the OR clause includes description)", async () => {
+describe("GET /api/search — the S77 reference parity (D-3 + D-4), resynced S95-1", () => {
+  it("matches title + shortDescription + tags only — the long description is NOT searched (S95-1)", async () => {
     db.product.findMany.mockResolvedValue([]);
     await GET(nextReq("/api/search?q=silk"));
 
@@ -41,7 +51,11 @@ describe("GET /api/search — the S77 reference parity (D-3 + D-4)", () => {
     expect(fields).toContain("name");
     expect(fields).toContain("shortDescription");
     expect(fields).toContain("tags");
-    expect(fields).toContain("description");
+    // The run-95 live measurement: "Silkfare" (only in a description) and
+    // "Nano" (only in a description) both return ZERO rows on the reference
+    // — the description clause is gone.
+    expect(fields).not.toContain("description");
+    expect(fields).toHaveLength(3);
   });
 
   it("orders results by the authored catalog order (createdAt desc), not rating", async () => {

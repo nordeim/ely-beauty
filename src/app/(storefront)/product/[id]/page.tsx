@@ -222,16 +222,24 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
           />
 
           {/* DESCRIPTION / HOW TO USE / INGREDIENTS — the reference's
-              right-column content sections. */}
-          <div className="mt-10 flex flex-col gap-6 border-t border-border pt-8">
-            <section aria-labelledby="description-title">
-              <h2 id="description-title" className="eyebrow-label mb-3 text-foreground">
-                Description
-              </h2>
-              <div className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
-                {product.description}
-              </div>
-            </section>
+              right-column content sections. S95-2: the WHOLE block is
+              conditional — the reference renders no section for an empty
+              field, and no sections at all means no stray hairline either
+              (measured live: the null-description products show no
+              Description heading; the Bamboo Oval carries no copy fields
+              at all). */}
+          {(product.description || product.howToUse || product.ingredients) && (
+            <div className="mt-10 flex flex-col gap-6 border-t border-border pt-8">
+            {product.description && (
+              <section aria-labelledby="description-title">
+                <h2 id="description-title" className="eyebrow-label mb-3 text-foreground">
+                  Description
+                </h2>
+                <div className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+                  {product.description}
+                </div>
+              </section>
+            )}
             {product.howToUse && (
               <section aria-labelledby="how-to-use-title">
                 <h2 id="how-to-use-title" className="eyebrow-label mb-3 text-foreground">
@@ -252,7 +260,8 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
                 </div>
               </section>
             )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 

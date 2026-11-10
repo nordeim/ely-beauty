@@ -395,7 +395,7 @@ export function ProductDialogButton({
               value={form.shortDescription}
               onChange={(e) => setField("shortDescription", e.target.value)}
               placeholder="One-line summary shown on cards"
-              maxLength={300}
+              maxLength={1000}
             />
           </div>
 
@@ -405,9 +405,8 @@ export function ProductDialogButton({
               id="product-description"
               value={form.description}
               onChange={(e) => setField("description", e.target.value)}
-              placeholder="Full product description (min 10 characters)"
+              placeholder="Full product description (optional — empty renders no Description section)"
               className="min-h-[110px]"
-              required
             />
           </div>
 

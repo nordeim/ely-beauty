@@ -208,8 +208,12 @@ export const productInputSchema = z.object({
     .min(2)
     .max(120)
     .regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, dashes"),
-  shortDescription: z.string().trim().max(300).default(""),
-  description: z.string().trim().min(10, "Description is required").max(8000),
+  shortDescription: z.string().trim().max(1000).default(""),
+  // S95-2: the reference ships 3 null-description products (their detail
+  // pages render no Description section) — the run-72-era min(10) rejected
+  // the admin edit of exactly those products. Empty is valid; the upper
+  // bound stays.
+  description: z.string().trim().max(8000).default(""),
   // S81-1: the many-to-many display-category memberships — zero valid (the
   // reference has six uncategorized products), duplicates rejected, bounded.
   categoryIds: z

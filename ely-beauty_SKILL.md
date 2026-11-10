@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.20.0
+version: 2.21.0
 last_updated: 2026-11-10
-project_state: "764 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-94 (session 44 cycle): the Stripe-replay ownership & SKILL-body de-drift cycle — audit 94-a clean (12/12 anchors, run-93 surface R1–R5 5/5, 0 CRITICAL, 7 LOW + 5 INFO, all LOW remediated); S94-2 the Stripe-intent P2002 replay routed through resolveReplay (the S7-2 ownership gate — a leaked pi_… id alone gets the 409; genuine retries still replay; +3 pins); S94-1 the e2e bundle guard imports the demo pair from the single source (+2 source-scan pins); S94-4 the scrypt hash hoisted above the rotation $transaction (no sync crypto under the SQLite write lock); S94-3/S94-5 this file's five live-tense body drifts fixed (identity, version table, 20 models, ELY-XXXXXXXX, clientIp order, key-files list); S94-6 the demo-credentials lockstep inventory corrected — 758 → 764 unit, e2e 92 unchanged ×2 consecutive. PREVIOUS (run-93): the rotation-atomicity & credential-single-sourcing cycle (S93-1..S93-4)"
+project_state: "777 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-95 (session 45 cycle): the reference-content resync & PAD-body de-drift cycle — audit 95-a clean (12/12 anchors, run-94 surface R1–R5 5/5, 0 CRITICAL/HIGH/MEDIUM, 6 LOW + 5 INFO, all LOW remediated); S95-1 the /api/search OR clause resynced to the reference's run-95 measured matching (title + short_description + tags — description dropped; "Silkfare"/"Nano" return 0 on the reference); S95-2 the seed content resync (the reference's owner restructured the catalog: paragraphs to short_description, feature-list/null descriptions, how_to_use empty reference-wide, the Ice Bowl ingredients, the authored quirks verbatim — bastseller/Lovender/Marron/Biege/Navy blue) + the detail-page sections all-conditional; S95-3 the PAD live-tense body de-drift (counts, 20 models, the 3-project e2e reality, crypto-random order numbers, the 68-suite table); S95-4 the NEW docs-counts.test.ts count-lockstep pin (the neo-crm mechanism — a stale count anywhere fails the unit gate by name); S95-5/S95-6 the advisory inventory comment + cosmetics — 764 → 777 unit (+13: 4 seed-content pins, 5 docs-counts pins, 1 advisory-inventory pin, 3 validation copy-bound pins; the search-route pin rewritten in place), e2e 92 unchanged. PREVIOUS (run-94): the Stripe-replay ownership & SKILL-body de-drift cycle (S94-1..S94-6)"
 tags:
   - nextjs16
   - react19
@@ -411,7 +411,8 @@ so humans and the e2e suite are unaffected.
 
 ### 8.4 Order tracking access control (the HIGH-severity fix)
 
-Order numbers are **sequential and printed on every receipt**, so the number
+Order numbers are **printed on every receipt** (and crypto-random
+`ELY-XXXXXXXX` since run-72 — no sequence to enumerate), so the number
 alone must never unlock PII. `/track-order` requires the order number **plus
 the purchase email** (`trackOrderSchema` in `src/lib/validation.ts`); the
 match is case-insensitive via `emailsMatch` (`src/lib/order-tracking.ts`,

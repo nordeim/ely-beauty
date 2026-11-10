@@ -104,3 +104,19 @@ describe("the advisory's TTL-cached negative verdict (S93-4, audit 93-a LOW-3)",
     ).resolves.toBe(false);
   });
 });
+
+describe("S95-5 — the advisory's doc-site inventory matches the S94-6 lockstep list", () => {
+  it("the module header names the four actual sites and not .env.example", async () => {
+    const source = await import("node:fs").then((fs) =>
+      fs.readFileSync("src/lib/admin-password-advisory.ts", "utf8"),
+    );
+    // The four lockstep sites (demo-credentials.ts's inventory).
+    for (const site of ["AGENTS.md", "README.md", "Project_Architecture_Document.md", "ely-beauty_SKILL.md"]) {
+      expect(source, `the header names ${site}`).toContain(site);
+    }
+    // The header must NOT claim .env.example documents the pair (it
+    // deliberately does not — a future rotation following a stale comment
+    // would miss two sites and touch one that stays clean).
+    expect(source).not.toMatch(/\/ \.env\.example/);
+  });
+});

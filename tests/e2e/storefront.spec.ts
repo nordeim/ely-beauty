@@ -332,9 +332,15 @@ test.describe("storefront", () => {
     await expect(ritual.getByText("Natural Bamboo Hair Brush - Square")).toBeVisible();
     await expect(ritual.locator("article")).toHaveCount(3);
 
-    // A how-to-use product renders its usage section (conditional content).
+    // S95-2 (run-95 content resync): the reference's how_to_use is empty
+    // for ALL 19 products — its detail pages render NO usage sections, so
+    // the clone ships none either (the run-72-authored howToUse copy is
+    // gone from the seed). The Gua Sha's detail renders the Description
+    // section only (its description moved to short_description, which
+    // rides the cards/overlay, not the detail body).
     await openDetailFromShop(page, "Stainless Steel Gua Sha", "/shop?q=gua");
-    await expect(page.getByRole("heading", { name: "How to Use" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "How to Use" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Description" })).toHaveCount(0);
   });
 
   test("category tiles deep-link into filtered products", async ({ page }) => {

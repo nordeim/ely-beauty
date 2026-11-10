@@ -216,3 +216,65 @@ describe("seed catalog constants (S15-2, run-72)", () => {
     }
   });
 });
+
+describe("seed content resync (S95-2 — the reference's run-95 content)", () => {
+  // The reference's owner restructured the product content since run-77:
+  // the marketing paragraphs now live in short_description, description
+  // holds feature lists (or nothing), how_to_use is empty for ALL 19, and
+  // the authored quirks are verbatim (the S74-13 convention). Measured via
+  // the reference's public entities API + the live detail/overlay/cards.
+
+  it("the reference's restructured copy: paragraphs in shortDescription, feature-lists/empties in description", () => {
+    const bySlug = (slug: string) => PRODUCTS.find((p) => p.slug === slug);
+    // The Bonnet's description is the reference's current copy.
+    expect(bySlug("premium-double-sided-ruffles-silk-hair-bonnet")?.description).toContain(
+      "Protect your hair day and night",
+    );
+    // The Pillowcase's shortDescription is the reference's full paragraph.
+    expect(bySlug("pure-satin-silk-pillowcase")?.shortDescription).toContain(
+      "Sleep in smooth comfort with our premium satin silk pillowcase",
+    );
+    // Three products carry EMPTY descriptions on the reference (their
+    // detail pages render no Description section).
+    for (const slug of ["heatless-hair-curler-set", "natural-bamboo-hair-brush-oval", "stainless-steel-gua-sha"]) {
+      expect(bySlug(slug)?.description, `${slug} description empty (S95-2)`).toBe("");
+    }
+    // The Sandalwood Paddle's description is the reference's feature list.
+    expect(bySlug("sandalwood-paddle-hairbrush-oval")?.description).toContain("Features -");
+  });
+
+  it("howToUse is empty for ALL 19 products (the reference renders no How to Use sections)", () => {
+    for (const p of PRODUCTS) {
+      expect(p.howToUse ?? "", `"${p.name}" howToUse empty (S95-2)`).toBe("");
+    }
+  });
+
+  it("the Ice Bowl is the only ingredient-bearing product (the reference's run-95 data)", () => {
+    for (const p of PRODUCTS) {
+      if (p.slug === "facial-ice-bowl") {
+        expect(p.ingredients ?? "").toContain("Key Features");
+      } else {
+        expect(p.ingredients ?? "", `"${p.name}" ingredients empty (S95-2)`).toBe("");
+      }
+    }
+  });
+
+  it("the authored quirks are verbatim: tags, the Bonnet size labels, the color spellings", () => {
+    // The owner's tag spelling "bastseller" and the variant-label typos
+    // are the reference's rendered truth (S74-13: content parity renders
+    // the authored string, quirks included).
+    const bonnet = PRODUCTS.find((p) => p.slug === "premium-double-sided-ruffles-silk-hair-bonnet");
+    expect(bonnet?.tags).toEqual(["bastseller"]);
+    expect(bonnet?.sizes).toEqual(["Pink & Lovender", "Marron & Navy Blue", "Black & White"]);
+    const brush = PRODUCTS.find((p) => p.slug === "wooden-cleansing-brush");
+    expect(brush?.tags).toEqual(["sale", "bastseller"]);
+    // The Dry Body Brush's clone-era "sale" tag is gone on the reference.
+    expect(PRODUCTS.find((p) => p.slug === "anti-cellulite-dry-body-brush")?.tags).toEqual([]);
+    // The massager's third color and the Curler's second color keep the
+    // reference's spellings ("Biege", "Navy blue").
+    const massager = PRODUCTS.find((p) => p.slug === "full-silicon-scalp-massager");
+    expect(massager?.colors?.map((c) => c.name)).toEqual(["Pink", "Black", "Biege"]);
+    const curler = PRODUCTS.find((p) => p.slug === "heatless-hair-curler-set");
+    expect(curler?.colors?.map((c) => c.name)).toEqual(["Black", "Navy blue"]);
+  });
+});

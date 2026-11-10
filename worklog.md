@@ -599,3 +599,24 @@ Stage Summary:
 - Parity: zero new deltas vs the live reference (all measured pins within the recorded −1px tolerances in this environment's coordinates; prices byte-identical).
 - Standing verifications: sitemap 28 public-only · 25/25 screenshots (7 changed: the known family) · .env.example 9/9 · npm audit 0.
 - Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.
+
+---
+
+Task ID: 89
+Agent: run-95 executor (the reference-content resync & PAD-body de-drift cycle)
+Task: The full remediation cycle on the SURVIVED workspace (git pull fast-forward 7df0a0f → ce99658 = run-94 code + the operator's raw-narrative commit adding docs/session_45.md; no new operator signal — a standard verification cycle): docs review → baseline gates green (764/764 unit — docs matched reality) → audit 95-a (read-only, skills/ excluded) → the live parity pass whose overlay-row-copy divergence root-caused into the reference's content restructure → the Session 95 plan (S95-1..S95-9) → TDD execution → gates ×2 → standing verifications + the parity re-measure → the docs sweep → the SSH-wrapper push.
+
+Work Log:
+- The parity pass's driver finding: the overlay ROW COPY diverged from the reference — the API-level investigation (the reference's public entities endpoint) root-caused it as a full CONTENT RESTRUCTURE by the reference's owner since run-77 (paragraphs moved to short_description, description → feature-lists/nulls, how_to_use emptied reference-wide, ingredients on the Ice Bowl only) plus a MATCHING divergence (the reference's overlay matches title + short_description + tags only — "Silkfare"/"Nano" → 0 rows measured live; the clone's S77-4 description clause would over-match the resynced content).
+- The fixes: S95-1 the /api/search OR clause resync (RED the rewritten pin → GREEN the route edit; live-verified byte-equal on "silk"/"Silkfare"/"bastseller"/"spa-like"); S95-2 the seed content resync (19 products from the live API; the authored quirks verbatim per S74-13 — "bastseller", "Pink & Lovender", "Marron & Navy Blue", "Biege", "Navy blue") + the detail page's sections made ALL-conditional (the reference renders no section for an empty field, and no stray hairline when none carry copy).
+- The S95-2 mid-cycle discovery (TDD): e2e run 1 failed 2 admin-catalog tests — productInputSchema's run-72-era description .min(10) (the reference ships 3 empties) and shortDescription .max(300) (the reference's longest is 424). RED 3 validation pins → GREEN the bounds relaxed (max(8000)/max(1000)) + the admin dialog's required/placeholder/maxLength corrected.
+- The S95-3/S95-4 pair: the PAD live-tense body de-drift (737/634/79 → 777/92; "19 models" → 20 ×3; the two-project e2e → three with the serialized admin-catalog + globalSetup heal + password-change row; "order numbers increment" → crypto-random; 12-per-page → 24/page; /products?q= → /shop?q=; the §8.1 table 48 → 68 suites) pinned by the NEW tests/unit/docs-counts.test.ts (the neo-crm count-lockstep mechanism — every live-tense count site under the unit gate; a stale count anywhere fails BY NAME). RED 5/5 → GREEN after the sweep.
+- The docs-counts lessons: the count moved twice mid-cycle (774 → 777 when the validation pins landed) and the pin correctly forced the re-sweep — the mechanism working as designed; the negative pins initially fired on the v2.22 revision block's own QUOTES of the stale strings — scoped to the live-tense body (after "## Table of Contents") since revision blocks are append-only history.
+- The parity re-measure: the overlay row copy now BYTE-IDENTICAL to the reference (the "silk" set's texts equal on all four rows; prices/geometry/fonts within the recorded −1px tolerances); mobile nav fully functional — no Tailwind v4 bug (zero classList in src/, the conditional-mount pattern holding, the panel → overlay → results → navigation chain exercised live on both sites).
+
+Stage Summary:
+- All gates green: lint · typecheck · typecheck:tests · 777/777 unit (+13, 68 files) · clean build · 92/92 e2e ×2 consecutive.
+- Audit 95-a: 0 CRITICAL/HIGH/MEDIUM; the 6 LOW all remediated (5 INFO: two fixed as S95-5/S95-6, three recorded no-action; P-4 the reference's ৳11 compare-price data noise recorded, not replicated).
+- Parity: the content resync closes the copy gap — the overlay rows + card desc lines byte-match; all measured pins within the recorded −1px tolerances.
+- Standing verifications: sitemap 28 public-only · 25/25 screenshots (8 changed: the content-resync family + the known raster-noise/admin surfaces) · .env.example 9/9 · npm audit 0.
+- Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.

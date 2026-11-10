@@ -676,3 +676,37 @@ describe("S86 — the zod 3→4 migration pins", () => {
     }
   });
 });
+
+describe("productInputSchema copy bounds (S95-2 — the reference's run-95 content reality)", () => {
+  // The reference's owner restructured the catalog content (run-95
+  // re-measurement): 3 products carry NO description (their detail pages
+  // render no Description section) and the longest short_description is
+  // 424 chars (the Derma Roller). The admin edit of those products must
+  // save — the run-72-era min(10)/max(300) bounds rejected them.
+  const base = {
+    name: "Test Product",
+    slug: "test-product",
+    price: 1999,
+    sku: "TP-TEST-01",
+    stock: 10,
+    images: ["/images/product-test.png"],
+  };
+
+  it("accepts an EMPTY description (the reference ships 3 null-description products)", () => {
+    const parsed = productInputSchema.safeParse({ ...base, description: "" });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("accepts the reference's longest shortDescription (424 chars — the Derma Roller)", () => {
+    const long = "L".repeat(424);
+    const parsed = productInputSchema.safeParse({ ...base, description: "A valid description.", shortDescription: long });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("still rejects the oversized bounds (shortDescription > 1000, description > 8000)", () => {
+    expect(
+      productInputSchema.safeParse({ ...base, description: "A valid description.", shortDescription: "L".repeat(1001) }).success,
+    ).toBe(false);
+    expect(productInputSchema.safeParse({ ...base, description: "L".repeat(8001) }).success).toBe(false);
+  });
+});

@@ -29,16 +29,19 @@ export async function GET(request: NextRequest) {
     const products = await db.product.findMany({
       where: {
         isActive: true,
-        // S77-4 (D-3, measured live): the reference's typeahead matches the
-        // LONG description too — "silk" returns the Sandalwood Paddle
-        // Hairbrush there purely through "silky" in its long copy. The
-        // contains clauses are substring matches on SQLite, so "silk"
-        // hitting "silky" is exactly the reference's behavior.
+        // S95-1 (resync, measured live): the reference's overlay matches
+        // title + short_description + tags ONLY — "Silkfare" and "Nano"
+        // (words that appear ONLY in descriptions) return ZERO rows there,
+        // while "spa-like" (short_description) and "bastseller" (tag)
+        // match. S77-4's description clause was measured against the
+        // reference's THEN-content (the paragraphs lived in `description`);
+        // the owner has since moved them to short_description, and the
+        // clause would now over-match the resynced content. The contains
+        // clauses are substring matches on SQLite ("silk" hits "silky").
         OR: [
           { name: { contains: q } },
           { shortDescription: { contains: q } },
           { tags: { contains: q } },
-          { description: { contains: q } },
         ],
       },
       orderBy: {

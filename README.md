@@ -1,6 +1,6 @@
 # ElyBeauty
 
-![Next.js](https://img.shields.io/badge/Next.js-16-black) ![React](https://img.shields.io/badge/React-19-149ECA) ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6) ![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4_CSS--first-38BDF8) ![Prisma](https://img.shields.io/badge/Prisma-6_+_SQLite-2D3748) ![Stripe](https://img.shields.io/badge/Stripe-payments-635FF5) ![Tests](https://img.shields.io/badge/tests-764_unit_·_92_e2e-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue) ![Currency](https://img.shields.io/badge/currency-BDT_৳-e11d48)
+![Next.js](https://img.shields.io/badge/Next.js-16-black) ![React](https://img.shields.io/badge/React-19-149ECA) ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6) ![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4_CSS--first-38BDF8) ![Prisma](https://img.shields.io/badge/Prisma-6_+_SQLite-2D3748) ![Stripe](https://img.shields.io/badge/Stripe-payments-635FF5) ![Tests](https://img.shields.io/badge/tests-777_unit_·_92_e2e-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue) ![Currency](https://img.shields.io/badge/currency-BDT_৳-e11d48)
 
 A production-grade premium-skincare e-commerce storefront + admin back office — a visual-and-functional **superset** of the Base44 reference app at [`ely-beauty.base44.app`](https://ely-beauty.base44.app/). High-fashion editorial design (Cormorant Garamond + Inter, warm ivory + taupe, sharp corners), a Bangladesh-market commerce model (৳ BDT, city-tiered shipping, Cash on Delivery), **product variants (colors/sizes)**, and a full admin console, on Next.js 16 · React 19 · TypeScript strict · Tailwind CSS v4 · Prisma 6 + SQLite. Re-skinned in run-72 from the battle-tested HomeNest Kitchen scaffold (70+ remediation sessions; see `docs/reference-investigation.md` for the live-reference dossier).
 
@@ -33,7 +33,7 @@ Demo accounts (seeded):
 
 | Area | Highlights |
 |---|---|
-| **Storefront** | Editorial single-image hero (the carousel engine activates with 2+ slides — admin-managed) · "Shop by Ritual" image category tiles · "Curated for You" newest-6 grid · **default catalog order matches the reference's authored order** (backdated `createdAt`) · `/shop` listing with sharp category filter pills (the reference's 0-radius geometry) + native sort select (Newest / Price / Name) + search — the reference's FULL-SCREEN overlay (`fixed inset-0 z-[70] bg-background/95`, Cormorant input, description-matching typeahead in the authored order, a 60vh-capped scrolling result list, a 1-character floor, 2px row corners — S78; `/products` 301-redirects) · product detail with **3-image gallery + thumb rail**, **COLOR swatch / SIZE variant selectors** (38px pills), DESCRIPTION / HOW TO USE / INGREDIENTS sections, and "Complete the Ritual" related pieces · floating WhatsApp chat (settings-driven) |
+| **Storefront** | Editorial single-image hero (the carousel engine activates with 2+ slides — admin-managed) · "Shop by Ritual" image category tiles · "Curated for You" newest-6 grid · **default catalog order matches the reference's authored order** (backdated `createdAt`) · `/shop` listing with sharp category filter pills (the reference's 0-radius geometry) + native sort select (Newest / Price / Name) + search — the reference's FULL-SCREEN overlay (`fixed inset-0 z-[70] bg-background/95`, Cormorant input, title/short-description/tag typeahead in the authored order (S95-1 — the reference's run-95 measured matching), a 60vh-capped scrolling result list, a 1-character floor, 2px row corners — S78; `/products` 301-redirects) · product detail with **3-image gallery + thumb rail**, **COLOR swatch / SIZE variant selectors** (38px pills), DESCRIPTION / HOW TO USE / INGREDIENTS sections (each rendered only when the product carries the copy — S95-2), and "Complete the Ritual" related pieces · floating WhatsApp chat (settings-driven) |
 | **Commerce** | Guest carts (token-cookie, merged on login **and at sign-in**) · "Your Bag" mini drawer + full cart page · **server-computed cart badge survives full reloads** · coupons (`WELCOME10`, `SAVE20`, `FREESHIP`) with expiry + **atomic redemption caps** · first-class `free_shipping` coupon type · free-shipping threshold hint (coupon-aware) · **product variants carried end-to-end** (cart line identity → checkout summary → order snapshot) · **city-tiered shipping** (Dhaka ৳70 / outside ৳130, derived from the City field; "Enter city to calculate" before input) · single-page checkout (CONTACT → SHIPPING ADDRESS → PAYMENT METHOD → Order Notes + live ORDER SUMMARY) · **Cash on Delivery** (the reference's method; **real Stripe card payments when configured AND the `STRIPE_BDT_PER_USD` rate is set** — Payment Element (PCI SAQ-A), server-minted PaymentIntent converted through the explicit FX seam, webhook-driven placement, the admin refund ledger) · **idempotent order placement** (retries reuse the same key — no double orders) · server-side total re-derivation **inside the order transaction** + atomic stock checks · transactional cart adds (no lost increments, shared 99/stock clamp, scoped race-safe line writes) · **bounded wishlist** (100-item cap enforced transactionally) with **one-request Add All to Cart** and **server-rendered filled hearts** on the detail page |
 | **Orders** | **`ELY-XXXXXXXX` crypto-random order numbers** (no sequence to enumerate) · **token-gated order-success receipt** · order tracking gated by **number + purchase email** (anti-enumeration, rate-limited) with a 4-step status timeline · per-order event history · admin cancellation restores stock · optional order notes |
 | **Accounts** | Register/login (scrypt hashes, DB-backed sessions, HMAC-signed cookie) · profile editing · address book (bounded at 20, first address auto-defaults, delete-default auto-promotes, friendly 409 at the cap inside the write transaction) · **order history first** (the reference's account anatomy) |
@@ -52,7 +52,7 @@ Demo accounts (seeded):
 | UI primitives | Radix UI + CVA + lucide-react | latest | Accessible dialogs, selects, sheets, toasts |
 | Charts | Recharts | ^3 | Admin revenue/analytics |
 | Validation | Zod | ^4.6 | Every external input boundary |
-| Tests | Vitest · Playwright | ^4.1 · ^1.64 | 764 unit · 92 e2e |
+| Tests | Vitest · Playwright | ^4.1 · ^1.64 | 777 unit · 92 e2e |
 
 ```mermaid
 flowchart TB
@@ -103,7 +103,7 @@ flowchart TB
 │   │                            # coupons, settings, products, validation, csp, seo
 └── 📂 actions/                  # server actions: auth, admin, reviews
 📂 prisma/                       # schema.prisma (19 models) + seed.ts (idempotent)
-📂 tests/                        # unit/ (Vitest · 764) · e2e/ (Playwright · 92)
+📂 tests/                        # unit/ (Vitest · 777) · e2e/ (Playwright · 92)
 📂 db/                           # custom.db (created by db:push, git-ignored)
 📂 docs/                         # reference dossier, implementation plan, screenshots/
 ```
@@ -123,7 +123,7 @@ flowchart TB
 ## Testing
 
 ```bash
-npm run test            # 764 unit tests (Vitest, node env; the component tests run under jsdom)
+npm run test            # 777 unit tests (Vitest, node env; the component tests run under jsdom)
 npm run typecheck:tests # the unit/e2e/seed sources are type-checked too
 npm run build           # required before e2e (suite starts the standalone server)
 npm run test:e2e        # 92 e2e tests (Playwright; server auto-started on :3100)

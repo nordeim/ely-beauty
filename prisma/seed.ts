@@ -132,17 +132,16 @@ export const PRODUCTS: SeedProduct[] = [
     // variants) — the reference renders multi-image galleries on
     // every product page; the rail renders with 2+ images.
     images: ["/images/product-silk-bonnet.png", "/images/product-silk-bonnet-2.png", "/images/product-silk-bonnet-3.png"],
-    tags: ["bestseller"],
+    tags: ["bastseller"],
     specs: [
       { label: "Material", value: "100% mulberry silk" },
       { label: "Sides", value: "Double-sided" },
     ],
-    sizes: ["Pink & Lavender", "Maroon & Navy Blue", "Black & White"],
+    sizes: ["Pink & Lovender", "Marron & Navy Blue", "Black & White"],
     // S76-8 (D-11): the reference renders NO card description on this
     // product (measured live 2026-11-08) — empty copy, no card line.
     shortDescription: "",
-    description:
-      "Sleep in luxury with our Premium Double Sided Ruffles Silk Hair Bonnet. Crafted from 100% mulberry silk, it reduces friction, prevents breakage, and keeps your hairstyle fresh while you sleep. The double-sided design offers two looks in one, with delicate ruffles adding a touch of elegance.",
+    description: "Protect your hair day and night with our luxuriously soft, double-sided satin silk bonnet. Designed to reduce frizz, prevent breakage, and lock in moisture, it keeps your hairstyle smooth and healthy while you sleep. Lightweight, breathable, and gentle on all hair types—for effortless beauty every morning. ✨",
     // S76-8 (D-10): the live reference renders NO badge on the bonnet
     // card (measured 2026-11-08) — badge data parity.
     badge: null,
@@ -164,7 +163,7 @@ export const PRODUCTS: SeedProduct[] = [
     // variants) — the reference renders multi-image galleries on
     // every product page; the rail renders with 2+ images.
     images: ["/images/product-satin-pillowcase.png", "/images/product-satin-pillowcase-2.png", "/images/product-satin-pillowcase-3.png"],
-    tags: ["bestseller", "sale"],
+    tags: ["sale", "bestseller"],
     specs: [
       { label: "Material", value: "Premium satin silk" },
       { label: "Sizes", value: "Standard" },
@@ -175,9 +174,8 @@ export const PRODUCTS: SeedProduct[] = [
       { name: "Sky Blue", hex: "#8aaccc" },
       { name: "Black", hex: "#080906" },
     ],
-    shortDescription: "Sleep in smooth comfort — wake up fresh, frizz-free, and glowing.",
-    description:
-      "Sleep in smooth comfort with our premium satin silk pillowcase. Designed to protect your hair and skin, it's the perfect beauty sleep essential for waking up fresh, frizz-free, and glowing.\n\nReduces Hair Frizz & Breakage – Minimizes friction to keep hair smooth and tangle-free.\nPrevents Sleep Lines & Wrinkles – Gentle on skin, reducing creases and signs of aging.\nRetains Skin & Hair Moisture – Unlike cotton, satin won't absorb natural oils.\nHypoallergenic & Gentle – Ideal for sensitive skin and allergy-prone users.\nCool & Comfortable – Breathable fabric keeps you cool all night.",
+    shortDescription: "Sleep in smooth comfort with our premium satin silk pillowcase. Designed to protect your hair and skin, it’s the perfect beauty sleep essential for waking up fresh, frizz-free, and glowing.",
+    description: "Sleep in smooth comfort with our premium satin silk pillowcase. Designed to protect your hair and skin, it’s the perfect beauty sleep essential for waking up fresh, frizz-free, and glowing.\n\nReduces Hair Frizz & Breakage – Minimizes friction to keep hair smooth and tangle-free.\nPrevents Sleep Lines & Wrinkles – Gentle on skin, reducing creases and signs of aging.\nRetains Skin & Hair Moisture – Unlike cotton, satin won’t absorb natural oils.\nHypoallergenic & Gentle – Ideal for sensitive skin and allergy-prone users.\nCool & Comfortable – Breathable fabric keeps you cool all night.\nDescription",
     badge: "Bestseller",
     isFeatured: true,
     isNewArrival: true,
@@ -203,11 +201,10 @@ export const PRODUCTS: SeedProduct[] = [
     ],
     colors: [
       { name: "Black", hex: "#080906" },
-      { name: "Navy Blue", hex: "#28335b" },
+      { name: "Navy blue", hex: "#28335b" },
     ],
-    shortDescription: "Beautiful curls without heat damage.",
-    description:
-      "Get beautiful curls without heat damage. Our Heatless Hair Curling Set creates soft, long-lasting curls, reduces frizz, and keeps hair smooth & healthy.",
+    shortDescription: "Get beautiful curls without heat damage. Our Heatless Hair Curling Set creates soft, long-lasting curls, reduces frizz, and keeps hair smooth & healthy.",
+    description: "",
     badge: "Bestseller",
     isFeatured: true,
     isNewArrival: true,
@@ -234,8 +231,7 @@ export const PRODUCTS: SeedProduct[] = [
     // S76-8 (D-11): the reference renders NO card description on this
     // product (measured live 2026-11-08) — empty copy, no card line.
     shortDescription: "",
-    description:
-      "Glide through knots with our Natural Bamboo Hair Brush. The square paddle design and smooth bamboo bristles detangle gently, distribute natural oils, and add shine — an eco-friendly essential for healthy hair.",
+    description: "Promote healthier hair with our Bamboo Wood Anti Hair Loss Hairbrush. Designed to gently massage the scalp, this eco-friendly brush helps reduce hair fall, stimulate growth, and improve circulation. Perfect for all hair types, it’s a sustainable choice for those looking to maintain thick, strong, and nourished hair.",
     isFeatured: true,
     isNewArrival: true,
   },
@@ -258,9 +254,8 @@ export const PRODUCTS: SeedProduct[] = [
       { label: "Material", value: "100% natural sandalwood" },
       { label: "Shape", value: "Oval paddle" },
     ],
-    shortDescription: "Sandalwood paddle brush that detangles, smooths, and reduces frizz.",
-    description:
-      "This natural wooden brush gently glides through your hair to detangle, smooth, and reduce frizz. Its anti-static properties help maintain shine while preventing breakage and split ends — the perfect daily essential for healthy, beautiful hair.\n\nBenefits:\n- Reduces hair breakage and split ends\n- Prevents static & frizz naturally\n- Improves scalp blood circulation\n- Leaves hair silky, shiny & manageable",
+    shortDescription: "This natural wooden comb gently glides through your hair to detangle, smooth, and reduce frizz. Its anti-static properties help maintain shine while preventing breakage and split ends — the perfect daily essential for healthy, beautiful hair.\n\nBenefits -\nReduces hair breakage and split ends\nPrevents static & frizz naturally\nImproves scalp blood circulation\nLeaves hair silky, shiny & manageable\nShipping & Delivery",
+    description: "Features -\nMade from Sandalwood\nAnti-static & Eco-friendly natural material\nSmooth rounded teeth for gentle detangling\nLightweight & durable handcrafted design\nSuitable for all hair types, men and women\n",
     isFeatured: true,
     isNewArrival: true,
   },
@@ -283,9 +278,8 @@ export const PRODUCTS: SeedProduct[] = [
       { label: "Material", value: "100% natural sandalwood" },
       { label: "Shape", value: "Oval" },
     ],
-    shortDescription: "Effortless detangling with a soothing sandalwood aroma.",
-    description:
-      "Experience effortless detangling with our Premium Sandalwood Detangling Hairbrush – Oval Style. Crafted from 100% natural sandalwood, this elegant brush gently glides through your hair, reducing breakage, frizz, and static while adding a natural shine and soothing aroma.",
+    shortDescription: "Experience effortless detangling with our Premium Sandalwood Detangling Hairbrush – Oval Style. Crafted from 100% natural sandalwood, this elegant brush gently glides through your hair, reducing breakage, frizz, and static while adding a natural shine and soothing aroma.",
+    description: "Features\n100% Natural Sandalwood Handle & Bristles\nOval Style design for easy grip and smooth brushing\nAnti-static & Eco-friendly finish\nDurable & Long-lasting handcrafted body\nSuitable for all hair types – wet or dry\nBenefits\nGently detangles without pulling or breakage\nHelps reduce frizz and static naturally\nPromotes scalp stimulation & healthy hair growth\nLeaves hair smooth, shiny, and manageable",
     isNewArrival: true,
   },
   {
@@ -310,8 +304,7 @@ export const PRODUCTS: SeedProduct[] = [
     // S76-8 (D-11): the reference renders NO card description on this
     // product (measured live 2026-11-08) — empty copy, no card line.
     shortDescription: "",
-    description:
-      "The oval sibling of our bamboo classic. Rounded pins massage the scalp while the pneumatic cushion adapts to your head's shape — comfortable, anti-static, and beautifully finished.",
+    description: "",
   },
   {
     slug: "stainless-steel-gua-sha",
@@ -332,11 +325,8 @@ export const PRODUCTS: SeedProduct[] = [
       { label: "Material", value: "Stainless steel" },
       { label: "Finish", value: "Polished mirror" },
     ],
-    shortDescription: "Cooling stainless steel gua sha for a sculpted, de-puffed glow.",
-    description:
-      "Elevate your skincare routine with this cooling stainless steel gua sha. Glide it over your favorite serum or moisturizer to help relax facial tension, reduce puffiness, and boost your natural glow.",
-    howToUse:
-      "Apply a few drops of serum or moisturizer, then glide the tool outward from the center of your face — cheeks, jawline, brow, and neck — using light, sweeping strokes. Chill in the fridge before use for extra de-puffing.",
+    shortDescription: "Elevate your skincare routine with this cooling stainless steel gua sha. ✨ Glide it over your favorite serum or moisturizer to help relax facial tension, reduce puffiness, and boost your natural glow. 💆♀️",
+    description: "",
     isFeatured: true,
   },
   {
@@ -359,9 +349,8 @@ export const PRODUCTS: SeedProduct[] = [
       { label: "Set", value: "1 pair" },
     ],
     sizes: ["Pink", "Sky Blue", "Black"],
-    shortDescription: "Spa-like exfoliation at home — softer, brighter skin every use.",
-    description:
-      "Experience spa-like exfoliation at home with our 100% Natural Viscose Exfoliating Gloves. Designed to gently remove dead skin cells, unclog pores, and reveal softer, smoother, and brighter skin after every use.",
+    shortDescription: "Experience spa-like exfoliation at home with our 100% Natural Viscose Exfoliating Gloves. Designed to gently remove dead skin cells, unclog pores, and reveal softer, smoother, and brighter skin after every use.",
+    description: "Benefits:\n\nDeeply exfoliates to remove dead skin buildup\nHelps reduce ingrown hairs & improve skin texture\nBoosts circulation for naturally glowing skin\nEnhances absorption of body lotions & oils\nReusable, eco-friendly & suitable for all skin types\nProduct Details:\n\nMade from 100% natural viscose plant fiber\nUse 1–2 times a week on damp skin\nCompatible with soap or body wash\nSize: One size fits all\nWashable & long-lasting",
   },
   {
     slug: "facial-threading-tool",
@@ -385,9 +374,7 @@ export const PRODUCTS: SeedProduct[] = [
     // S76-8 (D-11): the reference renders NO card description on this
     // product (measured live 2026-11-08) — empty copy, no card line.
     shortDescription: "",
-    description:
-      "Remove unwanted facial hair the traditional way — without wax or chemicals. The spring coil traps hair at the root and lifts it away in a gentle sweeping motion, leaving skin smooth for weeks.",
-    howToUse: "Hold the handles, bend the coil against the skin, and roll outward across the area. Follow with a soothing moisturizer.",
+    description: "Achieve smooth, salon-like facial hair removal at home with the FEYORA Precision Facial Threading Tool. Designed for easy and gentle threading, it helps remove unwanted hair from the upper lip, chin, cheeks, and forehead without harsh chemicals or irritation. Lightweight, reusable, and beginner-friendly — perfect for quick touch-ups anytime.\n\n",
   },
   {
     slug: "moisturizing-spa-socks",
@@ -412,8 +399,7 @@ export const PRODUCTS: SeedProduct[] = [
     // S76-8 (D-11): the reference renders NO card description on this
     // product (measured live 2026-11-08) — empty copy, no card line.
     shortDescription: "",
-    description:
-      "Slip into softness. These spa socks carry a vitamin-rich gel lining that hydrates dry heels and cracked skin while you sleep — wake up to noticeably smoother feet.",
+    description: "Say goodbye to dry, rough feet\nInfused with soft gel lining tHelps lock in moisture and repair cracked, dry heels for softer, smoother feet 💖\n\nHow to care:\n• Hand wash with cold water & mild soap\n• Lay flat to dry after use",
   },
   {
     slug: "crystal-hair-remover",
@@ -434,10 +420,8 @@ export const PRODUCTS: SeedProduct[] = [
       { label: "Material", value: "Crystal glass" },
       { label: "Reusability", value: "Eco-friendly, reusable" },
     ],
-    shortDescription: "Gently buffs away unwanted hair — no razors, no waxing.",
-    description:
-      "Say goodbye to razors and painful waxing! Our Crystal Hair Remover gently buffs away unwanted hair and dead skin cells, leaving your skin silky-smooth and glowing. Easy to use, eco-friendly, and reusable — it's perfect for legs, arms, and sensitive areas. Just rub in circular motions and reveal softer skin instantly!",
-    howToUse: "Rub in gentle circular motions on dry skin, then rinse and moisturize. Rinse the tool after each use.",
+    shortDescription: "Say goodbye to razors and painful waxing! Our Crystal Hair Remover gently buffs away unwanted hair and dead skin cells, leaving your skin silky-smooth and glowing. Easy to use, eco-friendly, and reusable — it's perfect for legs, arms, and sensitive areas. Just rub in circular motions and reveal softer skin instantly!",
+    description: "Product Info - ✨\nNano Crystalline Technology\nGently Remove Hair Painless\nReusable And Washable\nSlowing Hair Growth\nEasy to carry",
   },
   {
     slug: "full-silicon-scalp-massager",
@@ -461,14 +445,13 @@ export const PRODUCTS: SeedProduct[] = [
     colors: [
       { name: "Pink", hex: "#CB9D9D" },
       { name: "Black", hex: "#080906" },
-      { name: "Beige", hex: "#E5C38F" },
+      { name: "Biege", hex: "#E5C38F" },
     ],
-    sizes: ["Pink", "Black", "Beige"],
+    sizes: ["Pink", "Black", "Biege"],
     // S76-8 (D-11): the reference renders NO card description on this
     // product (measured live 2026-11-08) — empty copy, no card line.
     shortDescription: "",
-    description:
-      "Turn every wash into a spa ritual. The soft silicone tips lift away buildup, stimulate circulation, and feel wonderful — while the full-silicon body rinses clean and never hosts bacteria.",
+    description: "Elevate your haircare ritual with Silkfare’s Sweet Repair Scalp Massager.\n\nThoughtfully designed to exfoliate buildup and invigorate your scalp, this soft-touch massager transforms your shower into a spa-like escape. With its full solid one piece design and gentle bristles, it's your perfect partner for healthier, more vibrant hair — one soothing massage at a time.",
   },
   {
     slug: "derma-roller-titanium",
@@ -490,11 +473,8 @@ export const PRODUCTS: SeedProduct[] = [
       { label: "Sizes", value: "0.5mm / 1.0mm" },
     ],
     sizes: ["0.5mm", "1.0mm"],
-    shortDescription: "Stimulates collagen for smoother, firmer, glowing skin.",
-    description:
-      "Transform your skincare routine with the Derma Roller! Featuring fine, ultra-precise needles, this tool gently stimulates collagen production, reduces fine lines, minimizes pores, and promotes smoother, firmer skin. Perfect for enhancing absorption of your favorite serums and creams, it's your go-to for a glowing, rejuvenated complexion. Safe, easy to use, and ideal for all skin types — unlock radiant skin with every roll!",
-    howToUse:
-      "Sanitize before use. Roll gently 4-8 times per area in horizontal, vertical, and diagonal directions with light pressure. Apply serum afterwards. Use 2-3 times per week; replace the head every 10-15 uses.",
+    shortDescription: "Transform your skincare routine with the Derma Roller! Featuring fine, ultra-precise needles, this tool gently stimulates collagen production, reduces fine lines, minimizes pores, and promotes smoother, firmer skin. Perfect for enhancing absorption of your favorite serums and creams, it’s your go-to for a glowing, rejuvenated complexion. Safe, easy to use, and ideal for all skin types—unlock radiant skin with every roll!",
+    description: "Benefits: \n\nBoosts Collagen Production – Firms and plumps the skin for a youthful glow.\nReduces Acne Scars & Dark Spots – Fades blemishes, hyperpigmentation, and sun damage.\nEnhances Skincare Absorption – Helps serums and moisturizers penetrate deeper.\nMinimizes Fine Lines & Wrinkles – Smooths out aging signs for a fresher look.\nShrinks Large Pores – Tightens skin and improves texture.\nPromotes Hair Growth – Stimulates scalp for thicker, healthier hair.\nHow to Use a Derma Roller in 5 Simple Steps\nCleanse your skin thoroughly.\nSanitize the derma roller.\nRoll gently in vertical, horizontal, and diagonal directions.\nApply a serum or moisturizer.\nClean and store the derma roller.\nSize Guidelines :\n0.5 mm - For Hair\n1.0 mm -  For Skin",
   },
   {
     slug: "derma-stamp-titanium",
@@ -515,10 +495,8 @@ export const PRODUCTS: SeedProduct[] = [
       { label: "Needles", value: "Titanium" },
       { label: "Type", value: "Stamp pen" },
     ],
-    shortDescription: "Healthy hair & glowing skin, made simple!",
-    description:
-      "Healthy hair & glowing skin, made simple! The Derma Stamp's precision titanium head creates tiny micro-channels that boost serum absorption and stimulate renewal — for denser-looking hair and a fresher complexion.",
-    howToUse: "Sanitize, then press the stamp gently over the target area 3-5 times. Follow with your serum. Discontinue if irritation occurs.",
+    shortDescription: "Healthy hair & glowing skin, made simple! 💖",
+    description: "Adjustable Derma Stamp – Revive Your Hair & Skin Naturally! ✨\nStruggling with hair thinning or uneven skin? The Adjustable Derma Stamp is your go-to solution! Designed to boost hair growth, smooth out skin texture, and enhance serum absorption, this tool puts professional skincare in your hands. With adjustable needle depth and Titanium micro-needles, it promotes natural healing—without harsh chemicals!\n\n✔️ Stimulates hair follicles for thicker hair\n✔️ Boosts collagen for firmer, youthful skin\n✔️ Improves product absorption for better results\n✔️ Adjustable & easy to use at home",
   },
   {
     slug: "travel-silicone-mask-applicator-set-4-pcs",
@@ -539,9 +517,8 @@ export const PRODUCTS: SeedProduct[] = [
       { label: "Set", value: "4 pieces" },
       { label: "Material", value: "Silicone" },
     ],
-    shortDescription: "Travel-friendly, hygienic, multi-use mask applicators.",
-    description:
-      "❣️ Travel-friendly ❣️ Hygienic ❣️ Multi-use\n\nThis 4-piece silicone set spreads masks, peels, and creams evenly — no product wasted on bristles or fingers. Flexible heads reach every contour; the compact case slips into any bag.",
+    shortDescription: "❣️ Travel-friendly ❣️ Hygienic ❣️ Multi-use",
+    description: "Upgrade your skincare routine with the Travel Silicone Mask Applicator Set! Designed for mess-free + hygienic application, this set includes three soft, flexible mini silicone spreaders that help evenly apply facial masks, creams, + serums without wasting product or getting your fingers dirty.\n\nPackaged in a convenient storage case, this set is perfect for beauty lovers who want a clean, efficient, + travel-friendly way to apply their favorite skincare products.",
   },
   {
     slug: "wooden-cleansing-brush",
@@ -558,14 +535,13 @@ export const PRODUCTS: SeedProduct[] = [
     // variants) — the reference renders multi-image galleries on
     // every product page; the rail renders with 2+ images.
     images: ["/images/product-cleansing-brush.png", "/images/product-cleansing-brush-2.png", "/images/product-cleansing-brush-3.png"],
-    tags: ["bestseller", "sale"],
+    tags: ["sale", "bastseller"],
     specs: [
       { label: "Material", value: "Wood + soft bristles" },
       { label: "Design", value: "Dual-sided" },
     ],
-    shortDescription: "A deeper, more effective cleanse — refreshed, smooth, glowing.",
-    description:
-      "Transform your skincare routine with the Wooden Cleansing Brush, designed to deliver a deeper, more effective cleanse. Its soft bristles and dual-sided design make it ideal for both exfoliation and cleansing, leaving your skin feeling refreshed, smooth, and glowing.",
+    shortDescription: "Transform your skincare routine with the Wooden cleansing brush, designed to deliver a deeper, more effective cleanse. Its soft bristles and dual-sided design make it ideal for both exfoliation and cleansing, leaving your skin feeling refreshed, smooth, and glowing.",
+    description: "Product Details:\n\nPremium Pine Wood Handle\nSoft bristles\nHow to Use:\n\nApply your favorite cleanser to the brush.\nGently massage in circular motions on damp skin.\nRinse with warm water and pat dry.\nUse the silicone side for gentle exfoliation.\nKey Benefits:\n\nDeep cleanses pores, removing dirt, oil, and makeup.\nExfoliates dead skin cells, revealing smoother skin.\nBoosts circulation for a natural, healthy glow.\nHelps skincare products absorb more effectively.\nThis high-quality tool is a game-changer for healthy, radiant skin. Perfect for any skincare routine, it’s your go-to for a refreshed and revitalized complexion.\n\nShipping & Delivery",
     badge: "Sale",
   },
   {
@@ -583,15 +559,13 @@ export const PRODUCTS: SeedProduct[] = [
     // variants) — the reference renders multi-image galleries on
     // every product page; the rail renders with 2+ images.
     images: ["/images/product-body-brush.png", "/images/product-body-brush-2.png", "/images/product-body-brush-3.png"],
-    tags: ["sale"],
+    tags: [],
     specs: [
       { label: "Bristles", value: "Natural" },
       { label: "Ritual", value: "Dry brushing" },
     ],
-    shortDescription: "Revive your skin with our detox dry body brush.",
-    description:
-      "Revive your skin with our detox dry body brush. This ancient ritual stimulates lymphatic flow, boosts circulation, smooths the appearance of cellulite, and reveals softer, radiant skin.",
-    howToUse: "On dry skin before showering, brush upward from the feet toward the heart with light pressure. Shower and moisturize after.",
+    shortDescription: "Revive your skin with our detox dry body brush. This ancient ritual stimulates lymphatic flow, boosts circulation, smooths the appearance of cellulite, and reveals softer, radiant skin. ",
+    description: "Product Benefits - \n\nPromote circulation \nIncrease energy levels\nGently exfoliate\nActivate lymphatic drainage\nSoften + smooth skin texture\nMaterials - \n\nSisal bristles\nBeech wood\n100% vegan\n100% plastic free\n100% biodegradable",
     badge: "Sale",
   },
   {
@@ -613,10 +587,9 @@ export const PRODUCTS: SeedProduct[] = [
       { label: "Material", value: "Food-grade silicone" },
       { label: "Design", value: "Foldable" },
     ],
-    shortDescription: "Cold therapy anytime, anywhere.",
-    description:
-      "Refresh and elevate your skincare routine with this foldable Face Ice Bath Bowl — perfect for quick, effective cold therapy anytime, anywhere. The skin-safe silicone bowl collapses flat for travel and pops back into shape in a second.",
-    howToUse: "Fill with water and ice, submerge the face for 10-30 seconds, pat dry, and follow with serum.",
+    shortDescription: "Refresh and elevate your skincare routine with this foldable Face Ice Bath Bowl—perfect for quick, effective cold therapy anytime, anywhere.",
+    description: "Refresh and elevate your skincare routine with this foldable Face Ice Bath Bowl—perfect for quick, effective cold therapy anytime, anywhere.",
+    ingredients: "✨ Key Features:  Foldable & Portable – Easy to store and travel with Depuffs & Tightens – Refreshes skin and boosts glow Premium Silicone – Durable, safe, and skin-friendly Built-In Ice Use – Just add water + ice, no extras needed Easy to Clean – Smooth, stain-resistant surface 📏 Specifications:  Material: Silicone Size: 26.4 × 23.2 × 10 cm Weight: ~310 g Color: Black 📦 Includes:  1 × Face Ice Bath Bowl",
   },
 ];
 

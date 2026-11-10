@@ -5,7 +5,9 @@ import { DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD } from "./demo-credentials";
  * Default-credential advisory detector (S92-2e, audit 92-a HIGH-1).
  *
  * The seed creates the documented demo admin (AGENTS.md / README.md /
- * .env.example) — correct for development, a takeover risk the moment a
+ * Project_Architecture_Document.md / ely-beauty_SKILL.md — the S94-6
+ * lockstep inventory; .env.example deliberately does NOT document the pair)
+ * — correct for development, a takeover risk the moment a
  * production deploy runs `db:setup` and goes public without rotating it,
  * which is exactly what the operator's run-92 jesspete.shop deploy did.
  * The admin dashboard renders a warning while this returns true on a

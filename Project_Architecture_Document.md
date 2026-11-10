@@ -1,9 +1,18 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.21
+# ElyBeauty — Master Project Architecture Document (PAD) v2.22
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-10
+
+#### Revision Block — v2.22 (Run 95 — the reference-content resync & PAD-body de-drift cycle)
+
+- `[API]` **The search matching resynced to the reference's run-95 measured behavior (S95-1)**: `/api/search`'s OR clause drops the S77-4 `description` term — the reference's overlay matches **title + short_description + tags only** (measured live: "Silkfare" and "Nano" — words that appear only in descriptions — return ZERO rows on the reference, while "spa-like" (short_description) and "bastseller" (tag) match; "SILK" → 4, case-insensitive). The S77-4 clause was measured against the reference's THEN-content (the paragraphs lived in `description`); the owner has since moved them to `short_description`, and the clause would now over-match the resynced content. Pinned by the rewritten OR-clause pin in `search-route.test.ts`.
+- `[DATA]` **The seed content resync (S95-2 — the reference's owner restructured the catalog since run-77)**: the marketing paragraphs now live in `short_description` (13/19 products; null for 6 — the card/overlay desc line renders only when present), `description` holds feature lists or nothing (3 nulls — the detail page's Description section is now CONDITIONAL like How to Use/Ingredients, and the whole sections block hides when no field carries copy), `how_to_use` is empty reference-wide (the run-72-authored usage copy removed), `ingredients` exists only on the Ice Bowl, and the authored quirks are verbatim per the S74-13 convention (Bonnet tag "bastseller", sizes "Pink & Lovender"/"Marron & Navy Blue", the massager color "Biege", the Curler's "Navy blue"). Pinned +4 in `seed-catalog.test.ts` + the storefront e2e usage-section pin flipped to the no-section reality.
+- `[DOCS]` **The PAD live-tense body de-drift (S95-3, audit 95-a L-1..L-5)**: the body had frozen around the run-76/80 era — §1.2 stack table (737/90), §8.1 heading (634) + a 48-of-67 file table carrying "12-per-page pagination" and `/products?q=`, §8.2 (79 tests, "Two projects", "order numbers increment", no globalSetup-heal/password-change rows), §3.1/§4.1/§12 ("19 models" ×3), §12 (634/82) — while only the append-only revision blocks ever carried the current numbers. All refreshed: the counts (774/92), the 20 models, the three-project e2e reality (70 desktop + 10 mobile + 12 serialized admin-catalog), the S84-2 globalSetup heal, the S92-2f password-change spec row, crypto-random order numbers, 24/page one-page grid, `/shop?q=`, and the §8.1 table extended to all 68 suites.
+- `[TEST]` **The count-lockstep pin (S95-4 — the neo-crm mechanism, web-application skill §14)**: NEW `tests/unit/docs-counts.test.ts` puts every live-tense count site (README badge/table/tree/commands, CLAUDE testing line, PAD §1.2/§8.1/§8.2/§12, SKILL project_state + §2) under the unit gate — a stale count anywhere fails the suite BY NAME, so the docs sweep can no longer be forgotten when a count changes. RED 5/5 against the frozen PAD → GREEN after the de-drift.
+- `[DOCS]` **The advisory inventory + cosmetics (S95-5/S95-6, audit 95-a L-6 + I-1/I-2)**: `admin-password-advisory.ts`'s header names the four actual doc sites (AGENTS/README/PAD/SKILL — the S94-6 lockstep inventory; `.env.example` deliberately clean), pinned by a source scan in `admin-password-advisory.test.ts`; the auth.spec header comment no longer re-inlines the credential pair; the capture script's "sequential" order-number wording corrected to crypto-random.
+- `[VERIFY]` **Audit 95-a clean, parity zero-geometry-delta + the content resync**: 12/12 standing anchors PASS, the run-94 regression surface R1–R5 5/5, 0 CRITICAL/HIGH/MEDIUM — 6 LOW + 5 INFO (all LOW remediated; I-3 dependency posture, I-4 import nuance, I-5 no-count-row recorded no-action; P-4 the reference's ৳11 compare-price data noise recorded, not replicated). Gates green (777/777 unit +13 in 68 files, 92/92 e2e ×2 consecutive, npm audit 0/0, sitemap 28 public-only, .env.example 9/9, 25/25 screenshots); live parity within the recorded tolerances on both sites logged in, and the overlay rows + card desc lines now byte-match the reference's resynced copy (the "silk" set's desc lines, prices, and fonts identical; the search behavior verified equal on "silk"/"Silkfare"/"bastseller"/"spa-like"); mobile nav fully functional — no Tailwind v4 bug.
 
 #### Revision Block — v2.21 (Run 94 — the Stripe-replay ownership & SKILL-body de-drift cycle)
 
@@ -552,8 +561,8 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, select, sheet, label, tabs, radio) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^4.6.7 | Single validation boundary (ADR-005) — v4 since run 86 (S86-1) |
-| Unit tests | Vitest | ^4.1.12 | Node-env suite (737 tests; grew with every remediation session + the session-61 Stripe retrofit + the session-73/74 parity pins + the session-75 measured-frame pins + the S88 toolchain pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
-| E2E tests | Playwright | ^1.64 | 90 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins |
+| Unit tests | Vitest | ^4.1.12 | Node-env suite (777 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
+| E2E tests | Playwright | ^1.64 | 92 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins + the S92-2f password-change round-trip |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
 ### 1.3 Architecture Decision Records
@@ -658,7 +667,7 @@ flowchart TB
         Lib["lib: auth · cart · wishlist · coupons ·<br/>order-money · settings · products · db-path"]
     end
 
-    DB[("SQLite<br/>db/custom.db<br/>19 models")]
+    DB[("SQLite<br/>db/custom.db<br/>20 models")]
     FS["public/images<br/>self-hosted art"]
 
     UI -->|documents + RSC fetches| Proxy
@@ -704,7 +713,7 @@ The admin is a role-gated RSC surface, not a separate app: `admin/layout.tsx` re
 
 ## 4. Data Architecture
 
-### 4.1 Entity Relationship (SQLite, 19 models)
+### 4.1 Entity Relationship (SQLite, 20 models)
 
 ```mermaid
 erDiagram
@@ -802,7 +811,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 634 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 777 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -825,8 +834,8 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 | `order-status.test.ts` | Transition rules (terminal states) + restock-on-cancel predicate |
 | `review-aggregate.test.ts` | Weighted-average growth, rounding, empty baseline, out-of-range rejection; the transactional `growReviewAggregate` (S8-2: baseline read → merged write; no-op when the row vanished) |
 | `seo-routes.test.ts` | Sitemap lists only public routes; robots disallows admin/account/checkout/api |
-| `seed-catalog.test.ts` | The seed-owned catalog constants the storefront e2e pins assume (S15-2): 19 products, the authored order (S12-5 lineage; the ElyBeauty order leads with the silk hair bonnet), 12-per-page pagination span, 4 categories, restore-harness field contract |
-| `seo-ld.test.ts` | JSON-LD builders: Product (cents→dollars price, stock→availability vocabulary, rating present only with reviews, images absolutized), Organization (contact + sameAs optional), WebSite (SearchAction → `/products?q=`) |
+| `seed-catalog.test.ts` | The seed-owned catalog constants the storefront e2e pins assume (S15-2): 19 products, the authored order (S12-5 lineage; the ElyBeauty order leads with the silk hair bonnet), the ONE-PAGE /shop grid at 24/page (S81-5), 4 categories, restore-harness field contract, the S90-4 restock pin, and the S95-2 run-95 content-resync contract (the reference's restructured short/description copy, howToUse empty reference-wide, the Ice Bowl ingredients, the authored quirks verbatim) |
+| `seo-ld.test.ts` | JSON-LD builders: Product (cents→dollars price, stock→availability vocabulary, rating present only with reviews, images absolutized), Organization (contact + sameAs optional), WebSite (SearchAction → `/shop?q=`) |
 | `cart-merge.test.ts` | Guest→user cart-merge planner: per-product sums, empty sides, zero-sum line drop, 99 ceiling, deterministic order |
 | `analytics.test.ts` | `foldItemAggregates`/top-products folds over bounded groupBy rows (S6-7) |
 | `session7-hardening.test.ts` | `resolveReplay` ownership gate, `productSeedUpdate` content-only policy, `interpolateContactEmail`, `jsonLdScript` escaping, `newRequestId`, `sessionSweepDue` |
@@ -856,10 +865,32 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 | `place-order-integration.test.ts` | S26-3 the money-path real-engine seam (the temp-SQLite harness; the S18-1 extraction applied to the money authority — `placeOrderTx` + `CheckoutError` verbatim into `src/lib/order-placement.ts` with the db client injected, route behavior byte-equivalent): server-derived money with the args' cosmetic mirrors carrying garbage (the live rows win), the receipt snapshots, the "placed" event, stock reservation, the read-side insufficient-stock fast-fail, the WRITE-side atomic decrement guard (a duplicate-product handoff makes the first guarded decrement the concurrent writer for the second — count 0 → 409 → full rollback), the coupon burn, the engine-level atomic rollback (a mid-tx failure after the burn restores `timesUsed`), the S12-1 cart-clear scoping (the concurrent-tab line survives), and the S7-8 best-effort save (order places at the address cap; below cap the address saves in the SAME tx) |
 | `validation.test.ts` (S17-2 addendum) | `MAX_CART_QUANTITY` is 99 and the cart schemas interpolate the shared constant |
 | `api-boundaries.test.ts` (C7 addendum) | Cart DELETE `?all=1`: no cart → `{itemCount:0}` with `deleteMany` never called; guest cart → cartId-scoped `deleteMany` + the fresh summary's `itemCount` |
+| `variants.test.ts` | The variant model (S73): `composeVariantLabel` composition, the color/size option shapes, the variant-aware Zod boundaries |
+| `shipping-tiers.test.ts` | The city-tier shipping mapping (S73-1): Dhaka ৳70 / outside ৳130, `shippingMethodForCity`, derived IN-TX from the address city (integration-pinned) |
+| `order-number.test.ts` | The `ELY-XXXXXXXX` format: 8 uppercase base36 chars, crypto-random, the UNIQUE-collision retry loop |
+| `json-body.test.ts` | The bounded shared JSON seam (S79-7): non-`application/json` refused, declared/streamed bodies over 32 KB refused, malformed JSON → 400 |
+| `search-route.test.ts` | `/api/search`'s OR clause (S77-4 resynced S95-1: name + shortDescription + tags — NOT description), the authored-order sort, the shortDescription row payload, the 1-char floor (S78-2), the 8-row cap |
+| `search-overlay.test.tsx` | The full-screen overlay component (S77-2): fixed inset-0 z-[70] bg-background/95, the Cormorant input, the single-column rows (p-3, the description line only when non-empty), Escape/focus behavior |
+| `layout-tokens.test.ts` | The design-token source pins (S77): globals.css carries the pinned `@theme inline` values, the `@custom-variant hover`, the `@utility` declarations, the `@source not` prose guard |
+| `tailwind-scan-guard.test.ts` | The prose-scan guard (S76-0): class-like strings in .md docs must not compile — the candidate-scan trap pinned |
+| `build-config-resilience.test.ts` | The run-87 resilience contract: the five CONFIG_FALLBACKS registry entries byte-exact vs the canonicals; `next.config.ts`'s alias survives a lost tsconfig |
+| `toolchain-versions.test.ts` | The S88 pins: prisma/@prisma/client version alignment, vitest/playwright majors, the lockfile in sync with package.json |
+| `e2e-infrastructure.test.ts` | The e2e suite's own contracts: the 3-project shape, the serialized admin-catalog project, `gotoHydrated` usage, zero demo-password literals across every spec (S94-1), the single-source import shape |
+| `stripe-config.test.ts` | The Stripe config truth table (S74-11): keys + `STRIPE_BDT_PER_USD` gate the Card option; unconfigured = COD byte-identical |
+| `stripe-payment.test.ts` | The FX seam (`stripeChargeAmount`), the converted in-tx amount guard, the webhook signature/dedup/classification contracts |
+| `checkout-stripe-replay.test.ts` | S94-2: the Stripe-intent P2002 branch routes through `resolveReplay` — the deny pin (another client's anchor → 409 + no receipt), the genuine-retry pin, the source-composition pin |
+| `credential-rotation.test.ts` | S93-1/S94-4: the rotation runs in ONE transaction (`rotateCredentialInTx`), the scrypt hash hoisted BEFORE the transaction, the session sweep, the source pins |
+| `admin-password-advisory.test.ts` | The dashboard advisory truth table (S92-2): default-password detection, the 60s TTL-cached negative verdict (S93-4), the four-site lockstep inventory (S95-5) |
+| `admin-payments.test.ts` | The admin payment-surface guards: refund/charge action boundaries, the webhook-owned refund state |
+| `seed-db-path.test.ts` | The seed routes through the db-path seam (S77-6): `datasourceUrl: resolveProcessDatabaseUrl()` |
+| `product-card.test.tsx` | The card anatomy component test (run-76): the badge spans, the compare-at strike, the clamp-1 description line, the variant dots |
+| `star-rating.test.tsx` | The star-rating component: full/half/empty composition, the aria label |
+| `docs-counts.test.ts` | S95-4: the count-lockstep pin — every live-tense count site (README/CLAUDE/PAD/SKILL) carries the same unit/e2e/model counts; a stale count anywhere fails the unit gate by name |
+| `session51-hardening.test.ts` | The session-51 hardening family: the specific gates that run added |
 
-### 8.2 E2E (Playwright — 79 tests: 71 desktop + 8 mobile-navigation, `tests/e2e/`)
+### 8.2 E2E (Playwright — 92 tests: 70 desktop-chromium + 10 mobile-navigation + 12 serialized admin-catalog, `tests/e2e/`)
 
-Two projects: `mobile-navigation` (iPhone-13 device emulation on Chromium — WebKit is not installable in the target sandbox) and `desktop-chromium` (1440×900). The config first runs `scripts/restore-demo-stock.ts` (S14-4 — e2e checkouts permanently drain the traffic-owned demo stock) and then boots the standalone production build on :3100 with `/api/health` as the readiness probe (reusing an existing healthy server, whose state is already restored).
+Three projects: `mobile-navigation` (iPhone-13 device emulation on Chromium — WebKit is not installable in the target sandbox), `desktop-chromium` (1440×900), and `admin-catalog` (S83-1: the catalog-mutating specs — `admin.spec.ts` + `password-change.spec.ts` since S92-2f — run alone, `workers: 1`, AFTER every read-only project has finished, so their mutation windows are never observable by a concurrent reader). The config first runs `scripts/restore-demo-stock.ts` (S14-4 — e2e checkouts permanently drain the traffic-owned demo stock) and then boots the standalone production build on :3100 with `/api/health` as the readiness probe; a `globalSetup` (S84-2) heals a stale-but-healthy reused server (restarts it when the build is newer than the running one).
 
 | Spec | Coverage |
 |---|---|
@@ -877,8 +908,9 @@ Two projects: `mobile-navigation` (iPhone-13 device emulation on Chromium — We
 | `contact-newsletter.spec.ts` | The support/marketing capture surfaces (C5): contact form success toast + the `/api/contact` 400 boundary (invalid email, short message), newsletter subscribe success + the `/api/newsletter` 400 boundary (invalid email, malformed JSON) |
 | `admin-coupons.spec.ts` | The session-19 S19-5 coupon-management loop: the 3 seeded coupons render, a new coupon is created through the dialog, APPLIED at the cart, deactivated (the same code then rejects at the same surface), deleted — the spec cleans up after itself. **S20-1 hardened**: the cart is seeded through the `request` fixture with a snapshot-restore cleanup (never an absolute badge pin on the durable admin cart) and the setup self-heals a leftover code from an aborted prior run. **S21-1 cookie-corrected**: the per-test `request` fixture is identity-isolated (and the production session cookie is `Secure`), so every admin-identity call sends the session cookie read from `context.cookies()` as an explicit `Cookie` header — without it the seeded line silently landed on a throwaway guest cart |
 | `free-shipping-coupon.spec.ts` | S20-6: FREESHIP zeroes shipping below the spend threshold through the full money path — the cart's applied label, the checkout mirror (both Shipping rows of the review card + sticky summary, session-21 S21-4 scoping), and the SERVER-derived receipt's "FREE". Session-23 S23-2: the cart hint goes coupon-aware — the $34.99 pin cart shows the "Add $15.01 more" nag pre-apply, FREESHIP swaps it for the coupon-attributed block, remove restores it |
+| `password-change.spec.ts` | S92-2f: the serialized password round-trip — change password (current-password verification, inline uniform errors), the OLD password stops working everywhere (the rotation killed the sessions), sign back in with the NEW one, then RESTORE the seed password (the S93-1 transactional rotation exercised live; joins the admin-catalog project so the change→restore window is never observable by a concurrent demo login) |
 
-**E2E conventions:** `gotoHydrated(page, url)` before any interaction (the `data-hydrated` sentinel from `StoreProvider` — clicking before hydration falls back to native GET, a real bug class this suite caught); async cart effects asserted via the `data-testid="cart-count"` badge before navigating; off-canvas drawers assert `not.toBeInViewport()` + `pointer-events-none` (the always-mounted translate pattern is invisible to `toBeHidden`); DB-mutating specs tolerate re-runs (seed is idempotent, order numbers increment).
+**E2E conventions:** `gotoHydrated(page, url)` before any interaction (the `data-hydrated` sentinel from `StoreProvider` — clicking before hydration falls back to native GET, a real bug class this suite caught); async cart effects asserted via the `data-testid="cart-count"` badge before navigating; off-canvas drawers assert `not.toBeInViewport()` + `pointer-events-none` (the always-mounted translate pattern is invisible to `toBeHidden`); DB-mutating specs tolerate re-runs (the seed is idempotent and order numbers are crypto-random `ELY-XXXXXXXX` — no sequence to exhaust).
 
 ---
 
@@ -1055,8 +1087,8 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/mobile-nav.tsx` | The Tailwind-v4-safe mobile menu |
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
-| `prisma/schema.prisma` / `seed.ts` | 19 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 634 unit · 82 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins) |
+| `prisma/schema.prisma` / `seed.ts` | 20 models / idempotent seed |
+| `tests/unit/*` · `tests/e2e/*` | 777 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---
