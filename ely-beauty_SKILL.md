@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.27.0
-last_updated: 2026-11-10
-project_state: "814 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-101 (session 58 cycle): the plan-range lockstep net cycle — audit 101-a clean (12/12 standing anchors, 0 CRITICAL/HIGH/MEDIUM/LOW — 2 INFO, zero code defects; src/ verified byte-frozen since run-97 — the exact tree audits 97-a through 100-a plus this cycle's baseline gates already cover; the S99-1 and S100-1 class nets both re-probed non-vacuous with synthetic inputs; every live-tense count claim re-verified against the filesystem/vitest run); S101-1 the plan-range lockstep CLASS net in docs-counts.test.ts (audit 101-a INFO-1: the AGENTS architecture bullet's bounded-range claim about the REMEDIATION_PLAN's session sections sat outside the S100-1 net's grammar — that net bounds the numbered session files under docs/, this one bounds plan sections — and was accurate the cycle it was written in but stale the moment the plan grew; the net now derives the plan's session headings from the FILESYSTEM — the heading level is historically mixed H1/H2/H3 with era gaps, so only the MAX is stable — and pins that every plan-range literal in the seven live-tense scopes carries the plan's CURRENT tail, with a non-vacuity floor keeping the literal from silently vanishing into a false green; RED 1 pin observed by name — AGENTS.md's plan-range literal still carried the run-100 tail — then GREEN 30/30); S101-2 the GREEN sweep (AGENTS.md's plan-range literal bumped to the run-101 tail; the count-lockstep fired BY NAME on exactly the four predicted doc-site pins when UNIT_TESTS moved 811 to 814, one-pass sweep across README badge/table/tree/commands, CLAUDE's pin line, PAD 1.2/8.1/12, and this project_state) — 811 to 814 unit (+3: the plan-tail sanity pin, the seven-scope class scan, the non-vacuity floor), e2e 92 unchanged. PREVIOUS (run-100): the stale-existence-claim net & citation-hygiene cycle (S100-1..S100-2)"
+version: 2.28.0
+last_updated: 2026-11-11
+project_state: "819 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-102 (session 60 cycle): the paraphrase-proof grammar net cycle — audit 102-a clean (12/12 standing anchors, 0 CRITICAL/HIGH/MEDIUM/LOW — 3 INFO, zero code defects; src/ verified byte-frozen since run-97 — the exact tree audits 97-a through 101-a plus this cycle's baseline gates already cover; the three class nets (dangling-pointer, stale-existence, plan-range) each re-derived from the filesystem and re-probed non-vacuous; every live-tense count claim re-verified against the filesystem/vitest run); S102-1 the paraphrase-proof grammar CLASS net in docs-counts.test.ts (audit 102-a INFO-1 + INFO-2: the class scans' grammars covered only the canonical quoted shapes — the stale-existence scan required its only-they-exist wrapper and the plan-range scan the hyphenated dots literal — so a PARAPHRASED stale claim would have evaded both nets; the nets now own the class: the session-file scan flags any range literal whose upper bound sits below the highest numbered log on disk regardless of wrapper prose, and the plan-range scan accepts the separator and case variants; synthetic-fixture pins — never real doc bytes, the paraphrase-don't-quote convention — prove the widened grammars flag the paraphrased stale shapes and stay green on computed true bounds; the Appendix B boundary note keeps the canonical grammar for its marker pin because the widened grammar cannot distinguish a whole-corpus claim from a true closed-sub-series claim; RED 3 pins observed by name — the two paraphrase pins against the narrow grammars plus the standing plan-range lockstep on the newly-appended plan tail — then GREEN 35/35); S102-2 the GREEN sweeps (the plan-range literal bumped to the run-102 tail; the count-lockstep fired BY NAME on exactly the four predicted doc-site pins when the unit count moved 814 to 819, one-pass sweep across the nine live-tense sites) — 814 to 819 unit (+5: the four paraphrase-proof pins + the canonical-grammar non-vacuity pin), e2e 92 unchanged. PREVIOUS (run-101): the plan-range lockstep net cycle (S101-1..S101-2)"
 tags:
   - nextjs16
   - react19
@@ -5178,10 +5178,10 @@ Key files: `scripts/capture-screenshots.ts` · `docs/session_132.md` ·
   cycles still deserve the full parity re-measurement — 19 byte-identical
   screenshots are the cheapest drift alarm there is.
 
-- **Session-record boundary (S96-8): runs 89–99 live in the PAD revision
+- **Session-record boundary (S96-8): runs 89–102 live in the PAD revision
   blocks.** This appendix's per-session trail ends at Session 88 (run 88);
   from run 89 onward the per-run record moved to the PAD's append-only
-  revision blocks (v2.17–v2.26) + `docs/REMEDIATION_PLAN.md`'s session
+  revision blocks (v2.17–v2.29) + `docs/REMEDIATION_PLAN.md`'s session
   sections + the `docs/session_NN.md` logs — the trail continues there
   (run 89: the worklog/docs-verification consolidation; 90: the
   coupon-label format cycle; 91: the API force-dynamic cycle; 92: the
@@ -5190,7 +5190,9 @@ Key files: `scripts/capture-screenshots.ts` · `docs/session_132.md` ·
   completion + the run-96 doc-de-drift cycle; 97: the auth-secret hardening
   + the doc-de-drift completion cycle; 98: the enumeration-lockstep &
   payment-prose de-drift cycle; 99: the dangling-pointer class net &
-  payment-prose completion cycle). This note is the signpost so a
+  payment-prose completion cycle; 100: the stale-existence-claim net &
+  citation-hygiene cycle; 101: the plan-range lockstep net cycle; 102: the
+  paraphrase-proof grammar net cycle). This note is the signpost so a
   future reader knows where the trail continues — the historical entries
   above are deliberately left in their era-accurate wording.
 - **Docs-reset boundary (S99-4, audit 99-a D2; reworded S100-1 — the

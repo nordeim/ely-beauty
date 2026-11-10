@@ -19,7 +19,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 // ── The single source of truth for the docs' live-tense counts ──────────
-const UNIT_TESTS = 814;
+const UNIT_TESTS = 819;
 const E2E_TESTS = 92;
 const PRISMA_MODELS = 20;
 // ─────────────────────────────────────────────────────────────────────────
@@ -346,14 +346,35 @@ const SESSION_NUMBERS = [...DOCS_FILES]
 const MAX_SESSION_NUMBER = SESSION_NUMBERS[SESSION_NUMBERS.length - 1] ?? 0;
 
 /**
- * Stale "only … session_A..B.md … exist" claims in `text`: every claim
- * whose B bound is below the highest session number on disk is stale (the
- * post-reset series has grown past the claimed bound). The gap window
- * (≤ 12 chars) tolerates the line-wrapped "…md`\n  exist." form.
+ * Stale CANONICAL "only … session_A..B.md … exist" claims in `text` (the
+ * S100-1 grammar — used by the Appendix B boundary-note marker pin, whose
+ * two-series description carries a CLOSED pre-reset sub-series range
+ * deliberately below the disk max): every claim whose B bound is below the
+ * highest session number on disk is stale (the post-reset series has grown
+ * past the claimed bound). The gap window (≤ 12 chars) tolerates the
+ * line-wrapped "…md`\n  exist." form.
+ */
+const staleCanonicalExistenceClaims = (text: string): string[] => {
+  const stale: string[] = [];
+  for (const m of text.matchAll(/only\s+`?(?:docs\/)?session_(\d+)\.\.(\d+)\.md`?[\s\S]{0,12}exist/gi)) {
+    const bound = Number(m[2]);
+    if (MAX_SESSION_NUMBER > bound) stale.push(m[0].replace(/\s+/g, " "));
+  }
+  return stale;
+};
+
+/**
+ * Stale session-file range claims in `text` — the S102-1 PARAPHRASE-PROOF
+ * grammar (audit 102-a INFO-1): ANY `session_N..M.md` range whose M bound
+ * sits below the highest session number on disk is stale, regardless of
+ * the wrapper prose around it (the canonical "only…exist" wrapper was the
+ * S100-1 grammar; a paraphrased claim — "the survivors run
+ * session_1..53.md" — evaded it). Backticks, a docs/ prefix, and inner
+ * whitespace are tolerated by matching the bare range core.
  */
 const staleSessionExistenceClaims = (text: string): string[] => {
   const stale: string[] = [];
-  for (const m of text.matchAll(/only\s+`?(?:docs\/)?session_(\d+)\.\.(\d+)\.md`?[\s\S]{0,12}exist/gi)) {
+  for (const m of text.matchAll(/session_(\d+)\s*\.\.\s*(\d+)\s*\.md/g)) {
     const bound = Number(m[2]);
     if (MAX_SESSION_NUMBER > bound) stale.push(m[0].replace(/\s+/g, " "));
   }
@@ -390,14 +411,20 @@ describe("S100-1 — stale-existence-claim net: session-range claims stay true a
     }
   });
 
-  it("the Appendix B boundary note survives (the marker pin) and claims nothing stale", () => {
+  it("the Appendix B boundary note survives (the marker pin) and claims nothing stale in the canonical shape", () => {
     const skill = read("ely-beauty_SKILL.md");
     expect(skill, "the boundary-note bullet survives").toContain("**Docs-reset boundary");
     // The note is present-tense guidance about the CURRENT inventory —
     // scanned even though Appendix B is otherwise exempt (era-history):
-    // its existence claims are about NOW, not about the cited eras.
+    // its existence claims are about NOW, not about the cited eras. Since
+    // S102-1 the scan is the CANONICAL grammar only: the note's two-series
+    // description carries a CLOSED pre-reset sub-series range
+    // (session_1..53.md — deliberately below the disk max), which the
+    // widened whole-corpus grammar cannot distinguish from a stale claim;
+    // the canonical "only…exist" wrapper is the discriminator (a
+    // whole-corpus claim), and the note makes none.
     const note = skill.slice(skill.indexOf("**Docs-reset boundary"));
-    expect(staleSessionExistenceClaims(note), "boundary-note stale existence claims").toEqual([]);
+    expect(staleCanonicalExistenceClaims(note), "boundary-note stale canonical existence claims").toEqual([]);
   });
 });
 
@@ -420,11 +447,20 @@ const PLAN_SESSION_NUMBERS = [...read("docs/REMEDIATION_PLAN.md").matchAll(/^#{1
   .sort((a, b) => a - b);
 const MAX_PLAN_SESSION = PLAN_SESSION_NUMBERS[PLAN_SESSION_NUMBERS.length - 1] ?? 0;
 
-/** Stale `session-2..N` plan-range literals in `text` (N != the plan tail). */
+/**
+ * Stale plan-range literals in `text` — the S102-1 PARAPHRASE-PROOF
+ * grammar (audit 102-a INFO-2): any `session(s) 2 <sep> N` range literal
+ * (the canonical `session-2..N` dots plus the paraphrased `Sessions 2
+ * through N` / `session 2–N` separator and case variants) whose N is not
+ * the plan's current tail is stale — the plan's session sections start
+ * at Session 2 and the tail grows every cycle, so any other bound is the
+ * standing off-by-one shape. The MATCH TEXT (not a reconstructed literal)
+ * is reported so a failure names the exact drifting shape.
+ */
 const stalePlanRangeLiterals = (text: string): string[] =>
-  [...text.matchAll(/session-2\.\.(\d+)/g)]
+  [...text.matchAll(/sessions?[-_ ]?2\s*(?:\.{2}|…|–|—|-|through|to)\s*(\d+)/gi)]
     .filter((m) => Number(m[1]) !== MAX_PLAN_SESSION)
-    .map((m) => `session-2..${m[1]}`);
+    .map((m) => m[0].replace(/\s+/g, " "));
 
 describe("S101-1 — plan-range lockstep: the docs' plan-range literals track the REMEDIATION_PLAN tail", () => {
   it("derives the plan's session headings from the file (the append-only tail grows every cycle)", () => {
@@ -458,5 +494,50 @@ describe("S101-1 — plan-range lockstep: the docs' plan-range literals track th
     // fails loudly instead, keeping the net honest about its own shape.
     const agents = read("AGENTS.md");
     expect([...agents.matchAll(/session-2\.\.(\d+)/g)].length, "AGENTS.md keeps the plan-range literal").toBeGreaterThan(0);
+  });
+});
+
+// ── S102-1 — the paraphrase-proof grammar net (audit 102-a INFO-1/INFO-2) ──
+// The class nets' grammars covered only the CANONICAL quoted shapes: the
+// S100-1 scan required the `only … session_A..B.md … exist` wrapper and the
+// S101-1 scan the literal `session-2..N` — so a PARAPHRASED stale claim (a
+// range below the disk max without the wrapper; a plan range in the
+// `Sessions 2 through N` / `session 2–N` separators) evaded both nets. The
+// paraphrase-don't-quote convention (S99-1) makes paraphrase the DOCUMENTED
+// drift vector, so the nets now own the class: the session-file scan flags
+// ANY `session_N..M.md` range whose M bound sits below the disk max
+// (regardless of wrapper), and the plan-range scan accepts the
+// separator/case variants. The Appendix B boundary note's two-series
+// description (`session_1..53.md` — the CLOSED pre-reset series,
+// deliberately below the disk max) keeps the CANONICAL grammar for its
+// marker pin: the widened grammar cannot distinguish a whole-corpus claim
+// from a true closed-sub-series claim, so it applies to the seven
+// live-tense scopes only — the documented trade-off (audit 102-a INFO-1).
+// The fixtures below are SYNTHETIC (the shape of the drift class, never a
+// real doc's bytes — the S99-1 convention).
+describe("S102-1 — paraphrase-proof grammar: the scanners flag the paraphrased stale shapes", () => {
+  it("the session-file scan flags a paraphrased stale range — no `only…exist` wrapper (audit 102-a INFO-1)", () => {
+    const paraphrasedStale = "the survivors run `docs/session_1..53.md` and the series continues";
+    expect(staleSessionExistenceClaims(paraphrasedStale), "a bare range below the disk max is stale").toEqual(["session_1..53.md"]);
+  });
+
+  it("the session-file scan stays green on a true bound (the disk max, computed)", () => {
+    const trueRange = `the logs run session_1..${MAX_SESSION_NUMBER}.md`;
+    expect(staleSessionExistenceClaims(trueRange), "a range at the disk max claims nothing stale").toEqual([]);
+  });
+
+  it("the plan-range scan flags the paraphrased separators (through / en-dash, any case — audit 102-a INFO-2)", () => {
+    expect(stalePlanRangeLiterals("Sessions 2 through 101"), "the through-separator paraphrase").toEqual(["Sessions 2 through 101"]);
+    expect(stalePlanRangeLiterals("the plan covers session 2–101"), "the en-dash paraphrase").toEqual(["session 2–101"]);
+  });
+
+  it("the plan-range scan stays green on the plan tail (computed, canonical and paraphrased forms)", () => {
+    expect(stalePlanRangeLiterals(`session-2..${MAX_PLAN_SESSION}`), "the canonical literal at the tail").toEqual([]);
+    expect(stalePlanRangeLiterals(`Sessions 2 through ${MAX_PLAN_SESSION}`), "the paraphrased literal at the tail").toEqual([]);
+  });
+
+  it("the canonical wrapper grammar survives for the boundary-note marker (its own non-vacuity, computed bounds)", () => {
+    expect(staleCanonicalExistenceClaims("only session_1..50.md exist in docs/"), "the canonical stale shape is flagged").toEqual(["only session_1..50.md exist"]);
+    expect(staleCanonicalExistenceClaims(`only session_1..${MAX_SESSION_NUMBER}.md exist`), "the canonical true shape stays green").toEqual([]);
   });
 });

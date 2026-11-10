@@ -752,3 +752,24 @@ Stage Summary:
 - Parity: zero new deltas on every pinned surface; the mobile nav functional on both sites.
 - Standing verifications: sitemap 28 public-only · robots 4 disallows · 25/25 screenshots (8 changed, the documented families) · .env.example 9/9 · npm audit 0.
 - Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.
+
+---
+
+Task ID: 96
+Agent: run-102 executor (the paraphrase-proof grammar net cycle)
+Task: The full remediation cycle on a FRESH-CLONE workspace (the sandbox had been reset — git clone at e980575, the operator's raw run-101 narrative commit; npm install, .env with a fresh AUTH_SECRET, db:setup seeding the 19-product catalog, the parent-shell DATABASE_URL shadow converged via the session-63 hard-link — one inode, two paths, this generation blocks symlinks; Playwright chromium-1248 downloaded to the cold cache).
+
+Work Log:
+- Baseline gates on the fresh tree: lint ✓ · typecheck ✓ · typecheck:tests ✓ · 814/814 unit (68 files) · clean build (11/11 static, zero prisma errors) · e2e 92/92 (2.5m).
+- Audit 102-a (read-only subagent, skills/ excluded, web-application + code-review-checklist methodology): 12/12 standing anchors PASS · 0 CRITICAL/HIGH/MEDIUM/LOW — 3 INFO, zero code defects; the run-101 change-set re-verified line-by-line with no test weakening; the three class nets each re-derived and re-probed non-vacuous; every live-tense count claim re-verified (814/68/92/13/9/20/19/25/28 all ✓).
+- The cycle's code centerpiece (S102-1, TDD — audit INFO-1 + INFO-2): the paraphrase-proof grammar class net in tests/unit/docs-counts.test.ts — the session-file scan widened to flag ANY range literal whose bound sits below the disk max regardless of the only-they-exist wrapper (the canonical grammar survives as staleCanonicalExistenceClaims for the Appendix B boundary-note marker pin — the widened grammar cannot distinguish a whole-corpus claim from a true closed-sub-series claim); the plan-range scan widened to the separator/case variants; synthetic-fixture pins prove both widened grammars flag the paraphrased stale shapes and stay green on computed true bounds. RED 3 pins observed by name (the two paraphrase pins + the standing plan-range lockstep on the freshly-appended plan tail) → GREEN 35/35.
+- S102-2 (the sweeps): AGENTS.md's plan-range literal bumped to session-2..102; the count-lockstep fired BY NAME on exactly the four predicted doc-site pins when the unit count moved 814 → 819, one-pass sweep across the nine live-tense sites. Fresh catch: the SKILL Appendix B session-record signpost was two runs stale (the exact S98-4 class, outside the scanned scopes) — bumped to runs 89–102 (v2.17–v2.29) with runs 100/101/102 joining the enumeration.
+- The parity pass (mobile 390×844, the reference logged in via the operator credentials; both sides measured with matched methodology): every pinned surface HOLDS — the panel rows reference 89/125/161/197/233 vs clone 88/124/160/196/232 (−1px uniform, hrefs AND labels byte-identical); the overlay input Cormorant 18px/300 both; the silk rows reference 206/290/374/458 vs clone 205/289/373/457 (h=80, copies and prices byte-identical — the +32 absolute shift vs run-101's pins is a both-sides measurement-stance artifact; the pinned −1px delta holds); /shop h1 "All Products" + 19 unique cards bonnet-first both; the no-results copy byte-identical; the mobile nav functional on both sites (the panel → link → navigation chain exercised live) — no Tailwind v4 bug.
+- Standing verifications: sitemap 28 public-only · robots 4 disallows · /api/health ok · .env.example 9/9 (6 active + 3 commented, zero drift) · npm audit 0 (prod and full) · the .env DB contract (hard-link convergence holding) · 25/25 screenshots regenerated (7 changed: the documented raster-noise families; all PNG-signature-verified; restore-demo-stock re-topped 2 products).
+
+Stage Summary:
+- All gates green: lint · typecheck · typecheck:tests · 819/819 unit (+5, 68 files) · clean build · 92/92 e2e ×2 consecutive.
+- Audit 102-a: 12/12 standing anchors · 0 CRITICAL/HIGH/MEDIUM/LOW — 3 INFO (INFO-1/INFO-2 remediated as the S102-1 centerpiece; INFO-3 recorded no-action).
+- Parity: zero new deltas on every pinned surface; the mobile nav functional on both sites.
+- Standing verifications: sitemap 28 public-only · robots 4 disallows · 25/25 screenshots (7 changed, the documented families) · .env.example 9/9 · npm audit 0.
+- Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.

@@ -1,9 +1,15 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.28
+# ElyBeauty — Master Project Architecture Document (PAD) v2.29
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
-**Last Updated:** 2026-11-10
+**Last Updated:** 2026-11-11
+
+#### Revision Block — v2.29 (Run 102 — the paraphrase-proof grammar net cycle)
+
+- `[TEST]` **The paraphrase-proof grammar class net (S102-1, audit 102-a INFO-1 + INFO-2, TDD — the cycle's centerpiece)**: the three doc-drift class nets' grammars covered only the CANONICAL quoted shapes — the S100-1 stale-existence scan required its only-they-exist wrapper and the S101-1 plan-range scan the hyphenated dots literal — so a PARAPHRASED stale claim (a range below the disk max without the wrapper; a plan range in the through/en-dash separators) would have evaded both. `tests/unit/docs-counts.test.ts` now owns the class: the session-file scan flags ANY range literal whose upper bound sits below the highest numbered log on disk regardless of wrapper prose; the plan-range scan accepts the separator and case variants; synthetic-fixture pins (never real doc bytes — the paraphrase-don't-quote convention) prove the widened grammars flag the paraphrased stale shapes and stay green on computed true bounds; the Appendix B boundary note keeps the CANONICAL grammar for its marker pin (the widened grammar cannot distinguish a whole-corpus claim from a true closed-sub-series claim — the documented trade-off). RED 3 pins observed by name (the two paraphrase pins against the narrow grammars + the standing plan-range lockstep on the newly-appended plan tail) → GREEN 35/35.
+- `[DOCS]` **The GREEN sweeps (S102-2)**: the plan-range literal bumped to the run-102 tail; the count-lockstep fired BY NAME on exactly the four predicted doc-site pins when the unit count moved 814 → 819 (+5: the four paraphrase-proof pins + the canonical-grammar non-vacuity pin), one-pass sweep across the nine live-tense sites; the SKILL Appendix B session-record signpost de-drifted (the trail headline and enumeration were two runs stale — runs 100/101 had landed without joining them; now runs 89–102, v2.17–v2.29).
+- `[VERIFY]` **Audit 102-a clean, parity zero-delta on every pinned surface**: 12/12 standing anchors PASS, 0 CRITICAL/HIGH/MEDIUM/LOW — 3 INFO (INFO-1/INFO-2 adopted as the S102-1 centerpiece; INFO-3 recorded no-action), zero code defects; `src/` byte-frozen since run-97; live parity on the mobile panel (clone 124/160/196/232 vs reference 125/161/197/233 — −1px uniform, hrefs and labels byte-identical), the overlay input (Cormorant 18px/300), the silk rows (clone 205/289/373/457 vs reference 206/290/374/458 — −1px uniform, h=80, all four copies and prices byte-identical), /shop (19 unique cards, h1 byte-identical), the no-results copy byte-identical, and the mobile nav functional on both sites (the panel → link → navigation chain exercised live) — no Tailwind v4 bug.
 
 #### Revision Block — v2.28 (Run 101 — the plan-range lockstep net cycle)
 
@@ -606,7 +612,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, label, select, slot, toast) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^4.6.7 | Single validation boundary (ADR-005) — v4 since run 86 (S86-1) |
-| Unit tests | Vitest | ^4.1.12 | Node-env suite (814 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
+| Unit tests | Vitest | ^4.1.12 | Node-env suite (819 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
 | E2E tests | Playwright | ^1.64 | 92 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins + the S92-2f password-change round-trip |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
@@ -856,7 +862,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 814 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 819 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -1133,7 +1139,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
 | `prisma/schema.prisma` / `seed.ts` | 20 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 814 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
+| `tests/unit/*` · `tests/e2e/*` | 819 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11..27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---
