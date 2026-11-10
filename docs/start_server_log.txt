@@ -1,14 +1,12 @@
-$ rm -rf .next/ db/custom.db 
- 
 $ npm install
 
-up to date, audited 583 packages in 5s
+up to date, audited 583 packages in 10s
 
 176 packages are looking for funding
   run `npm fund` for details
 
 found 0 vulnerabilities
-
+ 
 $ npm run db:setup
 npm notice run ely-beauty@1.0.0 db:setup
 npm notice run prisma db push --accept-data-loss && tsx prisma/seed.ts
@@ -18,22 +16,12 @@ Datasource "db": SQLite database "custom.db" at "file:../db/custom.db"
 
 SQLite database custom.db created at file:../db/custom.db
 
-🚀  Your database is now in sync with your Prisma schema. Done in 7.48s
+🚀  Your database is now in sync with your Prisma schema. Done in 7.85s
 
-✔ Generated Prisma Client (v6.19.3) to ./node_modules/@prisma/client in 418ms
-┌─────────────────────────────────────────────────────────┐
-│  Update available 6.19.3 -> 8.0.0-rc.33                 │
-│                                                         │
-│  This is a major update - please follow the guide at    │
-│  https://pris.ly/d/major-version-upgrade                │
-│                                                         │
-│  Run the following to update                            │
-│    npm i --save-dev prisma@latest                       │
-│    npm i @prisma/client@latest                          │
-└─────────────────────────────────────────────────────────┘
+✔ Generated Prisma Client (v6.19.3) to ./node_modules/@prisma/client in 899ms
 
 Seeding ElyBeauty…
-Users: admin=cmwa7043s0000i0kgzu2f24j3 demo=cmwa704aa0001i0kgdfczpga8
+Users: admin=cmwaogwna0000i0kfdo6y3axw demo=cmwaogwv20001i0kfv7qv4ldn
 Categories: 4
 Products: 19
 Carousel slides: 1
@@ -43,28 +31,28 @@ Seed complete.
  
 $ ls -l db/
 total 312
--rw-r--r-- 1 pete pete 315392 Nov 10 12:31 custom.db
-
+-rw-r--r-- 1 pete pete 315392 Nov 10 20:40 custom.db
+ 
 $ npm run build
 npm notice run ely-beauty@1.0.0 build
 npm notice run node scripts/ensure-build-configs.mjs && next build && mkdir -p public && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/
 ▲ Next.js 16.4.5 (Turbopack)
 - Environments: .env
-✓ Running next.config.ts took 62ms
+✓ Running next.config.ts took 2.4s
 
   Creating an optimized production build ...
-✓ Compiled successfully in 16.4s
+✓ Compiled successfully in 46s
   Running TypeScript ...
-  Finished TypeScript in 13.2s ...
+  Finished TypeScript in 26.0s ...
   Collecting page data using 3 workers ...
-✓ Collecting page data using 3 workers in 1318ms
+✓ Collecting page data using 3 workers in 2.8s
   Generating static pages using 3 workers (0/11) ...
   Generating static pages using 3 workers (2/11) 
   Generating static pages using 3 workers (5/11) 
   Generating static pages using 3 workers (8/11) 
-✓ Generating static pages using 3 workers (11/11) in 189ms
+✓ Generating static pages using 3 workers (11/11) in 177ms
   Finalizing page optimization ...
-✓ Finalizing page optimization in 4.2s
+✓ Finalizing page optimization in 6.1s
 
 Route (app)
 ┌ ƒ /
@@ -115,6 +103,7 @@ Route (app)
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand
 
+ 
 $ npm run start
 npm notice run ely-beauty@1.0.0 start
 npm notice run NODE_ENV=production node .next/standalone/server.js 2>&1 | tee server.log
@@ -122,5 +111,5 @@ npm notice run NODE_ENV=production node .next/standalone/server.js 2>&1 | tee se
 - Local:         http://localhost:3000
 - Network:       http://0.0.0.0:3000
 ✓ Ready in 0ms
-✓ Running next.config took 7ms
- 
+✓ Running next.config took 5ms
+
