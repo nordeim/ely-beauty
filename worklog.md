@@ -773,3 +773,25 @@ Stage Summary:
 - Parity: zero new deltas on every pinned surface; the mobile nav functional on both sites.
 - Standing verifications: sitemap 28 public-only · robots 4 disallows · 25/25 screenshots (7 changed, the documented families) · .env.example 9/9 · npm audit 0.
 - Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.
+
+---
+
+Task ID: 97
+Agent: run-103 executor (the two-sided grammar net cycle)
+Task: The full remediation cycle on a FRESH-CLONE workspace (the sandbox had been reset — git clone at a8d94da, the operator's raw run-102 narrative commit adding only docs/session_61.md; npm install (582 pkgs, 0 vulnerabilities), .env with a fresh 48-hex-char AUTH_SECRET, db:setup seeding the 19-product catalog, the parent-shell DATABASE_URL shadow (file:/home/z/my-project/db/custom.db) converged via the session-63 hard-link — one inode, two paths; Playwright chromium-headless-shell 156.0.8078.4 (v1248) present in the cache).
+
+Work Log:
+- Baseline gates on the fresh tree: lint ✓ · typecheck ✓ · typecheck:tests ✓ · 819/819 unit (68 files) · clean build (11/11 static, zero prisma errors) · e2e 92/92 (2.5m).
+- Audit 103-a (read-only subagent, skills/ excluded, web-application + code-review-checklist methodology): 12/12 standing anchors PASS · 0 CRITICAL/HIGH/MEDIUM/LOW — 3 INFO, zero code defects; the run-102 change-set re-verified line-by-line with no test weakening; the four class nets each re-derived and re-probed non-vacuous; every live-tense count claim re-verified (819/68/92/13/9/20/19/25/28 all ✓); an independent sweep over src/, prisma/, scripts/, and the root configs found zero defects.
+- The cycle's code centerpiece (S103-1, TDD — audit INFO-1/2/3): the two-sided, lower-bound-generalized, punctuation-precise class net in tests/unit/docs-counts.test.ts — the session-file scan flags any range whose upper bound is not EXACTLY the disk max (an over-claim past the max cites files that do not exist); the plan-range scan generalizes the lower bound (the pair must be exactly the plan's structural start — a CONSTANT, the title's Session 2 — and its current tail, with a .md lookahead keeping session-file ranges out of the plan net); the dangling capture strips trailing dots. The pre-implementation probe against the seven live-tense scopes found exactly ONE live material the generalized grammar would flag — the PAD §7 file-map row's closed-sub-series era cite (session-11..27 hardening/wiring pins) — rephrased to the word-separated form the grammar cannot read as a range (the run-101 live-authoring precedent, probe-verified). RED 4 pins observed by name (the standing plan-range lockstep on the freshly-appended plan tail + the three new pins against the one-sided grammars) → GREEN 38/38.
+- S103-2 (the sweeps): AGENTS.md's plan-range literal bumped to session-2..103; the PAD §7 cite rephrased; the count-lockstep fired BY NAME on exactly the four predicted doc-site pins when the unit count moved 819 → 822, one-pass sweep across the nine live-tense sites.
+- The parity pass (mobile 390×844, the reference logged in via the operator credentials; both sides measured live with matched methodology — the reference-side script recreated as scratch outside the repo, credentials never committed): every pinned surface HOLDS — the panel rows reference 89/125/161/197/233 vs clone 88/124/160/196/232 (−1px uniform, hrefs AND labels byte-identical); the overlay input Cormorant 18px/300 both; the silk rows reference 174/258/342/426 vs clone 173/257/341/425 (h=80, copies and prices byte-identical — this cycle's absolute y pins match run-101's exactly); /shop h1 "All Products" + 19 unique cards bonnet-first both; the no-results copy byte-identical; the mobile nav functional on both sites (the panel → link → navigation chain exercised live; the reference's About row navigated to /about, the clone's to /about) — no Tailwind v4 bug.
+- Standing verifications: sitemap 28 public-only · robots 4 disallows · /api/health ok · .env.example 9/9 (6 active + 3 commented, zero drift) · npm audit 0 (prod and full) · the .env DB contract (DATABASE_URL="file:../db/custom.db", db/ at the repo root, the hard-link convergence holding) · /shop 19 unique product hrefs measured live.
+- S103-5: 25/25 screenshots regenerated in ONE invocation (the orphan-server ritual first; restore-demo-stock re-topped 2 products) — all PNG-signature- and dimension-verified; 7 changed vs HEAD, exactly run-102's seven documented raster-noise families.
+
+Stage Summary:
+- All gates green: lint · typecheck · typecheck:tests · 822/822 unit (+3, 68 files) · clean build · 92/92 e2e ×2 consecutive.
+- Audit 103-a: 12/12 standing anchors · 0 CRITICAL/HIGH/MEDIUM/LOW — 3 INFO (all three adopted as the S103-1 centerpiece).
+- Parity: zero new deltas on every pinned surface; the mobile nav functional on both sites.
+- Standing verifications: sitemap 28 public-only · robots 4 disallows · 25/25 screenshots (7 changed, the documented families) · .env.example 9/9 · npm audit 0.
+- Pushed: main @ <this commit> via docs/ssh_git_wrapper_v3.py (the paramiko shim), remote verified.

@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.28.0
+version: 2.29.0
 last_updated: 2026-11-11
-project_state: "819 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-102 (session 60 cycle): the paraphrase-proof grammar net cycle — audit 102-a clean (12/12 standing anchors, 0 CRITICAL/HIGH/MEDIUM/LOW — 3 INFO, zero code defects; src/ verified byte-frozen since run-97 — the exact tree audits 97-a through 101-a plus this cycle's baseline gates already cover; the three class nets (dangling-pointer, stale-existence, plan-range) each re-derived from the filesystem and re-probed non-vacuous; every live-tense count claim re-verified against the filesystem/vitest run); S102-1 the paraphrase-proof grammar CLASS net in docs-counts.test.ts (audit 102-a INFO-1 + INFO-2: the class scans' grammars covered only the canonical quoted shapes — the stale-existence scan required its only-they-exist wrapper and the plan-range scan the hyphenated dots literal — so a PARAPHRASED stale claim would have evaded both nets; the nets now own the class: the session-file scan flags any range literal whose upper bound sits below the highest numbered log on disk regardless of wrapper prose, and the plan-range scan accepts the separator and case variants; synthetic-fixture pins — never real doc bytes, the paraphrase-don't-quote convention — prove the widened grammars flag the paraphrased stale shapes and stay green on computed true bounds; the Appendix B boundary note keeps the canonical grammar for its marker pin because the widened grammar cannot distinguish a whole-corpus claim from a true closed-sub-series claim; RED 3 pins observed by name — the two paraphrase pins against the narrow grammars plus the standing plan-range lockstep on the newly-appended plan tail — then GREEN 35/35); S102-2 the GREEN sweeps (the plan-range literal bumped to the run-102 tail; the count-lockstep fired BY NAME on exactly the four predicted doc-site pins when the unit count moved 814 to 819, one-pass sweep across the nine live-tense sites) — 814 to 819 unit (+5: the four paraphrase-proof pins + the canonical-grammar non-vacuity pin), e2e 92 unchanged. PREVIOUS (run-101): the plan-range lockstep net cycle (S101-1..S101-2)"
+project_state: "822 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-103 (session 62 cycle): the two-sided grammar net cycle — audit 103-a clean (12/12 standing anchors, 0 CRITICAL/HIGH/MEDIUM/LOW — 3 INFO, zero code defects; src/ verified byte-frozen since run-97; the four class nets each re-derived and re-probed non-vacuous; every live-tense count claim re-verified against the filesystem/vitest run); S103-1 the two-sided, lower-bound-generalized, punctuation-precise grammar CLASS net in docs-counts.test.ts (audit 103-a INFO-1/INFO-2/INFO-3: the run-102 paraphrase-proof widenings each still owned only ONE side of their bound class — the session-file scan flagged only under-claims so a range PAST the disk max (citing files that do not exist) passed green, the plan-range grammar pinned the literal lower bound 2 so a paraphrased range starting elsewhere evaded, and the dangling capture's dot-greedy class let a sentence-final period phantom-flag a dangle; the nets now own both sides: the session-file scan flags any range whose upper bound is not EXACTLY the disk max, the plan-range scan generalizes the lower bound — the pair must be exactly the plan's structural start and its current tail, with a file-suffix lookahead keeping session-file ranges out of the plan net — and the dangling capture strips trailing dots; a pre-implementation probe against the seven live-tense scopes found exactly one live material the generalized grammar would flag — a legitimate closed-sub-series era cite in the PAD file-map row — rephrased to the word-separated form the grammar cannot read as a range, the run-101 live-authoring precedent; RED 4 pins observed by name — the three new pins against the one-sided grammars plus the standing plan-range lockstep on the freshly-appended plan tail — then GREEN 38/38); S103-2 the GREEN sweeps (the plan-range literal bumped to the run-103 tail; the count-lockstep fired BY NAME on exactly the four predicted doc-site pins when the unit count moved 819 to 822, one-pass sweep across the nine live-tense sites) — 819 to 822 unit (+3: the over-claim pin, the wrong-lower-bound pin, the punctuation pin), e2e 92 unchanged. PREVIOUS (run-102): the paraphrase-proof grammar net cycle (S102-1..S102-2); PREVIOUS (run-101):the plan-range lockstep net cycle (S101-1..S101-2)"
 tags:
   - nextjs16
   - react19
@@ -5178,10 +5178,10 @@ Key files: `scripts/capture-screenshots.ts` · `docs/session_132.md` ·
   cycles still deserve the full parity re-measurement — 19 byte-identical
   screenshots are the cheapest drift alarm there is.
 
-- **Session-record boundary (S96-8): runs 89–102 live in the PAD revision
+- **Session-record boundary (S96-8): runs 89–103 live in the PAD revision
   blocks.** This appendix's per-session trail ends at Session 88 (run 88);
   from run 89 onward the per-run record moved to the PAD's append-only
-  revision blocks (v2.17–v2.29) + `docs/REMEDIATION_PLAN.md`'s session
+  revision blocks (v2.17–v2.30) + `docs/REMEDIATION_PLAN.md`'s session
   sections + the `docs/session_NN.md` logs — the trail continues there
   (run 89: the worklog/docs-verification consolidation; 90: the
   coupon-label format cycle; 91: the API force-dynamic cycle; 92: the
@@ -5192,7 +5192,8 @@ Key files: `scripts/capture-screenshots.ts` · `docs/session_132.md` ·
   payment-prose de-drift cycle; 99: the dangling-pointer class net &
   payment-prose completion cycle; 100: the stale-existence-claim net &
   citation-hygiene cycle; 101: the plan-range lockstep net cycle; 102: the
-  paraphrase-proof grammar net cycle). This note is the signpost so a
+  paraphrase-proof grammar net cycle; 103: the two-sided grammar net
+  cycle). This note is the signpost so a
   future reader knows where the trail continues — the historical entries
   above are deliberately left in their era-accurate wording.
 - **Docs-reset boundary (S99-4, audit 99-a D2; reworded S100-1 — the

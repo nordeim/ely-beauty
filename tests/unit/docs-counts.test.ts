@@ -19,7 +19,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 // ── The single source of truth for the docs' live-tense counts ──────────
-const UNIT_TESTS = 819;
+const UNIT_TESTS = 822;
 const E2E_TESTS = 92;
 const PRISMA_MODELS = 20;
 // ─────────────────────────────────────────────────────────────────────────
@@ -250,7 +250,15 @@ const DOCS_DIRS = new Set(
 const danglingDocRefs = (text: string): string[] => {
   const danglers = new Set<string>();
   for (const m of text.matchAll(/docs\/([A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*)/g)) {
-    const ref = (m[1] ?? "").replace(/\/+$/, "");
+    // Sentence-final punctuation is never part of a docs/ filename: strip
+    // trailing slashes and dots from the capture before resolving. S103-1
+    // (audit 103-a F-3): the dot-greedy capture class let an unquoted
+    // "…in docs/session_1.md." capture "session_1.md." and phantom-flag a
+    // dangle — the class errs loud, never a false green, but precision is
+    // free and no docs/ filename ends in a dot.
+    const ref = (m[1] ?? "")
+      .replace(/\/+$/, "")
+      .replace(/\.+$/, "");
     if (ref && !existsSync(join(DOCS_DIR, ref))) danglers.add(ref);
   }
   return [...danglers].sort();
@@ -364,19 +372,21 @@ const staleCanonicalExistenceClaims = (text: string): string[] => {
 };
 
 /**
- * Stale session-file range claims in `text` — the S102-1 PARAPHRASE-PROOF
- * grammar (audit 102-a INFO-1): ANY `session_N..M.md` range whose M bound
- * sits below the highest session number on disk is stale, regardless of
- * the wrapper prose around it (the canonical "only…exist" wrapper was the
- * S100-1 grammar; a paraphrased claim — "the survivors run
- * session_1..53.md" — evaded it). Backticks, a docs/ prefix, and inner
- * whitespace are tolerated by matching the bare range core.
+ * Stale session-file range claims in `text` — the S102-1 paraphrase-proof
+ * grammar (audit 102-a INFO-1), made TWO-SIDED by S103-1 (audit 103-a F-1):
+ * ANY `session_N..M.md` range whose upper bound is not EXACTLY the highest
+ * session number on disk is stale, regardless of the wrapper prose around
+ * it — an UNDER-claim (M below the disk max: the corpus has grown past the
+ * bound) and an OVER-claim (M past the disk max: the range cites files that
+ * do not exist, the S99-1 dangle class's range form — the HomeNest-era
+ * `session_54..132.md` shape quoted into a live-tense scope) both flag.
+ * Backticks, a docs/ prefix, and inner whitespace are tolerated by matching
+ * the bare range core.
  */
 const staleSessionExistenceClaims = (text: string): string[] => {
   const stale: string[] = [];
   for (const m of text.matchAll(/session_(\d+)\s*\.\.\s*(\d+)\s*\.md/g)) {
-    const bound = Number(m[2]);
-    if (MAX_SESSION_NUMBER > bound) stale.push(m[0].replace(/\s+/g, " "));
+    if (Number(m[2]) !== MAX_SESSION_NUMBER) stale.push(m[0].replace(/\s+/g, " "));
   }
   return stale;
 };
@@ -446,20 +456,31 @@ const PLAN_SESSION_NUMBERS = [...read("docs/REMEDIATION_PLAN.md").matchAll(/^#{1
   .map((m) => Number(m[1]))
   .sort((a, b) => a - b);
 const MAX_PLAN_SESSION = PLAN_SESSION_NUMBERS[PLAN_SESSION_NUMBERS.length - 1] ?? 0;
+// S103-1 (audit 103-a F-2): the plan's first RECORDED session is a CONSTANT,
+// not derived — the title line carries "(Session 2)" while the numbered
+// headings only begin at Session 3 (HomeNest-era gaps, duplicate
+// sub-headings: only the MAX is derivable-stable). The START is structural:
+// the plan is append-only and its title never changes, so the constant
+// cannot drift the way a derived bound can.
+const PLAN_START_SESSION = 2;
 
 /**
- * Stale plan-range literals in `text` — the S102-1 PARAPHRASE-PROOF
- * grammar (audit 102-a INFO-2): any `session(s) 2 <sep> N` range literal
- * (the canonical `session-2..N` dots plus the paraphrased `Sessions 2
- * through N` / `session 2–N` separator and case variants) whose N is not
- * the plan's current tail is stale — the plan's session sections start
- * at Session 2 and the tail grows every cycle, so any other bound is the
- * standing off-by-one shape. The MATCH TEXT (not a reconstructed literal)
- * is reported so a failure names the exact drifting shape.
+ * Stale plan-range literals in `text` — the S102-1 paraphrase-proof
+ * grammar, made LOWER-BOUND-GENERALIZED by S103-1 (audit 103-a F-2): any
+ * `session(s) N <sep> M` range literal (the canonical `session-2..N` dots
+ * plus the paraphrased `Sessions 2 through N` / `session 2–N` separator and
+ * case variants) whose (N, M) pair is not exactly (the plan's first
+ * recorded session, the plan's CURRENT tail) is stale — the plan is
+ * append-only, so any other pair under-claims (a bound below the tail),
+ * over-claims (a bound past the tail — sections that do not exist), or
+ * mis-anchors the corpus start. The `.md` lookahead keeps session-FILE
+ * ranges (S100-1's domain) out of the plan net. The MATCH TEXT (not a
+ * reconstructed literal) is reported so a failure names the exact drifting
+ * shape.
  */
 const stalePlanRangeLiterals = (text: string): string[] =>
-  [...text.matchAll(/sessions?[-_ ]?2\s*(?:\.{2}|…|–|—|-|through|to)\s*(\d+)/gi)]
-    .filter((m) => Number(m[1]) !== MAX_PLAN_SESSION)
+  [...text.matchAll(/sessions?[-_ ]?(\d+)\s*(?:\.{2}|…|–|—|-|through|to)\s*(\d+)(?!\s*\.md\b)/gi)]
+    .filter((m) => Number(m[1]) !== PLAN_START_SESSION || Number(m[2]) !== MAX_PLAN_SESSION)
     .map((m) => m[0].replace(/\s+/g, " "));
 
 describe("S101-1 — plan-range lockstep: the docs' plan-range literals track the REMEDIATION_PLAN tail", () => {
@@ -539,5 +560,65 @@ describe("S102-1 — paraphrase-proof grammar: the scanners flag the paraphrased
   it("the canonical wrapper grammar survives for the boundary-note marker (its own non-vacuity, computed bounds)", () => {
     expect(staleCanonicalExistenceClaims("only session_1..50.md exist in docs/"), "the canonical stale shape is flagged").toEqual(["only session_1..50.md exist"]);
     expect(staleCanonicalExistenceClaims(`only session_1..${MAX_SESSION_NUMBER}.md exist`), "the canonical true shape stays green").toEqual([]);
+  });
+});
+
+// ── S103-1 — the two-sided, lower-bound-generalized, punctuation-precise ────
+// net (audit 103-a INFO-1/2/3, F-1/F-2/F-3). The run-102 lesson ("a class
+// net's grammar is itself a drift surface") landed one run later: each
+// widened grammar still owned only ONE side of its bound class.
+//   F-1: the S100-1 session-file scanner flagged only UNDER-claims (a bound
+//        below the disk max) — an OVER-claim (a range past the disk max,
+//        citing files that do not exist — the S99-1 dangle class's range
+//        form) passed green. The scan becomes TWO-SIDED: any range whose
+//        upper bound is not EXACTLY the disk max is flagged.
+//   F-2: the S101-1 plan-range grammar pinned the literal lower bound `2` —
+//        a paraphrased range starting elsewhere evaded entirely. The scan
+//        generalizes the lower bound: the claim is stale unless the pair is
+//        exactly (PLAN_START_SESSION, the plan's current tail). The start
+//        pins to the CONSTANT 2 — the plan's title records Session 2, and
+//        the numbered headings begin at Session 3 with HomeNest-era gaps,
+//        so only the MAX is derivable-stable; the START is structural. A
+//        `.md`-lookahead keeps session-FILE ranges out of the plan net
+//        (S100-1's domain). Known trade-off, documented: the grammar still
+//        cannot distinguish a whole-corpus claim from a true closed-sub-
+//        series cite — a live-scope sub-series cite must use the word-
+//        separated form (the S102-1 convention, probe-verified), and the
+//        bare `to` separator can over-match incidental prose (both err
+//        loud, never a false green).
+//   F-3: the S99-1 dangling capture class includes `.`, so a sentence-final
+//        period rode into the ref and phantom-flagged a dangle — fails
+//        loud, never a false green, but trailing dots are never part of a
+//        docs/ filename: strip them for free.
+// The fixtures are SYNTHETIC (the shape of the drift class, never a real
+// doc's bytes — the S99-1 convention); computed bounds keep the stale
+// shapes stale and the true shapes true as the corpora grow.
+describe("S103-1 — two-sided bounds: the scanners flag over-claims, wrong lower bounds, and ignore trailing punctuation", () => {
+  it("the session-file scan flags an OVER-CLAIM — a bound past the disk max (audit 103-a F-1)", () => {
+    // The HomeNest-era shape: an upper bound past every session number on
+    // disk cites files that do not exist. Computed so the phantom bound
+    // stays phantom as the corpus grows.
+    const phantomUpper = `cites session_54..${MAX_SESSION_NUMBER + 100}.md as if on disk`;
+    expect(staleSessionExistenceClaims(phantomUpper), "an over-claim past the disk max is stale").toEqual([
+      `session_54..${MAX_SESSION_NUMBER + 100}.md`,
+    ]);
+  });
+
+  it("the plan-range scan flags a WRONG LOWER BOUND (audit 103-a F-2 — the generalized bound)", () => {
+    expect(
+      stalePlanRangeLiterals(`sessions 3 through ${MAX_PLAN_SESSION}`),
+      "a wrong lower bound is stale even at the true tail",
+    ).toEqual([`sessions 3 through ${MAX_PLAN_SESSION}`]);
+    expect(stalePlanRangeLiterals("sessions 3 through 101"), "the audit's exact probe shape").toEqual([
+      "sessions 3 through 101",
+    ]);
+  });
+
+  it("the dangling scan ignores sentence-final punctuation (audit 103-a F-3)", () => {
+    expect(
+      danglingDocRefs("see docs/session_1.md. The ritual continues"),
+      "a sentence-final period is not part of the ref",
+    ).toEqual([]);
+    expect(danglingDocRefs("ends at docs/screenshots. too"), "a trailing-dot directory cite resolves").toEqual([]);
   });
 });
