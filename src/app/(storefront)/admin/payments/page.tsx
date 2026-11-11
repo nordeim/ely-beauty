@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { paymentFailureReasonView, paymentOutcomeView } from "@/lib/admin-payments";
 import { clampSearchTerm } from "@/lib/validation";
 import { formatDate } from "@/lib/format";
-import { formatMoney } from "@/lib/money";
+import { formatStripeUsd } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -127,7 +127,9 @@ export default async function AdminPaymentsPage({
                     {event.paymentIntentId ?? "—"}
                   </td>
                   <td className="px-4 py-3 font-semibold">
-                    {event.amount !== null ? formatMoney(event.amount) : "—"}
+                    {/* S105-1: StripeEvent.amount is USD minor units (the
+                        intents are minted USD-only) — the $ form, never ৳. */}
+                    {event.amount !== null ? formatStripeUsd(event.amount) : "—"}
                   </td>
                   <td className="px-4 py-3">
                     <span

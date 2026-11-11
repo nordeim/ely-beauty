@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { discountPercent, formatMoney, formatOverlayPrice, parseDollarsToCents } from "@/lib/money";
+import {
+  discountPercent,
+  formatMoney,
+  formatOverlayPrice,
+  formatStripeUsd,
+  parseDollarsToCents,
+} from "@/lib/money";
 
 describe("formatMoney", () => {
   it("formats integer cents as BDT (whole taka when no poisha)", () => {
@@ -51,6 +57,37 @@ describe("formatOverlayPrice (the reference's overlay USD template format)", () 
 
   it("the dollar is the ASCII codepoint 36, never the ৳ (U+09F3)", () => {
     const out = formatOverlayPrice(37000);
+    expect(out.codePointAt(0)).toBe(36);
+    expect(out).not.toContain("৳");
+  });
+});
+
+// S105-1 (audit 105-a LOW-1): the Stripe seam mints USD-only PaymentIntents
+// (currency: "usd"; verifyPaymentIntentForPlacement rejects non-USD), so
+// StripeEvent.amount and the charge amount/amount_refunded are USD cents —
+// they must NEVER render through formatMoney (the ৳ formatter). This
+// Stripe-scoped companion renders them with the ASCII dollar and two
+// decimals ALWAYS (Stripe's minor-unit convention): $31.29, $10.00, $0.00.
+// The customer-facing Pay button keeps ৳ (the BDT cart total — the FX
+// conversion is server-side in the intent mint, not a display surface).
+describe("formatStripeUsd (the Stripe ledger/notes USD form)", () => {
+  it("renders $ + comma-grouped whole + two decimals ALWAYS (whole dollars never drop the .00)", () => {
+    expect(formatStripeUsd(3129)).toBe("$31.29");
+    expect(formatStripeUsd(1000)).toBe("$10.00");
+    expect(formatStripeUsd(107000)).toBe("$1,070.00");
+  });
+
+  it("zero renders $0.00, not ৳0", () => {
+    expect(formatStripeUsd(0)).toBe("$0.00");
+    expect(formatStripeUsd(5)).toBe("$0.05");
+  });
+
+  it("handles negative amounts with a leading minus", () => {
+    expect(formatStripeUsd(-1999)).toBe("-$19.99");
+  });
+
+  it("the dollar is the ASCII codepoint 36, never the ৳ (U+09F3)", () => {
+    const out = formatStripeUsd(3129);
     expect(out.codePointAt(0)).toBe(36);
     expect(out).not.toContain("৳");
   });

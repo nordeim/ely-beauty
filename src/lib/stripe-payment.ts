@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
 
-import { formatMoney } from "./money";
+import { formatStripeUsd } from "./money";
 import { isUniqueViolation, uniqueTargetField } from "./prisma-errors";
 import { isPublishableKeyConfigured, isRealSecret, parseStripeBdtPerUsd, resolveStripeConfig } from "./stripe-config";
 import type { StripeConfig } from "./stripe-config";
@@ -424,8 +424,10 @@ export type ChargeRefundedReflection = {
  *   paymentStatus "refunded" + the full-refund note. A partial refund
  *   → the note only: the order keeps its paid capture state (a partial
  *   refund does not zero the capture — honest).
- * - Money formats through formatMoney at the note boundary (integer cents
- *   everywhere, display formatting at the edge).
+ * - Money formats through formatStripeUsd at the note boundary (the charge
+ *   amounts are USD minor units — the intents are minted USD-only — so the
+ *   notes carry the $ form; integer cents everywhere, display formatting at
+ *   the edge). S105-1.
  */
 export function chargeRefundedReflection(
   order: { paymentStatus: string | null },
@@ -436,12 +438,12 @@ export function chargeRefundedReflection(
   if (charge.refunded === true) {
     return {
       paymentStatus: "refunded",
-      eventNote: `Refunded ${formatMoney(refundedAmount)} via Stripe`,
+      eventNote: `Refunded ${formatStripeUsd(refundedAmount)} via Stripe`,
     };
   }
   return {
     paymentStatus: null,
-    eventNote: `Partially refunded ${formatMoney(refundedAmount)} of ${formatMoney(charge.amount ?? 0)} via Stripe`,
+    eventNote: `Partially refunded ${formatStripeUsd(refundedAmount)} of ${formatStripeUsd(charge.amount ?? 0)} via Stripe`,
   };
 }
 

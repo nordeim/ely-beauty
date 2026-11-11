@@ -40,6 +40,27 @@ export function formatOverlayPrice(cents: number): string {
   return `${sign}$${whole.toLocaleString("en-US")}.${rem.toString().padStart(2, "0")}`;
 }
 
+/**
+ * S105-1 (audit 105-a LOW-1): the Stripe seam mints USD-only PaymentIntents
+ * (currency: "usd" — verifyPaymentIntentForPlacement rejects anything else),
+ * so StripeEvent.amount and the charge amount/amount_refunded are USD minor
+ * units, never poisha. Rendering them through formatMoney mislabeled the
+ * operator-facing ledger and the refund notes with ৳ (off by the
+ * STRIPE_BDT_PER_USD factor). This Stripe-scoped companion renders them with
+ * the ASCII dollar and two decimals ALWAYS (Stripe's own minor-unit
+ * convention: $31.29, $10.00, $0.00). Consumed ONLY by the admin payments
+ * ledger and the refund OrderEvent notes — every other money surface keeps
+ * formatMoney's ৳ form, and the customer-facing Pay button stays ৳ (the BDT
+ * cart total; the FX conversion happens server-side in the intent mint).
+ */
+export function formatStripeUsd(cents: number): string {
+  const sign = cents < 0 ? "-" : "";
+  const abs = Math.abs(Math.round(cents));
+  const whole = Math.floor(abs / 100);
+  const rem = abs % 100;
+  return `${sign}$${whole.toLocaleString("en-US")}.${rem.toString().padStart(2, "0")}`;
+}
+
 /** Parse a user-typed amount string ("288", "৳1,299", "365.50") into integer
  *  cents. Accepts an optional currency symbol and thousand separators. */
 export function parseAmountToCents(input: string): number | null {

@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.30.0
+version: 2.31.0
 last_updated: 2026-11-11
-project_state: "826 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-104 (session 64 cycle): the backtracking-proof grammar net cycle — audit 104-a clean (12/12 standing anchors, 0 CRITICAL/HIGH/MEDIUM/LOW — 3 INFO, zero code defects; src/ verified byte-frozen since run-97; the five class nets each re-derived and re-probed non-vacuous; every live-tense count claim re-verified against the filesystem/vitest run); S104-1 the backtracking-proof, two-sided canonical grammar CLASS net in docs-counts.test.ts (audit 104-a INFO-1/INFO-2: the plan-range grammar's file-suffix lookahead was defeated by backtracking — the greedy bound capture surrendered trailing digits until the lookahead succeeded, so a session-file range in prose flagged a truncated match with a mangled bound and a TRUE file range at the disk max false-flagged the plan net, the documented exclusion invariant false as written; and the canonical whole-corpus grammar still flagged only under-claims, so an only-exist claim with a wrong corpus floor (denying real files) or a bound past the disk max (citing phantom files) passed green — the exact run-103 one-sidedness class surviving in the canonical grammar the boundary-note marker pin depends on; the nets now own both dimensions: a digit-boundary guard pins the captured bound to the full digit run so the lookahead genuinely excludes the file-range shape, and the canonical claim is stale unless its pair is exactly the corpus floor and the disk max; the session-file scan's own lower-bound side recorded in the class table as the documented sub-series trade-off; a pre-implementation probe against the seven live-tense scopes and the boundary-note slice found ZERO live material — no rephrase needed this cycle; RED 5 pins observed by name — the four new pins against the defective grammars plus the standing plan-range lockstep on the freshly-appended plan tail — then GREEN 42/42); S104-2 the GREEN sweeps (the plan-range literal bumped to the run-104 tail; the count-lockstep fired BY NAME on exactly the four predicted doc-site pins when the unit count moved 822 to 826, one-pass sweep across the nine live-tense sites) — 822 to 826 unit (+4: the two clean-exclusion pins, the wrong-floor pin, the over-claim pin), e2e 92 unchanged. PREVIOUS (run-103): the two-sided grammar net cycle (S103-1..S103-2); PREVIOUS (run-102): the paraphrase-proof grammar net cycle (S102-1..S102-2); PREVIOUS (run-101): the plan-range lockstep net cycle (S101-1..S101-2)"
+project_state: "830 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-105 (session 65 cycle): the Stripe USD display seam cycle — audit 105-a clean (12/12 standing anchors, 0 CRITICAL/HIGH/MEDIUM — 1 LOW + 2 INFO, zero code defects; the run-104 change-set re-verified line-by-line with no test weakening, the S104-1 grammar diff strictly tightening; src/ verified byte-frozen since run-97; the six class nets each re-derived from the filesystem and re-probed non-vacuous; every live-tense count claim re-verified against the filesystem/vitest run); S105-1 the Stripe USD display seam in money.ts/stripe-payment.ts/admin-payments (audit 105-a LOW-1: the Stripe intents are minted USD-only, so StripeEvent.amount and the charge amount/amount_refunded are USD minor units — but both render sites passed them to formatMoney, the ৳ formatter, mislabeling the operator-facing payments ledger and the refund OrderEvent notes with ৳ and off by the STRIPE_BDT_PER_USD factor against the BDT books; the fix is formatStripeUsd, a Stripe-scoped USD companion to the S82-1 overlay precedent — ASCII dollar, two decimals ALWAYS, the Stripe minor-unit convention — swapped at exactly three call sites: the two chargeRefundedReflection notes and the payments ledger cell; the customer-facing Pay button stays ৳ (the BDT cart total; the FX conversion is server-side in the intent mint); RED 6 pins observed by name — the two flipped refund-note pins plus the four new formatter pins — then GREEN; the webhook record-only branch envelope observation recorded NO-ACTION); S105-2 the GREEN sweeps (the plan-range literal bumped to the run-105 tail; the count-lockstep fired BY NAME on exactly the four predicted doc-site pins when the unit count moved 826 to 830 (+4: the formatStripeUsd describe; the two flipped refund-note pins are modifications, not additions), one-pass sweep across the nine live-tense sites) — 826 to 830 unit, e2e 92 unchanged. PREVIOUS (run-104): the backtracking-proof grammar net cycle (S104-1..S104-2); PREVIOUS (run-103): the two-sided grammar net cycle (S103-1..S103-2); PREVIOUS (run-102): the paraphrase-proof grammar net cycle (S102-1..S102-2); PREVIOUS (run-101): the plan-range lockstep net cycle (S101-1..S101-2)"
 tags:
   - nextjs16
   - react19
@@ -5178,10 +5178,10 @@ Key files: `scripts/capture-screenshots.ts` · `docs/session_132.md` ·
   cycles still deserve the full parity re-measurement — 19 byte-identical
   screenshots are the cheapest drift alarm there is.
 
-- **Session-record boundary (S96-8): runs 89–104 live in the PAD revision
+- **Session-record boundary (S96-8): runs 89–105 live in the PAD revision
   blocks.** This appendix's per-session trail ends at Session 88 (run 88);
   from run 89 onward the per-run record moved to the PAD's append-only
-  revision blocks (v2.17–v2.31) + `docs/REMEDIATION_PLAN.md`'s session
+  revision blocks (v2.17–v2.32) + `docs/REMEDIATION_PLAN.md`'s session
   sections + the `docs/session_NN.md` logs — the trail continues there
   (run 89: the worklog/docs-verification consolidation; 90: the
   coupon-label format cycle; 91: the API force-dynamic cycle; 92: the
@@ -5193,7 +5193,8 @@ Key files: `scripts/capture-screenshots.ts` · `docs/session_132.md` ·
   payment-prose completion cycle; 100: the stale-existence-claim net &
   citation-hygiene cycle; 101: the plan-range lockstep net cycle; 102: the
   paraphrase-proof grammar net cycle; 103: the two-sided grammar net
-  cycle; 104: the backtracking-proof grammar net cycle). This note is the signpost so a
+  cycle; 104: the backtracking-proof grammar net cycle; 105: the Stripe USD display-seam
+cycle). This note is the signpost so a
   future reader knows where the trail continues — the historical entries
   above are deliberately left in their era-accurate wording.
 - **Docs-reset boundary (S99-4, audit 99-a D2; reworded S100-1 — the

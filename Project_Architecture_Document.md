@@ -1,9 +1,15 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.31
+# ElyBeauty — Master Project Architecture Document (PAD) v2.32
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-11
+
+#### Revision Block — v2.32 (Run 105 — the Stripe USD display seam cycle)
+
+- `[FIX]` **The Stripe USD display seam (S105-1, audit 105-a LOW-1, TDD — the cycle's centerpiece)**: the Stripe seam mints USD-only PaymentIntents (`currency: "usd"`; `verifyPaymentIntentForPlacement` rejects non-USD), so `StripeEvent.amount` and the charge `amount`/`amount_refunded` are USD minor units — but BOTH render sites passed them to `formatMoney` (the ৳ formatter): the admin payments ledger cell and the two `chargeRefundedReflection` OrderEvent notes. A $31.29 refund rendered "৳31.29" — off by the ~120x `STRIPE_BDT_PER_USD` factor against the store's BDT books (display-only, operator-facing; receipts correctly ride the BDT `Order.total`; the pinned fixtures carried the mislabel). The fix: `formatStripeUsd` in `src/lib/money.ts` — a Stripe-scoped USD companion to the S82-1 overlay precedent (ASCII dollar, comma grouping, two decimals ALWAYS per Stripe's minor-unit convention) — swapped at exactly three call sites (the two refund notes + the payments ledger cell); the note-boundary docblock re-named; the customer-facing Pay button stays ৳ (the BDT cart total; the FX conversion is server-side in the intent mint). **RED 6 pins observed by name** (the two flipped refund-note pins + the four new formatter pins) → GREEN; non-regression — every other `formatMoney` call site is a BDT surface, byte-identical.
+- `[DOCS]` **The GREEN sweeps (S105-2)**: the plan-range literal bumped to the run-105 tail; the count-lockstep fired BY NAME on exactly the four predicted doc-site pins when the unit count moved 826 → 830 (+4: the `formatStripeUsd` describe; the two flipped refund-note pins are modifications, not additions), one-pass sweep across the nine live-tense sites; the Appendix B session-record signpost swept by checklist to runs 89–105 (v2.17–v2.32).
+- `[VERIFY]` **Audit 105-a clean, parity zero-delta on every pinned surface**: 12/12 standing anchors PASS, 0 CRITICAL/HIGH/MEDIUM — 1 LOW + 2 INFO (the LOW remediated as the S105-1 centerpiece; the webhook record-only-branch envelope observation recorded NO-ACTION — Stripe keys on the status code, not the body), zero code defects; `src/` verified byte-frozen since run-97 before this cycle's three-file fix; live parity on the mobile panel, the overlay, the silk rows, /shop, the no-results copy, and the mobile-nav chain on both sites — no Tailwind v4 bug.
 
 #### Revision Block — v2.31 (Run 104 — the backtracking-proof grammar net cycle)
 
@@ -624,7 +630,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, label, select, slot, toast) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^4.6.7 | Single validation boundary (ADR-005) — v4 since run 86 (S86-1) |
-| Unit tests | Vitest | ^4.1.12 | Node-env suite (826 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
+| Unit tests | Vitest | ^4.1.12 | Node-env suite (830 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
 | E2E tests | Playwright | ^1.64 | 92 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins + the S92-2f password-change round-trip |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
@@ -874,7 +880,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 826 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 830 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -1151,7 +1157,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
 | `prisma/schema.prisma` / `seed.ts` | 20 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 826 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11 through session-27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
+| `tests/unit/*` · `tests/e2e/*` | 830 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11 through session-27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---
