@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DollarSign, Package, ShoppingBag, TriangleAlert, Users } from "lucide-react";
+import { Banknote, Package, ShoppingBag, TriangleAlert, Users } from "lucide-react";
 
 import { db } from "@/lib/db";
 import { buildRevenueChart, type RevenueDayRow } from "@/lib/analytics";
@@ -92,8 +92,11 @@ export default async function AdminDashboardPage() {
   const totalRevenue = revenueAgg._sum.total ?? 0;
   const archivedCount = Math.max(0, totalProducts - activeProducts);
 
-  const kpis: { label: string; value: string; hint: string; icon: typeof DollarSign }[] = [
-    { label: "Total Revenue", value: formatMoney(totalRevenue), hint: "Excludes cancelled orders", icon: DollarSign },
+  // Banknote (currency-neutral): the revenue value is formatMoney ৳ — lucide
+  // 0.525.0 ships no taka glyph, so a dollar sign here would be the
+  // name-outlived-domain class at the icon stratum (S108-4).
+  const kpis: { label: string; value: string; hint: string; icon: typeof Banknote }[] = [
+    { label: "Total Revenue", value: formatMoney(totalRevenue), hint: "Excludes cancelled orders", icon: Banknote },
     { label: "Orders", value: orderCount.toLocaleString("en-US"), hint: `+${weekOrderCount} this week`, icon: ShoppingBag },
     { label: "Active Products", value: activeProducts.toLocaleString("en-US"), hint: `${archivedCount} archived`, icon: Package },
     { label: "Customers", value: customers.toLocaleString("en-US"), hint: "Registered accounts", icon: Users },

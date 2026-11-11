@@ -43,7 +43,7 @@ describe("buildProductJsonLd", () => {
     expect(ld.description).toBe(PRODUCT.shortDescription);
   });
 
-  it("converts integer cents to decimal-dollar price strings", () => {
+  it("converts integer minor units to the decimal price unit", () => {
     expect(ld.offers.price).toBe(199.99);
     expect(ld.offers.priceCurrency).toBe("USD");
   });

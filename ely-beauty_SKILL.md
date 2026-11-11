@@ -11,9 +11,9 @@ description: >
   model, TDD workflow, debugging playbooks, and the complete pre-ship gate
   chain. Use when extending, debugging, auditing, onboarding, or replicating
   this codebase — every pattern below was verified against a live build.
-version: 2.33.0
+version: 2.34.0
 last_updated: 2026-11-11
-project_state: "838 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-107 (session 69 cycle): the taka-vocabulary identifier cycle — audit 107-a clean (12/12 standing anchors, 0 CRITICAL/HIGH/MEDIUM/LOW — 3 INFO, zero code defects; the run-105 AND run-106 change-sets re-verified hunk-by-hunk with no test weakening; the currency-domain sweep re-run over 67 formatter call expressions with 0 mismatches; the six class nets each re-derived from the filesystem and re-probed non-vacuous — 24/24 probes; every live-tense count claim re-verified against the filesystem/vitest run); S107-1 the taka-vocabulary identifier sweep (audit 107-a INFO-1: the run-105/106 currency-domain class's last residue at the IDENTIFIER level — the parseDollarsToCents back-compat alias, the admin money-input *Dollars field names, and seo's centsToDollars JSON-LD helper, all carrying the HomeNest-scaffold dollar vocabulary over values that are ALL BDT poisha; one lockstep rename pass across 7 src files: the alias retires with its three dialog consumers importing parseAmountToCents directly, the seven field names take the *Taka vocabulary (priceTaka/compareAtTaka/minSubtotalTaka/standardShippingTaka/expressShippingTaka/freeShippingThresholdTaka), centsToDollars becomes centsToTaka, the two heritage comments re-word, and money.test.ts's describe re-points at the canonical export with assertions byte-identical; naming-only, zero behavioral change, no DOM/label/API surface touched; RED 4 source pins observed by name then GREEN); S107-2 the mint-fetch timeout (audit 107-a INFO-3: a hung mint request previously stranded the checkout island's panel in the preparing state with no retry affordance — AbortSignal.timeout(MINT_TIMEOUT_MS=15s) on the mint fetch, the abort rejecting into the standing catch → sessionError → the Try-again button; RED 1 source pin then GREEN); S107-3 the GREEN sweeps (the plan-range literal bumped to the run-107 tail; the count-lockstep fired BY NAME on exactly the four predicted doc-site pins when the unit count moved 833 to 838 (+5: the S107 describe's five source pins), one-pass sweep across the nine live-tense sites) — 833 to 838 unit, e2e 92 unchanged. PREVIOUS (run-106): the pay-button currency-domain cycle (S106-1..S106-2 — the island's Pay button rendered the converted USD intent amount through the ৳ formatter); PREVIOUS (run-105): the Stripe USD display seam cycle (S105-1..S105-2); PREVIOUS (run-104): the backtracking-proof grammar net cycle (S104-1..S104-2); PREVIOUS (run-103): the two-sided grammar net cycle (S103-1..S103-2)"
+project_state: "844 unit tests · 92 e2e tests · lint/typecheck/typecheck:tests/build green · npm audit 0 vulnerabilities · RUN-108 (session 71 cycle): the documentation-vocabulary residue cycle — audit 108-a (12/12 standing anchors, 0 CRITICAL/HIGH/MEDIUM — 5 LOW + 3 INFO; the run-107 change-set re-verified hunk-by-hunk with no dangling references; every live-tense count claim re-verified against the filesystem/vitest run; the vitest + playwright configs verified sane against the running suites; secrets sweep clean; npm audit 0). The cycle's class: the run-107 taka-vocabulary sweep retired the Dollars identifiers in src/ — and its OWN doc sweep left the retired vocabulary alive one stratum further out, in the DOC INVENTORY (the run-107 lesson recurring): S108-1 the doc-vocabulary residue sweep (the PAD §8.1 money row still naming the retired alias and omitting the runs-82/105 describes; the seo-ld row saying cents→dollars over the centsToTaka helper; the SKILL §7.3 money-seam map still naming the retired parser and calling the conversion dollars→cents; seo-ld.test.ts's price title saying decimal-dollar — all re-worded to the current reality, one pass); S108-2 the v2.34 block's payment-intention route typo corrected (a nonexistent route named in an append-only block is an error, not history); S108-3 the §8.2 free-shipping row re-worded from the HomeNest-era dollar nag amounts to the live BDT spec values; S108-4 the admin revenue KPI's DollarSign icon swapped for the currency-neutral Banknote over ৳ values (lucide 0.525.0 ships no taka glyph — the class at the ICON stratum; order-manage-dialog's BadgeDollarSign stays, USD domain); S108-5 the PAD §8.1 table defragged. The countermeasure — the S108 vocabulary net closes the DOC stratum: the PAD/SKILL architecture sections carry no retired money vocabulary, no nonexistent route names, no stale-currency nag amounts (scoped clean per the S104-1 lesson: the SKILL frontmatter project_state is rolling narration, the PAD §11 register is frozen history — both exempt, both load-bearing). RED 6 pins observed by name then GREEN — 838 to 844 unit (+6: four doc-stratum nets in docs-counts + two source pins in layout-tokens), e2e 92 unchanged; parity zero-delta on every pinned surface; the mobile nav functional on both sites — no Tailwind v4 bug. PREVIOUS (run-107): the taka-vocabulary identifier cycle (S107-1..S107-3 — the Dollars identifiers retired across 7 src files, naming-only); PREVIOUS (run-106): the pay-button currency-domain cycle (S106-1..S106-2); PREVIOUS (run-105): the Stripe USD display seam cycle (S105-1..S105-2); PREVIOUS (run-104): the backtracking-proof grammar net cycle (S104-1..S104-2)"
 tags:
   - nextjs16
   - react19
@@ -272,8 +272,8 @@ through untouched. `db/` is git-ignored (recreate with `db:setup`).
 
 ### 7.3 The money seam
 
-- `src/lib/money.ts`: `formatMoney` (display) + `parseDollarsToCents`
-  (admin input). The **only** place dollars→cents conversion happens.
+- `src/lib/money.ts`: `formatMoney` (display) + `parseAmountToCents`
+  (admin input). The **only** place taka→poisha conversion happens.
 - `src/lib/order-money.ts`: `computeOrderMoney({ subtotal, discount,
   shippingMethod, freeShippingThresholdCents, standardShippingCents,
   expressShippingCents, taxRatePercent })` — pure, integer, unit-tested
@@ -5178,10 +5178,10 @@ Key files: `scripts/capture-screenshots.ts` · `docs/session_132.md` ·
   cycles still deserve the full parity re-measurement — 19 byte-identical
   screenshots are the cheapest drift alarm there is.
 
-- **Session-record boundary (S96-8): runs 89–107 live in the PAD revision
+- **Session-record boundary (S96-8): runs 89–108 live in the PAD revision
   blocks.** This appendix's per-session trail ends at Session 88 (run 88);
   from run 89 onward the per-run record moved to the PAD's append-only
-  revision blocks (v2.17–v2.34) + `docs/REMEDIATION_PLAN.md`'s session
+  revision blocks (v2.17–v2.35) + `docs/REMEDIATION_PLAN.md`'s session
   sections + the `docs/session_NN.md` logs — the trail continues there
   (run 89: the worklog/docs-verification consolidation; 90: the
   coupon-label format cycle; 91: the API force-dynamic cycle; 92: the
@@ -5195,7 +5195,7 @@ Key files: `scripts/capture-screenshots.ts` · `docs/session_132.md` ·
   paraphrase-proof grammar net cycle; 103: the two-sided grammar net
   cycle; 104: the backtracking-proof grammar net cycle; 105: the Stripe USD display-seam
   cycle; 106: the pay-button currency-domain cycle; 107: the taka-vocabulary
-  identifier cycle). This note is the signpost so a
+  identifier cycle; 108: the documentation-vocabulary residue cycle). This note is the signpost so a
   future reader knows where the trail continues — the historical entries
   above are deliberately left in their era-accurate wording.
 - **Docs-reset boundary (S99-4, audit 99-a D2; reworded S100-1 — the

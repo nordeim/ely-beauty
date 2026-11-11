@@ -988,3 +988,37 @@ describe("S107 — the taka-vocabulary identifier pins (source pins)", () => {
     expect(mintOptions, "the mint fetch options carry the timeout signal").toContain("AbortSignal.timeout(");
   });
 });
+
+// S108 — the doc-vocabulary residue pins, source stratum (audit 108-a
+// F-2/INFO-1). The S107-1d pin held seo.ts's helper name but the SPEC TITLE
+// stratum had no net — seo-ld.test.ts's price describe still said
+// "decimal-dollar" over the currency-parametric builder (production passes
+// BDT; the fixture is scaffold-heritage USD). And the currency-domain class
+// survived at the ICON stratum: the admin Total Revenue KPI rendered a
+// DollarSign glyph over formatMoney ৳ values (lucide-react@0.525.0 ships
+// no BangladeshiTakaSign — Banknote is the currency-neutral swap).
+describe("S108 — the doc-vocabulary residue pins, source stratum (source pins)", () => {
+  it("S108-1a: seo-ld's price describe title carries no dollar vocabulary", () => {
+    // Same-directory read: the spec lives in tests/unit/, not src/ (the
+    // src() helper would resolve a nonexistent path).
+    const spec = readFileSync(path.resolve(import.meta.dirname, "seo-ld.test.ts"), "utf8");
+    const titles = [...spec.matchAll(/it\("([^"]+)"/g)].map((m) => m[1] ?? "");
+    const priceTitle = titles.find((t) => /price/i.test(t));
+    // The builder divides integer minor units by 100 for the JSON-LD
+    // decimal price unit — the currency is a parameter (BDT in production).
+    // "decimal-dollar" names a currency the helper does not assume.
+    expect(priceTitle, "the price describe exists").toBeTruthy();
+    expect(priceTitle, "no dollar vocabulary in the price title").not.toMatch(/dollar/i);
+  });
+
+  it("S108-4a: the admin revenue KPI's icon is currency-neutral (Banknote, not DollarSign)", () => {
+    const admin = src("app/(storefront)/admin/page.tsx");
+    // The Total Revenue KPI renders formatMoney ৳ values; a $ glyph over
+    // taka is the name-outlived-domain class at the icon stratum. lucide
+    // 0.525.0 ships no taka icon, so the neutral Banknote is the floor.
+    // order-manage-dialog's BadgeDollarSign is OUT of scope (Stripe refund
+    // events — USD domain, correct).
+    expect(admin, "no DollarSign on the taka KPI surface").not.toContain("DollarSign");
+    expect(admin, "the Banknote icon is imported").toContain("Banknote");
+  });
+});

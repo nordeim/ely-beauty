@@ -19,7 +19,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 // ── The single source of truth for the docs' live-tense counts ──────────
-const UNIT_TESTS = 838;
+const UNIT_TESTS = 844;
 const E2E_TESTS = 92;
 const PRISMA_MODELS = 20;
 // ─────────────────────────────────────────────────────────────────────────
@@ -706,5 +706,68 @@ describe("S104-1 — backtracking-proof exclusion + the two-sided canonical boun
     // (the S99-1 dangle class's canonical whole-corpus form).
     const overClaim = `only session_1..${MAX_SESSION_NUMBER + 36}.md exist`;
     expect(staleCanonicalExistenceClaims(overClaim), "an over-claim past the disk max is stale").toEqual([overClaim]);
+  });
+});
+
+// ── S108 — the doc-vocabulary residue net (audit 108-a F-1..F-5) ──────────
+// Run-107 retired the "Dollars" identifiers in src/ and swept the five-doc
+// count lockstep — but its own sweep left the retired vocabulary alive in
+// the DOC stratum: the PAD's live §8.1 test-inventory rows (money.test.ts
+// naming parseDollarsToCents; seo-ld saying cents→dollars), the SKILL §7.3
+// money-seam map (the same retired API + "dollars→cents conversion"), the
+// v2.34 block's payment-intention route typo, and §8.2's HomeNest-era
+// dollar nag amounts ($34.99/$15.01) over a live BDT spec. The run-107
+// lesson ("a class's residue can outlives its remediation at a LOWER
+// stratum") recurs one stratum further out: the DOC INVENTORY is a stratum
+// too, and it had no vocabulary net. These pins close it: the PAD/SKILL
+// live bodies carry no retired money vocabulary, no nonexistent route
+// names, and no stale-currency nag amounts.
+describe("S108 — the doc-vocabulary residue net (audit 108-a F-1..F-5)", () => {
+  it("S108-1b: the PAD live body carries no parseDollarsToCents / cents→dollars vocabulary", () => {
+    const pad = read("Project_Architecture_Document.md");
+    const padBody = pad.slice(pad.indexOf("## Table of Contents"));
+    // §8.1's money.test.ts row named the retired alias; the seo-ld row
+    // said "cents→dollars price" over the centsToTaka helper (S107-1).
+    expect(padBody, "no parseDollarsToCents in the PAD live body").not.toContain("parseDollarsToCents");
+    expect(padBody, "no cents→dollars in the PAD live body").not.toContain("cents→dollars");
+  });
+
+  it("S108-1c: the SKILL live body's money seam names the canonical parser (no Dollars vocabulary)", () => {
+    const skill = read("ely-beauty_SKILL.md");
+    // Post-frontmatter → pre-Appendix-A: the §1–§20 architecture sections.
+    // The frontmatter project_state is ROLLING NARRATION — rewritten every
+    // cycle, it legitimately names retired identifiers when describing the
+    // sweep that retired them (the Appendix B history convention applied to
+    // the frontmatter); §7.3's money-seam MAP is the live architecture claim.
+    const afterFrontmatter = skill.slice(skill.indexOf("---", 3) + 3);
+    const liveBody = afterFrontmatter.slice(0, afterFrontmatter.indexOf("## Appendix A"));
+    // §7.3's money-seam map named parseDollarsToCents and called the
+    // conversion "dollars→cents" — both false since S107-1 (the export is
+    // parseAmountToCents; the conversion is taka→poisha).
+    expect(liveBody, "no parseDollarsToCents in the SKILL architecture sections").not.toContain("parseDollarsToCents");
+    expect(liveBody, "no dollars→cents in the SKILL architecture sections").not.toContain("dollars→cents");
+    expect(liveBody, "the canonical parser is named at the money seam").toContain("parseAmountToCents");
+  });
+
+  it("S108-2a: the PAD carries no payment-intention route (the v2.34 typo class)", () => {
+    const pad = read("Project_Architecture_Document.md");
+    // The v2.34 revision block named fetch("/api/stripe/payment-intention"…)
+    // — a nonexistent route (the real one is payment-intent). Whole-file:
+    // the typo string is an error in every stratum, history included.
+    expect(pad, "no payment-intention anywhere in the PAD").not.toContain("payment-intention");
+  });
+
+  it("S108-3a: the PAD's §8 test inventory carries no HomeNest-era dollar nag amounts over the BDT spec", () => {
+    const pad = read("Project_Architecture_Document.md");
+    // §8 (the live test-inventory: §8.1 unit + §8.2 e2e) describes what the
+    // CURRENT specs pin. §11's known-issues register is frozen history —
+    // its Resolved rows quote era symptoms verbatim (the session-23 row
+    // quotes the HomeNest-era nag copy) and are not live-tense claims.
+    const sec8 = pad.slice(pad.indexOf("### 8.1"), pad.indexOf("## 9."));
+    // §8.2's free-shipping-coupon row described the "$34.99 pin cart" and
+    // the "Add $15.01 more" nag — HomeNest-era amounts; the live spec is
+    // BDT (৳3,000 threshold, the ৳288 under-threshold cart, "Add ৳2,712").
+    expect(sec8, "no $34.99 in the PAD test inventory").not.toContain("$34.99");
+    expect(sec8, "no $15.01 in the PAD test inventory").not.toContain("$15.01");
   });
 });
