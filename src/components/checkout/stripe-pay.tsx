@@ -12,7 +12,7 @@ import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-
 import { Loader2, Lock, ShieldCheck } from "lucide-react";
 
 import { isPublishableKeyConfigured } from "@/lib/stripe-config";
-import { formatMoney } from "@/lib/money";
+import { formatStripeUsd } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -58,6 +58,10 @@ export type StripeMintSnapshot = {
 type PaymentIntentSession = {
   clientSecret: string;
   paymentIntentId: string;
+  /** The minted intent's amount — USD MINOR UNITS (the converted
+   *  `stripeChargeAmount` total, `currency: "usd"`), never poisha. Rendered
+   *  by the Pay button through formatStripeUsd — the S106-1 domain seam
+   *  (audit 106-a F-1: the run-105 "stays ৳" premise was false). */
   amount: number;
 };
 
@@ -332,7 +336,7 @@ function CardPaymentPanel({
           ) : (
             <Lock className="h-4 w-4" aria-hidden />
           )}
-          {paying ? "Paying…" : submitting ? "Placing Order…" : `Pay — ${formatMoney(amount)}`}
+          {paying ? "Paying…" : submitting ? "Placing Order…" : `Pay — ${formatStripeUsd(amount)}`}
         </Button>
       </div>
     </div>

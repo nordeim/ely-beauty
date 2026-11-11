@@ -48,10 +48,13 @@ export function formatOverlayPrice(cents: number): string {
  * operator-facing ledger and the refund notes with ৳ (off by the
  * STRIPE_BDT_PER_USD factor). This Stripe-scoped companion renders them with
  * the ASCII dollar and two decimals ALWAYS (Stripe's own minor-unit
- * convention: $31.29, $10.00, $0.00). Consumed ONLY by the admin payments
- * ledger and the refund OrderEvent notes — every other money surface keeps
- * formatMoney's ৳ form, and the customer-facing Pay button stays ৳ (the BDT
- * cart total; the FX conversion happens server-side in the intent mint).
+ * convention: $31.29, $10.00, $0.00). Consumed by the admin payments
+ * ledger, the refund OrderEvent notes, and — since S106-1 — the checkout
+ * island's Pay button (the mint route echoes the converted USD intent
+ * amount, not the BDT total; audit 106-a F-1 caught run-105's "the button
+ * stays ৳" premise being false — the echoed value is `intent.amount`).
+ * Every other money surface keeps formatMoney's ৳ form (the review block's
+ * ৳ totals are the parent checkout's children, a BDT surface).
  */
 export function formatStripeUsd(cents: number): string {
   const sign = cents < 0 ? "-" : "";

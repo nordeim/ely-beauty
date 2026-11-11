@@ -1,9 +1,14 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.32
+# ElyBeauty — Master Project Architecture Document (PAD) v2.33
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-11
+
+#### Revision Block — v2.33 (Run 106 — the pay-button currency-domain cycle)
+
+- `[FIX]` **The Pay-button currency-domain seam (S106-1, audit 106-a HIGH-1, TDD — the cycle's centerpiece, the FIRST src/ change since run-97)**: the mint route (`/api/stripe/payment-intent`) echoes `intent.amount` — the CONVERTED USD-minor-unit total (`stripeChargeAmount` + `currency: "usd"`), never the poisha cart total — and the checkout island's charge-consent button rendered that echo through `formatMoney`, the ৳ BDT-poisha formatter. At `STRIPE_BDT_PER_USD=120` a ৳288 order minted a $2.40 intent whose button read "Pay — ৳2.40": wrong currency symbol AND ~120x under the ৳288 review block on the same screen. The prior cycle's change-set had asserted the button carried the BDT cart total — a premise the audit traced to its origin and falsified (the echoed value IS the USD intent amount). The fix: the button composes `formatStripeUsd` (the S105-1 Stripe USD formatter extended to the charge-consent surface — the button now states exactly what the card will be charged, "Pay — $2.40"); the island's `formatMoney` import drops entirely (no BDT money surface remains in the file — the review block's ৳ totals are the parent checkout's children); the mint route's session-amount docblock now names the USD-minor-unit domain at the boundary that mints it (audit F-2); and the stale stays-৳ claims re-worded in `money.ts`'s docblock + `money.test.ts`'s describe comment. RED: 3 source pins (the S82-1 precedent — the island cannot mount in test envs) + the standing plan-range lockstep, observed by name → GREEN 833/833.
+- `[SR]` **The audit-106-a envelope**: 12/12 standing anchors PASS · 0 CRITICAL/MEDIUM/LOW — 1 HIGH (S106-1) + 2 INFO (F-2 the mint docblock, remediated in the same fix; F-3 the deliberately byte-identical `formatOverlayPrice`/`formatStripeUsd` bodies across disjoint domains — recorded so future audits do not re-derive it). Count-lockstep: 830 → 833 unit (+3 source pins), e2e 92 unchanged; plan range `session-2..106`.
 
 #### Revision Block — v2.32 (Run 105 — the Stripe USD display seam cycle)
 
@@ -630,7 +635,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, label, select, slot, toast) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^4.6.7 | Single validation boundary (ADR-005) — v4 since run 86 (S86-1) |
-| Unit tests | Vitest | ^4.1.12 | Node-env suite (830 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
+| Unit tests | Vitest | ^4.1.12 | Node-env suite (833 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
 | E2E tests | Playwright | ^1.64 | 92 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins + the S92-2f password-change round-trip |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
@@ -880,7 +885,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 830 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 833 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -1157,7 +1162,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
 | `prisma/schema.prisma` / `seed.ts` | 20 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 830 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11 through session-27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
+| `tests/unit/*` · `tests/e2e/*` | 833 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11 through session-27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---

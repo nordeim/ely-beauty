@@ -860,3 +860,52 @@ describe("S96 — the admin accent-color reskin completion", () => {
     }
   });
 });
+
+// S106 — the Stripe Pay-button currency-domain pins (audit 106-a F-1/F-2,
+// source pins). The checkout island's Pay button renders the amount the
+// mint route echoes — `intent.amount`, the PaymentIntent's USD MINOR UNITS
+// (the converted `stripeChargeAmount` total, `currency: "usd"`) — so it
+// must compose `formatStripeUsd` (the Stripe USD formatter, S105-1), never
+// `formatMoney` (the ৳ BDT-poisha formatter). Run-105's change-set asserted
+// the button "stays ৳ — the BDT cart total", but the echoed value is the
+// CONVERTED USD intent amount, not `money.total`: at STRIPE_BDT_PER_USD=120
+// a ৳288 order minted a $2.40 intent whose button read "Pay — ৳2.40" — wrong
+// symbol AND ~120x under the review block's ৳288, on the charge-consent
+// surface. The island never mounts in test envs (Stripe unconfigured), so
+// the source pin is the only probe that can hold the seam — the S82-1
+// precedent (a money surface renders through its domain's formatter).
+describe("S106 — the Stripe Pay-button currency-domain pins (source pins)", () => {
+  it("S106-1a: the Pay button composes formatStripeUsd on the echoed intent amount", () => {
+    const island = src("components/checkout/stripe-pay.tsx");
+    // The button slice — the consent surface for the USD card charge. The
+    // review block's ৳ totals are the parent's children (a BDT surface,
+    // untouched); the button states exactly what the card will be charged.
+    expect(island).toContain("Pay — ${formatStripeUsd(amount)}");
+  });
+
+  it("S106-1b: the island carries NO formatMoney (no BDT money surface remains in the file)", () => {
+    const island = src("components/checkout/stripe-pay.tsx");
+    // The import swap is the whole GREEN: after S106-1 the island renders
+    // exactly one money value (the USD intent amount), so the ৳ formatter
+    // must not even be imported — a future re-add fails here by name.
+    expect(island).not.toContain("formatMoney");
+  });
+
+  it("S106-1c: the mint route's session-amount docblock names the USD-minor-unit domain (F-2)", () => {
+    const route = readFileSync(
+      path.resolve(import.meta.dirname, "../../src/app/api/stripe/payment-intent/route.ts"),
+      "utf8",
+    );
+    const sessionType = route.slice(
+      route.indexOf("type PaymentIntentSession = {"),
+      route.indexOf("amount: number;", route.indexOf("type PaymentIntentSession = {")) + "amount: number;".length,
+    );
+    // The domain-silent docblock was the ambiguity that enabled F-1: the
+    // field's currency/units must be stated at the boundary that mints it
+    // (the docblock's "never formatMoney" prohibition is the guidance —
+    // naming the trap at the seam that mints the value).
+    expect(sessionType).toMatch(/USD minor units/i);
+    expect(sessionType).toContain("formatStripeUsd");
+    expect(sessionType).toMatch(/never formatMoney/);
+  });
+});

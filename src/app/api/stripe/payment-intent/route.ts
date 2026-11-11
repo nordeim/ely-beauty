@@ -38,7 +38,11 @@ type MintBody = z.infer<typeof mintBodySchema>;
 type PaymentIntentSession = {
   clientSecret: string;
   paymentIntentId: string;
-  /** Echoed for the island's own amount display — server truth, not client input. */
+  /** Echoed for the island's own amount display — server truth, not client
+   *  input. USD MINOR UNITS (the converted intent amount, never the poisha
+   *  total — `stripeChargeAmount` + `currency: "usd"`): the island must
+   *  render it through formatStripeUsd, never formatMoney (the ৳ formatter)
+   *  — the S106-1 domain seam (audit 106-a F-1/F-2). */
   amount: number;
 };
 

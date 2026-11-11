@@ -68,9 +68,14 @@ describe("formatOverlayPrice (the reference's overlay USD template format)", () 
 // they must NEVER render through formatMoney (the ৳ formatter). This
 // Stripe-scoped companion renders them with the ASCII dollar and two
 // decimals ALWAYS (Stripe's minor-unit convention): $31.29, $10.00, $0.00.
-// The customer-facing Pay button keeps ৳ (the BDT cart total — the FX
-// conversion is server-side in the intent mint, not a display surface).
-describe("formatStripeUsd (the Stripe ledger/notes USD form)", () => {
+// S106-1 (audit 106-a F-1) widened the domain: the checkout island's Pay
+// button ALSO renders through this formatter — the mint route echoes the
+// CONVERTED USD intent amount (never the BDT total), so the button states
+// what the card will be charged ($2.40 for a ৳288 order at rate 120); the
+// run-105 claim that the button rode the BDT cart total was false (the
+// echoed value is `intent.amount` — the S105-1 mislabel survived one run
+// on the charge-consent surface because the island never mounts in tests).
+describe("formatStripeUsd (the Stripe USD form — ledger, refund notes, Pay button)", () => {
   it("renders $ + comma-grouped whole + two decimals ALWAYS (whole dollars never drop the .00)", () => {
     expect(formatStripeUsd(3129)).toBe("$31.29");
     expect(formatStripeUsd(1000)).toBe("$10.00");
