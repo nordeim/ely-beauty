@@ -583,7 +583,7 @@ export TARGET_APP_PASSWORD='...'   # rotate before production use
 /skill:replicate-web-app clone https://omni-study1.base44.app/
 ```
 
-**Security note:** The password shared in this conversation (`$Abcd1234`) must be treated as compromised and rotated immediately after the investigation. The skill deliberately does not embed it; it reads `TARGET_APP_PASSWORD` from the environment and instructs the agent to halt if it is absent.
+**Security note:** The password shared in this conversation (`<redacted per run-110>`) must be treated as compromised and rotated immediately after the investigation. The skill deliberately does not embed it; it reads `TARGET_APP_PASSWORD` from the environment and instructs the agent to halt if it is absent.
 
 ---
 

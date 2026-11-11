@@ -20,7 +20,7 @@ F-1 已复现：`AUTH_SECRET="<base64 value>"` 位于 `docs/start_server_log.txt
 两项发现均已复现。`.env.example` 包含 `AUTH_SECRET=""`（为空，安全）——受追踪文件树中唯一一个形状像真实值的 `AUTH_SECRET` 是 `start_server_log.txt:8`。现在让我检查测试文件的枚举辅助工具（以 S99-1 作为仓库范围扫描的先例），寻找追踪的对等脚本，并检查 `start_server_log` 是如何生成的。
 `start_server_log.txt` 是操作员的手动部署日志（非脚本生成）——因此修复方法是编辑文档 + 操作员建议。追踪的对比脚本是 `scripts/measure-parity.mjs`。让我读取 S99-1 枚举模式（作为 repo-scan 的先例）以及 S108 的描述（作为 S109 的模型）。
 S108 的 describe 模式很清晰。在设计 S109 网络之前，我必须先梳理出完整的泄露面——即密码和 `AUTH_SECRET` 形状在整个代码树中的分布情况，以避免网络设计与 test fixtures 或 frozen history 发生冲突。
-泄露范围已完全映射：密码准确出现在 4 个基础提示文档中（反引号包裹：password `$Abcd1234` — 我第一次 grep 时遗漏了反引号），而具有值形状的 `AUTH_SECRET=` 恰好出现在一个地方（`start_server_log.txt:8`）。所有 src/tests 中的使用都是属性传递形式 —— 网络可以将它们干净地排除。现在进入一致性检查（parity pass）。让我检查一下被追踪的 parity 脚本。
+泄露范围已完全映射：密码准确出现在 4 个基础提示文档中（反引号包裹：password `<redacted per run-110>` — 我第一次 grep 时遗漏了反引号），而具有值形状的 `AUTH_SECRET=` 恰好出现在一个地方（`start_server_log.txt:8`）。所有 src/tests 中的使用都是属性传递形式 —— 网络可以将它们干净地排除。现在进入一致性检查（parity pass）。让我检查一下被追踪的 parity 脚本。
 已跟踪的脚本涵盖了 panel/overlay/anatomy/no-results/shop-pills/footer。我需要在 `/home/z/scratch/` 目录下重新创建 run-108 补充（silk rows、shop cards、mobile-nav chain）作为临时文件。让我来编写这两个临时脚本。
 跟踪的测量结果符合 run-108 的固定基准完全一致（面板 88/124/160/196/232，覆盖层输入 Cormorant 18px，8 行，h=80，半径 2px）。补充脚本存在一个 bug：在 Escape（退出覆盖层）之后，面板可能已经打开，因此“打开菜单”点击超时。正在修复该探测逻辑以处理这两种状态。
 克隆端补充内容与 `run-108` 的锚点完全一致（`silk` 行 173/257/341/425，`h=80`，`prices` 字节完全相同；`panelStateAfterOverlay` 为 `true`；`navChain` → `/about` "Beauty, Redefined" 且 `panelGone`；`shop` 有 19 个唯一卡片，以 `bonnet-first` 排序）。现在启动参考端脚本（使用 `env` 凭证，临时创建，绝不提交）。

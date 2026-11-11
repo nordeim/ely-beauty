@@ -12,8 +12,10 @@
  * reference's single search surface — measured live: both the header icon
  * and the panel's SEARCH row open `fixed inset-0 z-[70]
  * bg-background/95 backdrop-blur-xs`). The old in-panel content swap is
- * retired; the panel stays open underneath the overlay, exactly like
- * the reference.
+ * retired; S110-4 (re-measured live at run 110, matched methodology on
+ * both sites): the reference's panel CLOSES at overlay-open time — it does
+ * not stay mounted underneath (the stale S77-2 claim, corrected). The
+ * SEARCH row's handler closes the panel and opens the overlay in one batch.
  *
  * Tailwind v4 trap-log note (the bug this file is structured around): v4
  * changed the generation order of display utilities, so JS-toggling the
@@ -69,7 +71,16 @@ export function MobileNav() {
         <nav aria-label="Mobile" className="flex flex-col gap-4">
           <button
             type="button"
-            onClick={() => setSearchOverlayOpen(true)}
+            onClick={() => {
+              // S110-4 (measured live on the reference at run 110): the
+              // panel closes AT overlay-open time — the reference's header
+              // box collapses to the 64px bar while the overlay is up, and
+              // the panel stays closed after the overlay exits. Both state
+              // sets batch into one render (the panel unmounts as the
+              // overlay mounts — no display-utility toggle involved).
+              setMobileNavOpen(false);
+              setSearchOverlayOpen(true);
+            }}
             className="flex items-center gap-3 text-sm uppercase tracking-[0.1em] text-foreground transition-colors hover:text-primary"
           >
             <Search className="h-4 w-4" aria-hidden />

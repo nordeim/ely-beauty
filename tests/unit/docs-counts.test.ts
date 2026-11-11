@@ -19,8 +19,8 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 // ── The single source of truth for the docs' live-tense counts ──────────
-const UNIT_TESTS = 846;
-const E2E_TESTS = 92;
+const UNIT_TESTS = 851;
+const E2E_TESTS = 93;
 const PRISMA_MODELS = 20;
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -837,5 +837,71 @@ describe("S109 — the secrets-shape net (audit 109-a F-1/F-2)", () => {
     const re = /password\s+`?\$[A-Za-z0-9]{6,}/i;
     const hits = scanTextFiles(SECRET_SCAN_ROOT).filter((f) => re.test(readFileSync(f, "utf8")));
     expect(hits, "$-prefixed password credentials — redact at the source").toEqual([]);
+  });
+});
+
+describe("S110 — the non-adjacent credential-shape net (audit 110-a F-1/F-2)", () => {
+  // Run-110's finding: the recurring leak stratum is the OPERATOR'S RAW
+  // NARRATIVES (session_75.md:23 quoted the standing instruction's
+  // credential verbatim) — and a narrative can quote the credential in
+  // NON-ADJACENT prose ("(`$…`)" — the "password" word nowhere near it),
+  // which the S109-2a adjacency shape never catches. The S110 shape bans
+  // the backtick-wrapped $-prefixed credential ANYWHERE in the corpus,
+  // discriminating credentials from lookalikes by requiring at least one
+  // digit AND one letter inside the 6+ alnum body (the operator's real
+  // credential shape): Prisma's all-letters identifiers (`$transaction`,
+  // `$queryRaw`, `$executeRaw` — the false-positive surface that killed
+  // the naive shape) and the `$2.40`/`$X.00` price templates pass.
+  //
+  // SCOPE BOUNDARY (recorded per the standing contract): the corpus walk
+  // excludes `skills/` — the vendored catalog is operator-managed content
+  // outside code checking; a credential inside it is remediated by hand
+  // (S110-2 did, for skills/replicate-web-app/SKILL-v3.md:586) and the
+  // complete fix for the credential itself is operator-side ROTATION.
+  const CREDENTIAL_SHAPE = /`\$(?=[A-Za-z0-9]*\d)(?=[A-Za-z0-9]*[A-Za-z])[A-Za-z0-9]{6,}`/;
+
+  it("S110-3a: the grammar matches credentials in any phrasing and rejects the benign lookalikes", () => {
+    // Fixtures use SYNTHETIC placeholder values — the S109 rule: a secrets
+    // net bans SHAPES, never values (a net quoting the banned secret would
+    // itself be a leak). The fixtures are ASSEMBLED BY CONCATENATION so the
+    // raw source of this file never itself carries the banned contiguous
+    // shape (the S110-3b corpus pin scans this file too — the S110-3b RED
+    // that fired on this very test file during development is the trap
+    // this assembly closes; no self-exclusion, no blind spot).
+    const token = (body: string): string => "`$" + body + "`";
+    const credentials = [
+      "password " + token("Zn9xq2b7"), // the S109-2a adjacent form
+      "(" + token("Zn9xq2b7") + ")", // the non-adjacent prose form (the run-110 class)
+      "the value " + token("Qw3rty8") + " leaked", // mid-sentence, no parens
+      "PASSWORD " + token("Ab1cd2ef"), // case-insensitive context
+    ];
+    for (const fixture of credentials) {
+      expect(CREDENTIAL_SHAPE.test(fixture), `credential fixture: ${fixture}`).toBe(true);
+    }
+    const benign = [
+      "`$transaction`", // Prisma API identifier (all letters) — the corpus-wide false-positive surface
+      "`$queryRaw`",
+      "`$executeRaw`",
+      "`$disconnect`",
+      "$2.40", // price templates (not backtick-wrapped, no letter)
+      "`$X.00`", // the overlay price format (dot breaks the alnum body; 1 letter, 0 digits)
+      "`$${var}`", // JS template literal
+      "price $288.00",
+      "AUTH_SECRET=\"\"", // the empty .env.example placeholder
+    ];
+    for (const fixture of benign) {
+      expect(CREDENTIAL_SHAPE.test(fixture), `benign fixture: ${fixture}`).toBe(false);
+    }
+  });
+
+  it("S110-3b: no tracked text file carries the backtick-wrapped $-prefixed credential shape", () => {
+    const files = scanTextFiles(SECRET_SCAN_ROOT);
+    // The S109 floor contract: the walk must prove it scanned.
+    expect(files.length, "the secrets-scan corpus is non-trivial").toBeGreaterThanOrEqual(300);
+    const hits = files.filter((f) => CREDENTIAL_SHAPE.test(readFileSync(f, "utf8")));
+    expect(
+      hits,
+      "backtick-wrapped $-prefixed credentials in any phrasing — redact at the source + rotate",
+    ).toEqual([]);
   });
 });

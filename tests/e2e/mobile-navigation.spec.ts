@@ -16,12 +16,14 @@ import { gotoHydrated } from "./helpers";
  * works; the header toggle X hides it; the hamburger re-opens it.
  *
  * Run-72 anatomy: the panel is the reference's ivory push-down with a
- * SEARCH row that swaps the panel content for an input + live results, then
- * Shop / Beauty Tools / Brush & Combs / About. S74-2: the panel ends at
- * About (the reference's panel carries nothing else — the Sign In/Wishlist/
+ * SEARCH row that opens the shared full-screen search overlay (S77-2),
+ * then Shop / Beauty Tools / Brush & Combs / About. S74-2: the panel ends
+ * at About (the reference's panel carries nothing else — the Sign In/Wishlist/
  * Admin rows were scaffold heritage); the wishlist entry lives in the
  * footer's SUPPORT column. The active link carries aria-current with NO
- * color highlight (the invisible a11y superset, S73-4).
+ * color highlight (the invisible a11y superset, S73-4). S110-4: the SEARCH
+ * row CLOSES the panel at overlay-open time (the reference's measured
+ * state machine — re-measured run-110).
  */
 test.describe("mobile navigation (Tailwind v4 regression guard)", () => {
   test.beforeEach(async ({ page }) => {
@@ -159,7 +161,8 @@ test.describe("mobile navigation (Tailwind v4 regression guard)", () => {
     const panel = page.getByTestId("mobile-menu");
     await panel.getByRole("button", { name: "Search", exact: true }).click();
 
-    // The shared full-screen overlay mounts above the open panel.
+    // The shared full-screen overlay mounts (S110-4: the panel closed at
+    // open time — the reference's measured state machine).
     const overlay = page.getByTestId("search-overlay");
     await expect(overlay).toBeVisible();
     const input = overlay.getByRole("searchbox", { name: "Search products" });
@@ -230,6 +233,38 @@ test.describe("mobile navigation (Tailwind v4 regression guard)", () => {
     const lastRow = rows.nth(7);
     await lastRow.scrollIntoViewIfNeeded();
     await expect(lastRow).toBeVisible();
+  });
+
+  test("the panel SEARCH row CLOSES the panel when it opens the overlay (S110-4, measured live)", async ({ page }) => {
+    // Run-110 re-measure (matched methodology, both sites logged in, both
+    // exit paths probed): the reference's panel does NOT stay mounted
+    // under the search overlay — clicking the panel's SEARCH row closes
+    // the panel AT OPEN TIME (the reference's header box collapses
+    // 278 → 64px while the overlay is up) and the panel stays closed
+    // after the overlay exits. The S77-2 claim ("the panel stays open
+    // underneath the overlay, exactly like the reference") was stale —
+    // re-measured and corrected this cycle.
+    const menuButton = page.getByTestId("mobile-menu-button");
+    await menuButton.click();
+    const panel = page.getByTestId("mobile-menu");
+    await expect(panel).toBeVisible();
+
+    await panel.getByRole("button", { name: "Search", exact: true }).click();
+    const overlay = page.getByTestId("search-overlay");
+    await expect(overlay).toBeVisible();
+
+    // The panel closed at open time — the reference's measured state machine.
+    await expect(page.getByTestId("mobile-menu")).toHaveCount(0);
+
+    // Exiting the overlay keeps the panel closed (no zombie re-open).
+    await overlay.getByRole("button", { name: "Close search" }).click();
+    await expect(page.getByTestId("search-overlay")).toHaveCount(0);
+    await expect(page.getByTestId("mobile-menu")).toHaveCount(0);
+
+    // The hamburger re-opens the panel — proves the close was a state
+    // set, not a broken mount (the v4-safe pattern holds).
+    await menuButton.click();
+    await expect(page.getByTestId("mobile-menu")).toBeVisible();
   });
 });
 
