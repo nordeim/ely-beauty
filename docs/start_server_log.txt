@@ -5,7 +5,7 @@ $ diff .env .env.example
 > NEXT_PUBLIC_SITE_URL=http://localhost:3000
 24,25c24,25
 < # Generate with: openssl rand -base64 32
-< AUTH_SECRET="P9vcuV2srgCUHIs344tE8MRv7fv/ymP11jnSTdu2ixw="
+< AUTH_SECRET="<redacted per run-109 — rotate at the production deploy>"
 ---
 > # Generate with: openssl rand -hex 32
 > AUTH_SECRET=""

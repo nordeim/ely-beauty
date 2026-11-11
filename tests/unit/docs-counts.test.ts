@@ -19,7 +19,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 // ── The single source of truth for the docs' live-tense counts ──────────
-const UNIT_TESTS = 844;
+const UNIT_TESTS = 846;
 const E2E_TESTS = 92;
 const PRISMA_MODELS = 20;
 // ─────────────────────────────────────────────────────────────────────────
@@ -769,5 +769,73 @@ describe("S108 — the doc-vocabulary residue net (audit 108-a F-1..F-5)", () =>
     // BDT (৳3,000 threshold, the ৳288 under-threshold cart, "Add ৳2,712").
     expect(sec8, "no $34.99 in the PAD test inventory").not.toContain("$34.99");
     expect(sec8, "no $15.01 in the PAD test inventory").not.toContain("$15.01");
+  });
+});
+
+// ── S109 — the secrets-shape net (audit 109-a F-1/F-2) ─────────────────────
+// The standing secrets sweep greps fixed MARKERS (operator literals, 64-hex,
+// sk_live, OPENSSH, ghp_, AKIA) — a VALUE-SHAPED secret matches none of them.
+// Audit 109-a found the production AUTH_SECRET sitting in plain sight in the
+// operator's own deployment log (docs/start_server_log.txt — a captured
+// `diff .env .env.example` from the production deploy) and the reference-site
+// operator password in the four vendored founding prompts: secrets leaked in
+// SHAPES the marker sweep never checked, at the OPERATOR-LOG stratum — the
+// one stratum no net had ever covered (the S108 "every stratum" lesson
+// recurring). These pins ban the SHAPES across every tracked text file
+// (the S99-1 filesystem-derivation convention; skills/ excluded per the
+// standing instruction). The pins carry NO values — a secrets net that
+// quotes the secret it bans would itself be a leak (the S108-2a
+// paraphrase discipline, generalized to the secrets class).
+const SECRET_SCAN_EXTS = new Set([
+  ".txt", ".md", ".ts", ".tsx", ".js", ".mjs", ".json", ".sh", ".css", ".py", ".yml", ".yaml",
+]);
+const SECRET_SCAN_SKIP_DIRS = new Set([
+  "node_modules", ".git", ".next", "skills", "test-results", "playwright-report", "db", "coverage",
+]);
+const SECRET_SCAN_ROOT = resolve(import.meta.dirname, "../..");
+
+/** Every text file under the repo root (the S99-1 derivation convention). */
+function scanTextFiles(dir: string, acc: string[] = []): string[] {
+  for (const ent of readdirSync(dir, { withFileTypes: true })) {
+    if (ent.isDirectory()) {
+      if (!SECRET_SCAN_SKIP_DIRS.has(ent.name)) scanTextFiles(join(dir, ent.name), acc);
+      continue;
+    }
+    if (!ent.isFile()) continue;
+    const dot = ent.name.lastIndexOf(".");
+    const ext = dot >= 0 ? ent.name.slice(dot) : "";
+    // .env.example is the one dotfile DESIGNED to carry the assignment shape
+    // (its value is the empty "" placeholder) — include it so a future
+    // accidental real value there fails too.
+    if (SECRET_SCAN_EXTS.has(ext) || ent.name === ".env.example") acc.push(join(dir, ent.name));
+  }
+  return acc;
+}
+
+describe("S109 — the secrets-shape net (audit 109-a F-1/F-2)", () => {
+  it("S109-1a: no tracked text file carries a value-shaped AUTH_SECRET assignment", () => {
+    const files = scanTextFiles(SECRET_SCAN_ROOT);
+    // The floor guards against a broken walk passing vacuously.
+    expect(files.length, "the secrets-scan corpus is non-trivial").toBeGreaterThanOrEqual(300);
+    // A real AUTH_SECRET is an openssl-rand value (32-byte base64/hex — 24+
+    // chars); 16+ value-shaped chars after the assignment is a captured
+    // value. .env.example's empty "" and prose mentions of the NAME pass;
+    // the property-passing shapes in src/tests (AUTH_SECRET: …) are outside
+    // the assignment shape.
+    const re = /AUTH_SECRET\s*=\s*["'`]?[A-Za-z0-9+/=]{16,}/;
+    const hits = files.filter((f) => re.test(readFileSync(f, "utf8")));
+    expect(
+      hits,
+      "value-shaped AUTH_SECRET assignments — rotate at the deploy + redact the capture",
+    ).toEqual([]);
+  });
+
+  it("S109-2a: no tracked text file carries a $-prefixed password credential", () => {
+    // The founding prompts quoted the reference-site login verbatim —
+    // `password $<alnum>` (backtick-wrapped). Post-redaction the shape
+    // appears nowhere; a future pasted credential of the same shape fails.
+    const re = /password\s+`?\$[A-Za-z0-9]{6,}/i;
+    const hits = scanTextFiles(SECRET_SCAN_ROOT).filter((f) => re.test(readFileSync(f, "utf8")));
+    expect(hits, "$-prefixed password credentials — redact at the source").toEqual([]);
   });
 });
