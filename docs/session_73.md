@@ -69,7 +69,6 @@ STEP 2 PASSED 100% — all standing verifications green, the Banknote swap verif
 Direct tools still down; subagent tools work. Composing the docs sweep content and dispatching it with exact text.
 Docs sweep applied and verified (46/46 docs-counts still green). Now the polished `docs/session_72.md` log.
 
-The session restarted mid-task (server_shutdown). The repo state is on disk — let me verify tool health and the working tree, then finish the remaining steps: `docs/session_72.md`, the commit-hash backfill, and the commit + push.
 Direct Bash is restored. Interesting — `docs/session_72.md` already exists (the agent wrote it before the shutdown). Let me verify its content is complete.
 session_72.md is complete. Let me check how the worklog hash convention worked in prior pushed runs (chicken-and-egg: the hash can't be in its own commit).
 The house convention keeps the literal `<this commit>` placeholder (the hash is unknowable pre-commit). Aligning my worklog line to the exact prior phrasing.
