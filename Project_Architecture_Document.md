@@ -1,9 +1,16 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.33
+# ElyBeauty — Master Project Architecture Document (PAD) v2.34
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-11
+
+#### Revision Block — v2.34 (Run 107 — the taka-vocabulary identifier cycle)
+
+- `[FIX]` **The taka-vocabulary identifier sweep (S107-1, audit 107-a INFO-1, TDD — the cycle's centerpiece)**: the run-105/106 currency-domain class's last residue survived at the IDENTIFIER level — the HomeNest-scaffold "Dollars" vocabulary over values that are ALL BDT poisha: the `parseDollarsToCents` back-compat alias in `src/lib/money.ts` (consumed by the three admin dialogs' taka-labeled inputs), the seven `*Dollars` form-field names (`priceDollars`/`compareAtDollars` in product-dialog + the products-page prefill, `minSubtotalDollars` in coupon-dialog + the coupons-page prefill, `standardShippingDollars`/`expressShippingDollars`/`freeShippingThresholdDollars` in settings-form), and `src/lib/seo.ts`'s `centsToDollars` JSON-LD price helper (poisha → decimal taka). Naming-only, zero behavioral impact — but a future maintainer reaching for a money API by name found a "Dollars" surface over taka values (the name-outlived-domain trap one stratum below the seams runs 105/106 closed). The fix, one lockstep pass across 7 src files: the alias RETIRES (its three consumers import `parseAmountToCents` directly — the canonical name it always forwarded to); the seven field names take the `*Taka` vocabulary; `centsToDollars` becomes `centsToTaka` (internal-only: one definition + one call site, zero test references); the two heritage-acknowledging comments re-word; and `money.test.ts`'s describe re-points at the canonical export with assertions byte-identical. RED: 4 source pins (S107-1a the alias's absence, S107-1b the canonical imports, S107-1c the vocabulary's absence on the five admin money-input surfaces — the net sweeps stale heritage comments with the stale names, S107-1d the taka-named seo helper) + the standing plan-range lockstep, observed by name → GREEN. No DOM/aria/label change (the inputs were already ৳-labeled), no API/schema contract change, no e2e coupling; the renamed fields' rendered form verified live (the admin settings form renders the three shipping/threshold inputs with ৳ labels and the seeded 70.00/130.00/3000.00 values).
+- `[FIX]` **The mint-fetch timeout (S107-2, audit 107-a INFO-3)**: the checkout island's mint `fetch("/api/stripe/payment-intention"…)` carried no abort signal — a hung request left the panel in "Preparing secure card payment…" forever with no retry affordance (the Try-again button renders only on `sessionError`). The fix: `MINT_TIMEOUT_MS = 15_000` (a named constant) + `signal: AbortSignal.timeout(MINT_TIMEOUT_MS)` — the abort rejects into the standing catch → `sessionError` → Try-again. RED: 1 source pin (S107-2a) observed by name → GREEN; the `cancelled` flag, the idempotency-key mint, and the PaymentElement/confirm flow untouched.
+- `[SR]` **The audit-107-a envelope**: 12/12 standing anchors PASS · 0 CRITICAL/HIGH/MEDIUM/LOW — 3 INFO (INFO-1 the identifier residue → S107-1; INFO-2 the documented `db:push` shell-env deviation → recorded NO-ACTION in the plan's class table; INFO-3 the mint timeout → S107-2), zero code defects; the run-105 AND run-106 change-sets re-verified hunk-by-hunk with no test weakening; the currency-domain sweep re-run over 67 formatter call expressions with 0 mismatches; the six class nets re-derived and re-probed non-vacuous (24/24 probes); every live-tense count claim re-verified against the filesystem/vitest run. Count-lockstep: 833 → 838 unit (+5 source pins), e2e 92 unchanged; plan range `session-2..107`.
+- `[VERIFY]` **Parity zero-delta on every pinned surface**: the mobile panel rows (clone 88/124/160/196/232 vs reference 89/125/161/197/233 — −1px uniform, hrefs and labels byte-identical), the overlay input (Cormorant 18px/300), the silk rows (clone 173/257/341/425 vs reference 174/258/342/426 — −1px uniform, h=80, all four copies and prices byte-identical at Cormorant 14px/300; the reference's rows are BUTTON elements), /shop (19 unique cards bonnet-first, h1 byte-identical), the no-results copy byte-identical, and the mobile nav functional on both sites (the panel → link → navigation chain exercised live) — no Tailwind v4 bug.
 
 #### Revision Block — v2.33 (Run 106 — the pay-button currency-domain cycle)
 
@@ -635,7 +642,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, label, select, slot, toast) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^4.6.7 | Single validation boundary (ADR-005) — v4 since run 86 (S86-1) |
-| Unit tests | Vitest | ^4.1.12 | Node-env suite (833 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
+| Unit tests | Vitest | ^4.1.12 | Node-env suite (838 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
 | E2E tests | Playwright | ^1.64 | 92 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins + the S92-2f password-change round-trip |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
@@ -885,7 +892,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 833 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 838 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -1162,7 +1169,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
 | `prisma/schema.prisma` / `seed.ts` | 20 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 833 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11 through session-27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
+| `tests/unit/*` · `tests/e2e/*` | 838 unit · 92 e2e (incl. the v4 guard + tracking access contract + the session-11 through session-27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---

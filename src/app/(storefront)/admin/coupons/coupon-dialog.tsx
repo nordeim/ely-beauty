@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 
 import { deleteCouponAction, toggleCouponActiveAction, upsertCouponAction } from "@/lib/actions/admin";
-import { parseDollarsToCents } from "@/lib/money";
+import { parseAmountToCents } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
@@ -37,7 +37,7 @@ export type CouponFormValues = {
   value: string;
   description: string;
   /** Decimal taka string; "" / "0" = no minimum. */
-  minSubtotalDollars: string;
+  minSubtotalTaka: string;
   /** Date-input value (YYYY-MM-DD); "" = never expires. */
   expiresAtDate: string;
   /** "" = unlimited. */
@@ -52,7 +52,7 @@ function emptyCoupon(): CouponFormValues {
     type: "percent",
     value: "",
     description: "",
-    minSubtotalDollars: "",
+    minSubtotalTaka: "",
     expiresAtDate: "",
     maxRedemptions: "",
     isActive: true,
@@ -108,7 +108,7 @@ export function CouponDialogButton({
     } else if (form.type === "free_shipping") {
       parsedValue = 0;
     } else {
-      const cents = parseDollarsToCents(form.value);
+      const cents = parseAmountToCents(form.value);
       if (cents === null || cents < 1) {
         setError("Amount off must be a taka amount of ৳0.01 or more.");
         return;
@@ -117,8 +117,8 @@ export function CouponDialogButton({
     }
 
     let minSubtotal = 0;
-    if (form.minSubtotalDollars.trim() !== "") {
-      const cents = parseDollarsToCents(form.minSubtotalDollars);
+    if (form.minSubtotalTaka.trim() !== "") {
+      const cents = parseAmountToCents(form.minSubtotalTaka);
       if (cents === null) {
         setError("Minimum subtotal must be a taka amount, like 25.00.");
         return;
@@ -276,8 +276,8 @@ export function CouponDialogButton({
                   type="number"
                   min={0}
                   step={0.01}
-                  value={form.minSubtotalDollars}
-                  onChange={(e) => setField("minSubtotalDollars", e.target.value)}
+                  value={form.minSubtotalTaka}
+                  onChange={(e) => setField("minSubtotalTaka", e.target.value)}
                   placeholder="0.00"
                   className="pl-7"
                 />

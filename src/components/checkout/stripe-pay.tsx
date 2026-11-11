@@ -65,6 +65,13 @@ type PaymentIntentSession = {
   amount: number;
 };
 
+/** The mint fetch's timeout ceiling (S107-2, audit 107-a INFO-3): a
+ *  server-minted Stripe intent call's generous limit. Without it a hung
+ *  request left the panel in "Preparing secure card payment…" forever —
+ *  the abort rejects into the standing catch → sessionError → the
+ *  Try-again button renders. */
+const MINT_TIMEOUT_MS = 15_000;
+
 // The site tokens, as hex, for the Element's iframe styling (the iframe
 // cannot read the page's CSS — Stripe's appearance variables are the only
 // channel). S75-10 (L-1): mapped from the CURRENT ElyBeauty theme in
@@ -147,6 +154,10 @@ export function StripeCheckout({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: mintKey,
+      // S107-2: a hung mint must not strand the panel — the timeout abort
+      // rejects the promise into the catch below, which surfaces the
+      // sessionError the Try-again button renders.
+      signal: AbortSignal.timeout(MINT_TIMEOUT_MS),
     })
       .then(async (res) => {
         if (cancelled) return;

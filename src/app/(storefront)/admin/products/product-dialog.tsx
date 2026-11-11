@@ -6,7 +6,7 @@ import { Eye, EyeOff, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 
 import { deleteProductAction, toggleProductActiveAction, upsertProductAction } from "@/lib/actions/admin";
 import { slugify } from "@/lib/format";
-import { parseDollarsToCents } from "@/lib/money";
+import { parseAmountToCents } from "@/lib/money";
 import { normalizeTemplateCategory } from "@/lib/validation";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toaster";
@@ -41,8 +41,8 @@ export type ProductFormValues = {
   templateCategory: string;
   shortDescription: string;
   description: string;
-  priceDollars: string;
-  compareAtDollars: string;
+  priceTaka: string;
+  compareAtTaka: string;
   sku: string;
   stock: string;
   imagesText: string;
@@ -70,8 +70,8 @@ function emptyProduct(): ProductFormValues {
     templateCategory: "",
     shortDescription: "",
     description: "",
-    priceDollars: "",
-    compareAtDollars: "",
+    priceTaka: "",
+    compareAtTaka: "",
     sku: "",
     stock: "25",
     imagesText: "",
@@ -125,14 +125,14 @@ export function ProductDialogButton({
     event.preventDefault();
     setError(null);
 
-    const priceCents = parseDollarsToCents(form.priceDollars);
+    const priceCents = parseAmountToCents(form.priceTaka);
     if (priceCents === null || priceCents <= 0) {
       setError("Enter a valid price in taka (৳), e.g. 49.99.");
       return;
     }
     let compareAtCents: number | null = null;
-    if (form.compareAtDollars.trim() !== "") {
-      const parsed = parseDollarsToCents(form.compareAtDollars);
+    if (form.compareAtTaka.trim() !== "") {
+      const parsed = parseAmountToCents(form.compareAtTaka);
       if (parsed === null || parsed <= 0) {
         setError("Enter a valid compare-at price in taka (৳) — or leave it blank.");
         return;
@@ -357,8 +357,8 @@ export function ProductDialogButton({
                 id="product-price"
                 type="text"
                 inputMode="decimal"
-                value={form.priceDollars}
-                onChange={(e) => setField("priceDollars", e.target.value)}
+                value={form.priceTaka}
+                onChange={(e) => setField("priceTaka", e.target.value)}
                 placeholder="149.99"
                 required
               />
@@ -369,8 +369,8 @@ export function ProductDialogButton({
                 id="product-compare-at"
                 type="text"
                 inputMode="decimal"
-                value={form.compareAtDollars}
-                onChange={(e) => setField("compareAtDollars", e.target.value)}
+                value={form.compareAtTaka}
+                onChange={(e) => setField("compareAtTaka", e.target.value)}
                 placeholder="Optional"
               />
             </div>

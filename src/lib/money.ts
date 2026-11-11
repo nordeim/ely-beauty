@@ -74,11 +74,6 @@ export function parseAmountToCents(input: string): number | null {
   return Math.round(cents);
 }
 
-/** Back-compat alias for the pre-ElyBeauty name — kept for its unit
- * test AND the three admin dialogs' taka-labeled inputs (product-dialog,
- * coupon-dialog, settings-form — all import this alias). */
-export const parseDollarsToCents = parseAmountToCents;
-
 /** Percentage discount between compare-at and current price, e.g. -29 => "-29%". */
 export function discountPercent(price: number, compareAtPrice: number | null | undefined): number | null {
   if (!compareAtPrice || compareAtPrice <= price) return null;

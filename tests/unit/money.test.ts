@@ -5,7 +5,7 @@ import {
   formatMoney,
   formatOverlayPrice,
   formatStripeUsd,
-  parseDollarsToCents,
+  parseAmountToCents,
 } from "@/lib/money";
 
 describe("formatMoney", () => {
@@ -98,27 +98,27 @@ describe("formatStripeUsd (the Stripe USD form — ledger, refund notes, Pay but
   });
 });
 
-describe("parseDollarsToCents", () => {
-  it("parses plain dollar strings", () => {
-    expect(parseDollarsToCents("199.99")).toBe(19999);
-    expect(parseDollarsToCents("5")).toBe(500);
-    expect(parseDollarsToCents("0.05")).toBe(5);
+describe("parseAmountToCents", () => {
+  it("parses plain amount strings", () => {
+    expect(parseAmountToCents("199.99")).toBe(19999);
+    expect(parseAmountToCents("5")).toBe(500);
+    expect(parseAmountToCents("0.05")).toBe(5);
   });
 
   it("strips currency symbols and thousands separators", () => {
-    expect(parseDollarsToCents("৳1,299.50")).toBe(129950);
-    expect(parseDollarsToCents("$1,299.50")).toBe(129950);
-    expect(parseDollarsToCents(" 42 ")).toBe(4200);
+    expect(parseAmountToCents("৳1,299.50")).toBe(129950);
+    expect(parseAmountToCents("$1,299.50")).toBe(129950);
+    expect(parseAmountToCents(" 42 ")).toBe(4200);
   });
 
   it("accepts at most two decimal places", () => {
-    expect(parseDollarsToCents("1.999")).toBeNull();
+    expect(parseAmountToCents("1.999")).toBeNull();
   });
 
   it("rejects garbage", () => {
-    expect(parseDollarsToCents("abc")).toBeNull();
-    expect(parseDollarsToCents("")).toBeNull();
-    expect(parseDollarsToCents("-5")).toBeNull();
+    expect(parseAmountToCents("abc")).toBeNull();
+    expect(parseAmountToCents("")).toBeNull();
+    expect(parseAmountToCents("-5")).toBeNull();
   });
 });
 

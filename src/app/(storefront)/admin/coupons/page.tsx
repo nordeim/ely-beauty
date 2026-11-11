@@ -49,7 +49,7 @@ export default async function AdminCouponsPage() {
             // free_shipping carries value 0 (the dialog hides the field).
             value: coupon.type === "fixed" ? (coupon.value / 100).toFixed(2) : String(coupon.value),
             description: coupon.description,
-            minSubtotalDollars: (coupon.minSubtotal / 100).toFixed(2),
+            minSubtotalTaka: (coupon.minSubtotal / 100).toFixed(2),
             expiresAtDate: expiryDateValue(coupon.expiresAt),
             maxRedemptions: coupon.maxRedemptions === null ? "" : String(coupon.maxRedemptions),
             isActive: coupon.isActive,

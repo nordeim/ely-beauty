@@ -909,3 +909,82 @@ describe("S106 — the Stripe Pay-button currency-domain pins (source pins)", ()
     expect(sessionType).toMatch(/never formatMoney/);
   });
 });
+
+// S107 — the taka-vocabulary identifier pins (audit 107-a INFO-1/INFO-3,
+// source pins). Runs 105/106 closed the currency-DOMAIN class at the
+// formatter and render seams (formatStripeUsd on USD minor units, never
+// formatMoney); audit 107-a found the class's last residue at the
+// IDENTIFIER level: the admin money-input surfaces still carried the
+// HomeNest-scaffold "Dollars" vocabulary over values that are ALL BDT
+// poisha — the parseDollarsToCents back-compat alias, the *Dollars form
+// field names (price/compareAt/minSubtotal/shipping/threshold), and seo's
+// centsToDollars JSON-LD helper. Internal-only names (never rendered, no
+// behavioral impact), but the identifier vocabulary is the same
+// name-outlived-domain trap: a future maintainer reaching for a money API
+// by name finds a "Dollars" surface over taka values. The pins hold the
+// retirement: the canonical parseAmountToCents import, the *Taka field
+// vocabulary, and no Dollars identifier anywhere on the five admin
+// money-input surfaces (the net sweeps stale heritage COMMENTS with the
+// stale names — prose carrying the old vocabulary fails here too).
+describe("S107 — the taka-vocabulary identifier pins (source pins)", () => {
+  it("S107-1a: money.ts exports no parseDollarsToCents alias (retired with S107-1)", () => {
+    const money = src("lib/money.ts");
+    // The alias always forwarded to parseAmountToCents; with its three
+    // dialog consumers migrated, the back-compat export retires — a
+    // future re-add fails here by name.
+    expect(money).not.toContain("parseDollarsToCents");
+  });
+
+  it("S107-1b: the three admin dialogs import parseAmountToCents directly (no alias consumers)", () => {
+    const dialogs = [
+      "app/(storefront)/admin/products/product-dialog.tsx",
+      "app/(storefront)/admin/coupons/coupon-dialog.tsx",
+      "app/(storefront)/admin/settings/settings-form.tsx",
+    ] as const;
+    for (const rel of dialogs) {
+      const dialog = src(rel);
+      expect(dialog, rel).toContain('import { parseAmountToCents } from "@/lib/money"');
+      expect(dialog, rel).not.toContain("parseDollarsToCents");
+    }
+  });
+
+  it("S107-1c: the admin money-input surfaces carry no *Dollars identifiers (the taka vocabulary)", () => {
+    const surfaces = [
+      "app/(storefront)/admin/settings/settings-form.tsx",
+      "app/(storefront)/admin/products/product-dialog.tsx",
+      "app/(storefront)/admin/products/page.tsx",
+      "app/(storefront)/admin/coupons/coupon-dialog.tsx",
+      "app/(storefront)/admin/coupons/page.tsx",
+    ] as const;
+    for (const rel of surfaces) {
+      const surface = src(rel);
+      // Both cases: the identifier shapes (priceDollars, minSubtotalDollars)
+      // and any prose heritage notes still carrying the vocabulary.
+      expect(surface, rel).not.toContain("Dollars");
+      expect(surface, rel).not.toContain("dollars");
+    }
+  });
+
+  it("S107-1d: seo.ts's JSON-LD price helper is named in the taka vocabulary", () => {
+    const seo = src("lib/seo.ts");
+    // centsToDollars converted poisha → decimal taka for the JSON-LD BDT
+    // price unit (its own docblock flagged the scaffold-heritage name);
+    // the rename makes the name match the domain it always served.
+    expect(seo).toContain("centsToTaka");
+    expect(seo).not.toContain("centsToDollars");
+  });
+
+  it("S107-2a: the island's mint fetch carries a timeout signal (audit 107-a INFO-3)", () => {
+    const island = src("components/checkout/stripe-pay.tsx");
+    const mintStart = island.indexOf('fetch("/api/stripe/payment-intent"');
+    const mintEnd = island.indexOf(".then(async (res)", mintStart);
+    expect(mintStart, "the mint fetch site").toBeGreaterThanOrEqual(0);
+    const mintOptions = island.slice(mintStart, mintEnd);
+    // A hung mint request previously left the panel in the preparing state
+    // with no retry affordance; the abort rejects into the standing catch
+    // → sessionError → the Try-again button. The island never mounts in
+    // test envs (Stripe unconfigured), so the source pin is the only probe
+    // that can hold the seam.
+    expect(mintOptions, "the mint fetch options carry the timeout signal").toContain("AbortSignal.timeout(");
+  });
+});

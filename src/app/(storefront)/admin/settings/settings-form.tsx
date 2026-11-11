@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 import { updateSettingsAction } from "@/lib/actions/admin";
-import { parseDollarsToCents } from "@/lib/money";
+import { parseAmountToCents } from "@/lib/money";
 import type { StoreSettings } from "@/lib/settings";
 import { useToast } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
@@ -19,9 +19,9 @@ type SettingsFormState = {
   contactPhone: string;
   address: string;
   taxRatePercent: string;
-  standardShippingDollars: string;
-  expressShippingDollars: string;
-  freeShippingThresholdDollars: string;
+  standardShippingTaka: string;
+  expressShippingTaka: string;
+  freeShippingThresholdTaka: string;
   socialInstagram: string;
   socialPinterest: string;
   socialFacebook: string;
@@ -36,9 +36,9 @@ function toFormState(settings: StoreSettings): SettingsFormState {
     contactPhone: settings.contactPhone,
     address: settings.address,
     taxRatePercent: String(settings.taxRatePercent),
-    standardShippingDollars: (settings.standardShippingCents / 100).toFixed(2),
-    expressShippingDollars: (settings.expressShippingCents / 100).toFixed(2),
-    freeShippingThresholdDollars: (settings.freeShippingThresholdCents / 100).toFixed(2),
+    standardShippingTaka: (settings.standardShippingCents / 100).toFixed(2),
+    expressShippingTaka: (settings.expressShippingCents / 100).toFixed(2),
+    freeShippingThresholdTaka: (settings.freeShippingThresholdCents / 100).toFixed(2),
     socialInstagram: settings.socialInstagram,
     socialPinterest: settings.socialPinterest,
     socialFacebook: settings.socialFacebook,
@@ -50,8 +50,8 @@ function toFormState(settings: StoreSettings): SettingsFormState {
  * Admin settings form — taka ⇄ poisha conversion happens here: the three
  * shipping/threshold fields are edited in taka (৳) and submitted as integer
  * cents (poisha); the tax rate is submitted as a plain percent number.
- * (The *Dollars field names are HomeNest-scaffold heritage — internal
- * only, never rendered.)
+ * (The *Taka field names are the S107-1 vocabulary — taka-denominated
+ * strings, parsed by parseAmountToCents, internal only, never rendered.)
  */
 export function SettingsForm({ settings }: { settings: StoreSettings }) {
   const router = useRouter();
@@ -68,17 +68,17 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
     event.preventDefault();
     setError(null);
 
-    const shippingCents = parseDollarsToCents(form.standardShippingDollars);
+    const shippingCents = parseAmountToCents(form.standardShippingTaka);
     if (shippingCents === null) {
       setError("Enter a valid amount for Dhaka shipping (e.g. 70).");
       return;
     }
-    const expressCents = parseDollarsToCents(form.expressShippingDollars);
+    const expressCents = parseAmountToCents(form.expressShippingTaka);
     if (expressCents === null) {
       setError("Enter a valid amount for outside-Dhaka shipping (e.g. 130).");
       return;
     }
-    const thresholdCents = parseDollarsToCents(form.freeShippingThresholdDollars);
+    const thresholdCents = parseAmountToCents(form.freeShippingThresholdTaka);
     if (thresholdCents === null) {
       setError("Enter a valid taka amount for the free-shipping threshold (e.g. 50).");
       return;
@@ -215,8 +215,8 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
               id="settings-standard-shipping"
               type="text"
               inputMode="decimal"
-              value={form.standardShippingDollars}
-              onChange={(e) => setField("standardShippingDollars", e.target.value)}
+              value={form.standardShippingTaka}
+              onChange={(e) => setField("standardShippingTaka", e.target.value)}
               placeholder="6.95"
               required
             />
@@ -228,8 +228,8 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
               id="settings-express-shipping"
               type="text"
               inputMode="decimal"
-              value={form.expressShippingDollars}
-              onChange={(e) => setField("expressShippingDollars", e.target.value)}
+              value={form.expressShippingTaka}
+              onChange={(e) => setField("expressShippingTaka", e.target.value)}
               placeholder="18.95"
               required
             />
@@ -241,8 +241,8 @@ export function SettingsForm({ settings }: { settings: StoreSettings }) {
               id="settings-free-threshold"
               type="text"
               inputMode="decimal"
-              value={form.freeShippingThresholdDollars}
-              onChange={(e) => setField("freeShippingThresholdDollars", e.target.value)}
+              value={form.freeShippingThresholdTaka}
+              onChange={(e) => setField("freeShippingThresholdTaka", e.target.value)}
               placeholder="50"
               required
             />

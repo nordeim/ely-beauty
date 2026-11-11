@@ -55,9 +55,8 @@ function absolutizeImage(baseUrl: string, image: string): string {
 }
 
 /** Integer cents → decimal taka (19999 → 199.99 — the JSON-LD BDT price
- * unit; the name is HomeNest-scaffold heritage). Never a float math trap:
- * prices are whole cents. */
-export function centsToDollars(cents: number): number {
+ * unit). Never a float math trap: prices are whole cents. */
+export function centsToTaka(cents: number): number {
   return Math.round(cents) / 100;
 }
 
@@ -129,7 +128,7 @@ export function buildProductJsonLd(product: ProductJsonLdInput): JsonLdObject {
       "@type": "Offer",
       url: product.url,
       priceCurrency: product.currency,
-      price: centsToDollars(product.price),
+      price: centsToTaka(product.price),
       availability: availabilityFor(product.stock),
       itemCondition: "https://schema.org/NewCondition",
       priceValidUntil: priceValidUntil(),
