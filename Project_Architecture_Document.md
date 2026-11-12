@@ -1,9 +1,16 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.41
+# ElyBeauty — Master Project Architecture Document (PAD) v2.42
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-12
+
+#### Revision Block — v2.42 (Run 115 — the review-catch & identifier-redaction hardening cycle)
+
+- `[SR]` **The audit-115-a envelope — the first actionable findings since run-113, both remediated TDD-first**: 12/12 standing anchors PASS · 0 CRITICAL/HIGH · 1 MEDIUM + 1 LOW + 6 INFO. MEDIUM-1: `submitReviewAction`'s broad catch-swallow — the sole untyped, unlogged, non-rethrowing catch in the actions layer, violating the S13-5 sibling convention ("an outage is not a not-found"; auth.ts + 11 admin.ts sites narrow to known Prisma classes and rethrow unknowns) — a DB outage during review submission was indistinguishable from a transient failure. LOW-1: the reference-site login identifier (the operator's personal-mail address) remained verbatim in the four founding prompts after the run-109 password redaction — PII in a public-shaped repo and a phishing/spraying enabler. The anchors re-probed independently (zero classList/TODO/any/console.log in src/, 13/13 routes force-dynamic, the seam at 10 files/12 sites, 15 metered sites with Retry-After, the secrets nets corpus 359 ≥ 300 with 0/0/0 hits, db-path contract standing, npm audit 0/0); every count claim re-measured live (855/71/93/20/13/25/28/4 at baseline).
+- `[FIX]` **The two remediations (TDD-first)**: (1) `tests/unit/review-catch.test.ts` written FIRST — RED by name on exactly the 3 action pins → the `isRecordNotFound` (P2025) helper joined the `prisma-errors.ts` duck-typing seam (the `isUniqueViolation`/`isForeignKeyViolation` contract) → the catch now maps the two concurrent-delete race classes (P2003 FK from the in-tx review insert; P2025 from `growReviewAggregate`'s product update) to the pre-check's "Product not found." copy, and logs-and-rethrows every unknown with `{ productId }` context — the review-form island's existing catch renders the friendly copy (UX unchanged). (2) The S115-3a domain-class pin in the S109/S110 family (no `@`-personal-mail address in the tracked corpus; pattern assembled by concatenation, quoting no value) — RED by name on the four founding prompts AND the fresh plan narrative itself → the identifier redacted to `<redacted per run-115>` in all four + the plan paraphrased → GREEN.
+- `[VERIFY]` **Parity zero-delta on every pinned surface, the S110-4 state machine matching both sides for the fifth consecutive cycle**: the panel rows (clone 88/124/160/196/232 vs reference 89/125/161/197/233, −1px uniform, hrefs/labels/tags byte-identical) · the "e" typeahead byte-identical in names AND prices through row 8 ($370/$288/$340/$470/$470/$540/$665/$340) · the no-results copy byte-identical (clean-query re-measured) · About → "Beauty, Redefined" · /shop "All Products" + 19 unique cards bonnet-first with byte-identical DOM-order ৳ sequences — the mobile nav functional on both sites, no TailwindCSS v4 bug.
+- `[CHORE]` **The lockstep + housekeeping**: the count lockstep 855 → 861 (+6 pins measured — 5 review-catch + 1 S115-3a; the plan's initial 860/five estimate corrected to the measured reality BEFORE the sweep), fired BY NAME on exactly README ×4 / CLAUDE ×1 / PAD ×3 / SKILL ×1 → one-pass sweep; the plan-range lockstep 2..114 → 2..115 (RED by name → GREEN); 25/25 screenshots (7 changed, all documented families; the mobile-menu shots byte-stable — an error-path+docs-only cycle); AGENTS.md plan range; SKILL v2.41.0 + the Appendix B signpost swept to runs 89–115 (v2.17–v2.42); worklog Task 109; the polished session_86.md. The two standing rotation advisories remain armed (rotate the reference-site password AND the production AUTH_SECRET at the source — git history retains both values).
 
 #### Revision Block — v2.41 (Run 114 — the seam-count drift hardening cycle)
 
@@ -696,7 +703,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, label, select, slot, toast) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^4.6.7 | Single validation boundary (ADR-005) — v4 since run 86 (S86-1) |
-| Unit tests | Vitest | ^4.1.12 | Node-env suite (855 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
+| Unit tests | Vitest | ^4.1.12 | Node-env suite (861 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
 | E2E tests | Playwright | ^1.64 | 93 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins + the S92-2f password-change round-trip |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
@@ -946,7 +953,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 855 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 861 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -1221,7 +1228,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
 | `prisma/schema.prisma` / `seed.ts` | 20 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 855 unit · 93 e2e (incl. the v4 guard + tracking access contract + the session-11 through session-27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
+| `tests/unit/*` · `tests/e2e/*` | 861 unit · 93 e2e (incl. the v4 guard + tracking access contract + the session-11 through session-27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---

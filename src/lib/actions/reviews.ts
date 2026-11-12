@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { isForeignKeyViolation, isRecordNotFound } from "@/lib/prisma-errors";
 import { clientIp, rateLimit, reviewRateLimitKeys } from "@/lib/rate-limit";
 import { growReviewAggregate } from "@/lib/review-aggregate";
 import { firstError, reviewSchema } from "@/lib/validation";
@@ -82,7 +83,22 @@ export async function submitReviewAction(
 
     revalidatePath(`/product/${pid}`);
     return { ok: true };
-  } catch {
-    return { ok: false, error: "Could not save your review. Please try again." };
+  } catch (error) {
+    // The pre-check races a concurrent product deletion: the product row
+    // vanishing between the findUnique and the in-tx writes surfaces as
+    // P2003 (the review insert's FK, onDelete: Cascade) or P2025 (the
+    // aggregate growth's product.update on the same vanished row) — both
+    // the same "not found" outcome as the pre-check, so both map to its
+    // copy (audit 115-a MEDIUM-1, the S13-5 sibling convention).
+    if (isForeignKeyViolation(error) || isRecordNotFound(error)) {
+      return { ok: false, error: "Product not found." };
+    }
+    // An outage is not a not-found (S13-5): log it with product context and
+    // let the review-form island's catch render the friendly copy — the
+    // pre-fix shape swallowed EVERY failure with no log, making a DB
+    // outage indistinguishable from a transient one (audit 115-a
+    // MEDIUM-1: the sole broad catch-swallow in the actions layer).
+    console.error("[reviews] submitReviewAction failed", { productId: pid, error });
+    throw error;
   }
 }

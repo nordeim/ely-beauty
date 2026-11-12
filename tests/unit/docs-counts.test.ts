@@ -19,7 +19,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 // ── The single source of truth for the docs' live-tense counts ──────────
-const UNIT_TESTS = 855;
+const UNIT_TESTS = 861;
 const E2E_TESTS = 93;
 const PRISMA_MODELS = 20;
 // ─────────────────────────────────────────────────────────────────────────
@@ -902,6 +902,36 @@ describe("S110 — the non-adjacent credential-shape net (audit 110-a F-1/F-2)",
     expect(
       hits,
       "backtick-wrapped $-prefixed credentials in any phrasing — redact at the source + rotate",
+    ).toEqual([]);
+  });
+});
+
+// ── S115 — the personal-mail identifier net (audit 115-a LOW-1) ─────────────
+// The reference-site login IDENTIFIER — the operator's personal-mail
+// address — survived the run-109 password redaction in the four founding
+// prompts: the S109-2a/S110 credential nets check PASSWORD shapes, and an
+// identifier is not a password shape. An email alone grants no access (the
+// paired password is redacted and the rotation advisories stay armed), but
+// it is the reference operator's personal-mail PII in a public-shaped repo
+// and a phishing/spraying enabler against the reference site. The pin bans
+// the DOMAIN CLASS — the repo's legitimate addresses are the seeded
+// @elybeauty.com ones; a genuine future need for an external personal-mail
+// address in tracked text is a conscious exemption decision, not an
+// accident. The pin quotes NO value (the S108-2a paraphrase discipline
+// generalized to identifiers) and the pattern is ASSEMBLED BY
+// CONCATENATION so this file never itself carries the contiguous shape
+// (the S110-3a convention — the corpus pin below scans this file too).
+const PERSONAL_MAIL_DOMAIN = new RegExp("@" + "outlook" + "\\.com", "i");
+
+describe("S115 — the personal-mail identifier net (audit 115-a LOW-1)", () => {
+  it("S115-3a: no tracked text file carries a personal-mail (outlook.com) address", () => {
+    const files = scanTextFiles(SECRET_SCAN_ROOT);
+    // The S109 floor contract: the walk must prove it scanned.
+    expect(files.length, "the secrets-scan corpus is non-trivial").toBeGreaterThanOrEqual(300);
+    const hits = files.filter((f) => PERSONAL_MAIL_DOMAIN.test(readFileSync(f, "utf8")));
+    expect(
+      hits,
+      "personal-mail (outlook.com) identifiers — redact at the source (the run-115 sweep of the founding prompts)",
     ).toEqual([]);
   });
 });

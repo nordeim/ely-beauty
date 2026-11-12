@@ -41,6 +41,23 @@ export function isForeignKeyViolation(error: unknown): boolean {
 }
 
 /**
+ * True when the error is Prisma's P2025 record-not-found failure — an update
+ * or delete targeting a row that no longer exists (run-115 S115-2, audit
+ * 115-a MEDIUM-1: the review action's aggregate growth hits it when the
+ * product row vanishes between the pre-check and the in-tx write; callers
+ * map it to the same friendly not-found copy as their pre-check — the
+ * sibling convention that `submitReviewAction`'s catch now follows).
+ */
+export function isRecordNotFound(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "P2025"
+  );
+}
+
+/**
  * True when the P2002 `meta.target` identifies the given model field — via a
  * field-shaped target (array or exact string) or via a constraint-name
  * string that contains `_<field>_` / ends with `_<field>_key`.
