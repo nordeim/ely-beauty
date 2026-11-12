@@ -189,7 +189,7 @@ model Address {
   city       String
   state      String
   postalCode String
-  country    String   @default("United States")
+  country    String   @default("Bangladesh") // S113-3 (audit 113-a INFO-2): the BD storefront's market — matches the Zod boundary's S74-12 default; the HomeNest-era US default was dead scaffolding
   isDefault  Boolean  @default(false)
   createdAt  DateTime @default(now())
 
@@ -297,7 +297,7 @@ model StripeEvent {
 model Coupon {
   id          String   @id @default(cuid())
   code        String   @unique
-  type        String   @default("percent") // percent | fixed
+  type        String   @default("percent") // percent | fixed | free_shipping (S113-3, audit 113-a INFO-1 — the live vocabulary, validation.ts's z.enum)
   value       Int // percent (1..100) or cents for fixed
   description String   @default("")
   minSubtotal Int      @default(0) // cents; 0 = no minimum

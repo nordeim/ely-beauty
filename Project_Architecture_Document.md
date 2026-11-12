@@ -1,9 +1,16 @@
-# ElyBeauty — Master Project Architecture Document (PAD) v2.39
+# ElyBeauty — Master Project Architecture Document (PAD) v2.40
 
 **Classification:** Internal Engineering Reference
 **Status:** DEFINITIVE, PRODUCTION-LOCKED BLUEPRINT
 **Companion Document:** `README.md` (quick start), `AGENTS.md` (agent traps), `CLAUDE.md` (conventions)
 **Last Updated:** 2026-11-12
+
+#### Revision Block — v2.40 (Run 113 — the schema-drift hardening cycle)
+
+- `[SR]` **The audit-113-a envelope — the third consecutive 0-defect cycle, now with two INFOs remediated**: 12/12 standing anchors PASS · 0 CRITICAL/HIGH/MEDIUM/LOW — 4 INFO (two actionable, two recorded no-action). The anchors re-probed independently (zero `classList` in src/ — the Tailwind v4 anchor; zero TODO/FIXME; zero `any` escapes — the two `as unknown as` casts are the Prisma global-singleton idiom and a canonicalization; zero console.log; 13/13 API routes force-dynamic; the parseJsonBody seam at 10 files/14 sites + the webhook's bounded readRawBody; 15 route-level metered sites each carrying Retry-After; the secrets nets independently replicated non-vacuous — corpus 346+ files above the ≥300 floor, 0/0/0 hits across all three shape nets; the db-path contract with db/ at the repo root; npm audit 0/0 prod and full; the git tree clean — no `.env`/`*.db`/`*.key` staged). The fresh-eyes sweep over the Mode C dimensions zero code defects. The four INFOs: **INFO-1 (remediated as S113-3)** the `Coupon.type` schema comment drifting to `// percent | fixed` (the live vocabulary is percent | fixed | free_shipping — S74-11); **INFO-2 (remediated as S113-2/S113-3)** the `Address.country` column `@default("United States")` — dead HomeNest scaffolding on a BD storefront, one stratum below the S83-5 src-fallback ban; INFO-3 (no-action) the 30-day session TTL — a documented deliberate deviation (DB-backed revocable sessions, credential rotation kills every row transactionally); INFO-4 (no-action) the Stripe webhook's pre-signature rate-limit absence (bounded 64KB reads, mid-stream cancel, one HMAC verify per request — an IP-keyed pre-auth limiter adds nothing against the platform-level DoS threat).
+- `[FIX]` **The schema-drift remediation (TDD-first, the run-112 "no-action" posture upgraded because a pinned drift can never recur)**: `tests/unit/schema-defaults.test.ts` (the S99-1 filesystem-derivation convention — reading `prisma/schema.prisma` directly) written FIRST and observed RED on both pins — the country-default pin and the coupon-vocabulary pin — then the one-line schema edits GREENed them: `country String @default("Bangladesh")` (matching the Zod boundary's S74-12 default) and the coupon-type comment `// percent | fixed | free_shipping`. `prisma db push` synced the DDL (the Address table now reads `country TEXT NOT NULL DEFAULT 'Bangladesh'` — a metadata-only change; the db file snapshotted first, the hard-link convergence preserved — one inode, two paths — and the data invariants re-verified after: 19 products / 4 categories / 3 coupons / 11 settings / all 24 existing address rows already carrying country="Bangladesh" / health ok).
+- `[VERIFY]` **Parity zero-delta on every pinned surface, the S110-4 state machine matching both sides for the third consecutive cycle**: the panel rows (clone 88/124/160/196/232 vs reference 89/125/161/197/233 — −1px uniform, hrefs AND labels AND element tags byte-identical); the "e" typeahead rows byte-identical in names AND prices through the seventh row ($370/$288/$340/$470/$470/$540/$665); **the S110-4 state machine measured matching on both sides (header 277/278 → 64 at overlay-open via the panel's SEARCH row, stays closed after overlay exit, the hamburger re-opens)**; the no-results copy `No products found for "zzz"` byte-identical both; the About chain → /about h1 "Beauty, Redefined" on both; /shop h1 "All Products" + 19 unique cards bonnet-first both with matching ৳ prices — **the mobile nav functional on both sites, no Tailwind v4 bug** (zero `classList` in src/, the conditional-mount pattern holding).
+- `[CHORE]` **The lockstep + housekeeping**: the count lockstep 851 → 853 (+2 pins — the `UNIT_TESTS` constant bumped and every stale live-tense site swept BY NAME: README ×4, CLAUDE ×1, PAD ×3, SKILL project_state); the plan-range lockstep (`session-2..112` → `session-2..113`, RED observed by name on the freshly-appended plan tail → GREEN via the AGENTS.md bump); 25/25 screenshots regenerated from the live standalone server; worklog Task 107; the polished `docs/session_82.md`; SKILL v2.39.0 (the run-113 project_state, run-112 compressed to PREVIOUS; the Appendix B signpost swept to runs 89–113 / v2.17–v2.40); this revision block. **The two standing rotation advisories remain armed** (rotate the reference-site password AND the production AUTH_SECRET at the source — git history retains both values; the in-repo redactions are the half-fix).
 
 #### Revision Block — v2.39 (Run 112 — the second consecutive zero-defect verification cycle)
 
@@ -682,7 +689,7 @@ The starting point of this remediation was a client-only Vite SPA that kept the 
 | UI primitives | Radix UI (dialog, label, select, slot, toast) + CVA + lucide-react | latest | Accessible primitives; the shadcn pattern without the CLI |
 | Charts | Recharts | ^3 | Admin revenue + analytics surfaces |
 | Validation | Zod | ^4.6.7 | Single validation boundary (ADR-005) — v4 since run 86 (S86-1) |
-| Unit tests | Vitest | ^4.1.12 | Node-env suite (851 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
+| Unit tests | Vitest | ^4.1.12 | Node-env suite (853 tests; grew with every remediation session — the session-61 Stripe retrofit, the session-73/74 parity pins, the S88 toolchain pins, the run-94 replay/rotation pins, the run-95 content-resync + docs-counts pins, the run-96 SEO-fallback + accent pins, the run-97 secret-floor + whitespace/lockstep pins — see §8.1; vitest 4.1.12 retired the tinypool/@vitest/mocker advisories) |
 | E2E tests | Playwright | ^1.64 | 93 tests incl. the Tailwind v4 mobile-nav regression guard + the 404 CSP-hydration pin (S69-2) + the S75 measured-frame geometry pins + the S92-2f password-change round-trip |
 | Fonts | next/font (Cormorant Garamond + Inter) | — | Self-hosted at build, no runtime font requests |
 
@@ -932,7 +939,7 @@ None. There are no queues, cron jobs, or background workers. Long-running concer
 
 **Two suites, one gate:** `npm run lint && npm run typecheck && npm run typecheck:tests && npm run test && npm run build && npm run test:e2e` — all must be green; there is no hosted CI, so this local gate is the only gate.
 
-### 8.1 Unit (Vitest, node env — 851 tests, `tests/unit/`)
+### 8.1 Unit (Vitest, node env — 853 tests, `tests/unit/`)
 
 | File | Pins |
 |---|---|
@@ -1207,7 +1214,7 @@ See the table in `AGENTS.md` (authoritative). Clean-check order: `lint → typec
 | `src/components/store/store-chrome.tsx` | Sticky header + mobile panel + cart drawer |
 | `src/app/(storefront)/admin/coupons/` | The S19-5 coupon-management surface (page + dialog island) |
 | `prisma/schema.prisma` / `seed.ts` | 20 models / idempotent seed |
-| `tests/unit/*` · `tests/e2e/*` | 851 unit · 93 e2e (incl. the v4 guard + tracking access contract + the session-11 through session-27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
+| `tests/unit/*` · `tests/e2e/*` | 853 unit · 93 e2e (incl. the v4 guard + tracking access contract + the session-11 through session-27 hardening/wiring pins + the session-61 Stripe seam/engine pins + the session-69 404 CSP-hydration pin + the session-73 server-derived-shipping/variant-composition pins + the session-75 measured-frame pins + the run-76 scan-guard/card-anatomy/gallery pins + the run-94 replay/rotation pins + the run-95 content-resync/docs-counts pins + the run-96 SEO-fallback/accent pins + the run-97 secret-floor/whitespace/lockstep pins) |
 | `playwright.config.ts` / `vitest.config.ts` | Suite wiring (standalone webServer; iPhone-13-on-Chromium project) |
 
 ---
