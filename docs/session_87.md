@@ -34,7 +34,7 @@ Reference verified: About "Beauty, Redefined" · /shop "All Products" · 19 uniq
 The MEDIUM-1 catch-swallow is confirmed. Let me study the sibling convention (auth.ts) and the existing review test pins before writing the plan.
 The island already catches rejections with friendly copy (line 50) — so the S13-5 rethrow pattern is safe for UX. Let me check the schema's Review relation and growReviewAggregate to determine the expected Prisma failure codes.
 No existing pin forces the swallow — the remediation is unconstrained. Let me check the secrets nets (S109/S110) to see whether the email-identifier redaction should be pinned too.
-The S109/S110 nets ban password shapes; the email identifier needs a domain-class shape pin to avoid quoting the value. Let me scan the corpus for `@outlook.com` occurrences first.
+The S109/S110 nets ban password shapes; the email identifier needs a domain-class shape pin to avoid quoting the value. Let me scan the corpus for the personal-mail domain-class shape (assembled by concatenation, never quoted) first.
 All 4 hits located. Now let me check how existing unit tests construct Prisma known-request errors for the instanceof narrowing.
 The seam design is clear. Now let me find the UNIT_TESTS count-lockstep mechanism in docs-counts.test.ts.
 All mechanisms identified. Now writing the **Session 115 plan entry** (house format) into REMEDIATION_PLAN.md — the cycle record with the full evidence base and ToDo list.
